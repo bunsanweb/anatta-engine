@@ -1,0 +1,20 @@
+{
+    "name": "anatta-engine",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "test": "./node_modules/mocha/bin/_mocha -u qunit"
+    },
+    "main": "./engine.js",
+    "engines": {"node": ">=0.8.12"},
+    "dependencies": {
+        "jsdom": "*",
+        "log": "*",
+        "iconv": "*",
+        "mongoq": "*",
+        "q": "*"
+    },
+    "devDependencies": {
+        "mocha": "*"
+    }
+}
