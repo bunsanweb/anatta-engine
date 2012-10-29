@@ -5,7 +5,7 @@
     "scripts": {
         "test": "node ./node_modules/.bin/mocha"
     },
-    "main": "./engine.js",
+    "main": "./anatta",
     "engines": {"node": ">=0.8.14"},
     "dependencies": {
         "jsdom": "*",
