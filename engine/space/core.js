@@ -12,6 +12,7 @@ var Request = function Request(method, uri, headers, body, from) {
     return Object.create(Request.prototype, {
         method: {value: method.toUpperCase(), enumerable: true},
         uri: {value: uri, enumerable: true},
+        uriObject: {value: url.parse(uri), enumerable: true},
         headers: {value: headers, enumerable: true},
         body: {get: function () {return new Buffer(body)}, enumerable: true},
         from: {value: from},
@@ -64,7 +65,9 @@ Space.prototype.access = function (request) {
         }
     };
     var field = this.manager.resolve(request);
-    return field.access(request).spread(redirector);
+    var deferred = q.defer();
+    deferred.resolve(field.access(request));
+    return deferred.promise.spread(redirector);
 };
 
 var FieldUtils = {
@@ -81,10 +84,8 @@ var FieldUtils = {
 
 var UnknownField = Object.freeze({
     access: function (request) {
-        var deferred = q.defer();
-        deferred.resolve(FieldUtils.error(
-            request, "Resource not found: " + request.uri, "404"));
-        return deferred.promise;
+        return FieldUtils.error(
+            request, "Resource not found: " + request.uri, "404");
     },
 });
 
