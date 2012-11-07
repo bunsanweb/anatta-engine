@@ -12,7 +12,7 @@ var Request = function Request(method, uri, headers, body, from) {
     return Object.create(Request.prototype, {
         method: {value: method.toUpperCase(), enumerable: true},
         uri: {value: uri, enumerable: true},
-        uriObject: {value: url.parse(uri), enumerable: true},
+        uriObject: {value: url.parse(uri, true, true), enumerable: true},
         headers: {value: headers, enumerable: true},
         body: {get: function () {return new Buffer(body)}, enumerable: true},
         from: {value: from},
@@ -42,7 +42,7 @@ var Response = function Response(status, headers, body) {
     });
 };
 
-var Space = function Space (opts) {
+var Space = function Space(opts) {
     opts = opts || {};
     opts.redirectMax = opts.redirectMax || 5;
     return Object.create(Space.prototype, {

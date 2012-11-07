@@ -3,7 +3,7 @@ var fs = require("fs");
 var path = require("path");
 var core = require("./core");
 
-var FileField = function (opts) {
+var FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
         opts: {value: opts},
     });
