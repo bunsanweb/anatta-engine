@@ -50,6 +50,8 @@ var Space = function Space(opts) {
         manager: {value: FieldManager(), enumerable: true},
     });
 };
+Space.prototype.request = Request;
+Space.prototype.response = Response;
 Space.prototype.access = function (request) {
     var self = this;
     var redirector = function (request, response) {
