@@ -1,10 +1,11 @@
 var core = require("./core");
 
-var Link = function JsonLink(engine, json) {
+var Link = function JsonLink(engine, json, parent) {
     // TBD: json value copy
     return Object.create(JsonLink.prototype, {
         engine: {value: engine},
         json: {value: json},
+        parent: {value: parent},
     });
 };
 Link.prototype = core.Link();
@@ -33,7 +34,7 @@ Entity.prototype.all = function () {
         var v = this.json[key];
         if (typeof v !== "object") return r;
         if (typeof v["href"] !== "string") return r;
-        r[key] = Link(this.engine, v);
+        r.push(Link(this.engine, v, this));
         return r;
     }).bind(this), []);
 };

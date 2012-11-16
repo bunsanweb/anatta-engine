@@ -1,3 +1,4 @@
+var url = require("url");
 var q = require("q");
 
 // Metadata common value interface
@@ -16,7 +17,8 @@ Metadata.prototype.get = function () {
 
 // methods as metadata dict
 Metadata.prototype.href = function () {
-    return this.attr("href");
+    var href = this.attr("href");
+    return this.parent ? url.resolve(this.parent.href(), href) : href;
 };
 Metadata.prototype.attr = function (key) {
     // return as a string
