@@ -3,3 +3,4 @@ test/space-core-test.js
 test/space-file-test.js
 test/space-data-test.js
 test/metadata-json-test.js
+test/metadata-atom-test.js

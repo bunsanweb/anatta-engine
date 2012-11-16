@@ -7,7 +7,7 @@ var features = jsdom.defaultDocumentFeatures = {
     MutationEvents: false,
     QuerySelector: true,
 };
-var browser = jsdom.browserAugumentation(jsdom.dom.level3.html, {
+var browser = jsdom.browserAugmentation(jsdom.dom.level3.html, {
     features: features,
 });
 
@@ -15,7 +15,7 @@ var browser = jsdom.browserAugumentation(jsdom.dom.level3.html, {
 var createHTMLDocument = exports.createHTMLDocument = function (title) {
     var html = jsdom.jsdom(
         "<!doctype html><html><head></head><body></body></html>",
-        jsdom.dom.level3.html, {features: jsdomFeatures});
+        jsdom.dom.level3.html, {features: features});
     if (typeof title === "string") {
         var titleNode = html.createElement("title");
         titleNode.textContent = title;
@@ -30,7 +30,7 @@ var createHTMLDocument = exports.createHTMLDocument = function (title) {
 // compat function for "document.implementation.createDocument"
 var createDocument = exports.createDocument = function () {
     var xml = jsdom.jsdom(
-        "", jsdom.dom.level3.core, {features: jsdomFeatures});
+        "", jsdom.dom.level3.core, {features: features});
     if (!xml.implementation.createDocument) {
         xml.implementation.createDocument = createDocument;
     }

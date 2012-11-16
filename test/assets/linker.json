@@ -1,0 +1,7 @@
+{
+    "name": "linker",
+    "target": {
+        "name": "target1",
+        "href": "target.json"
+    }
+}
