@@ -10,4 +10,5 @@ exports.metadata = {
     core: require("./engine/metadata/core"),
     json: require("./engine/metadata/json"),
     atom: require("./engine/metadata/atom"),
+    html: require("./engine/metadata/html"),
 };

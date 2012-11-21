@@ -54,10 +54,10 @@ Entity.prototype.attr = function (key) {
     return "";
 };
 Entity.prototype.all = function () {
-    return Array.prototype.slice.call(this.atom.querySelectorAll(
-        "feed > entry")).map(function (entry) {
-            return Link(this.engine, entry, this);
-        }, this);
+    var entries = this.atom.querySelectorAll("feed > entry");
+    return Array.prototype.map.call(entries, function (entry) {
+        return Link(this.engine, entry, this);
+    }, this);
 };
 
 var Link = function AtomLink(engine, atom, parent) {
