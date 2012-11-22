@@ -18,16 +18,12 @@ Entity.prototype.attr = function (key) {
     // TBD: get metadata from HTML document
     // - any data in HTML5 "footer" element
     var root = this.html.documentElement;
-    // meta[http-equiv]
-    var attr = attrAsMeta(root, key, "http-equiv");
-    if (attr) return attr;
-    // meta[name]
-    var attr = attrAsMeta(root, key, "name");
-    if (attr) return attr;
+    var attr = "";
+    // meta[http-equiv] or meta[name]
+    if (attr = attrAsMeta(root, key, "http-equiv")) return attr;
+    if (attr = attrAsMeta(root, key, "name")) return attr;
     // *[rel] in footer
-    var attr = attrAsRelUnderFooter(root, key);
-    if (attr) return attr;
-    
+    if (attr = attrAsRelUnderFooter(root, key)) return attr;
     return "";
 };
 Entity.prototype.all = function () {
@@ -51,13 +47,12 @@ Link.prototype = core.Link();
 Link.prototype.attr = function (key) {
     // TBD: see Entity.prototype.attr
     var root = this.html;
-    var attr = attrAsElementAttr(root, key);
-    if (attr) return attr;
-    var attr = attrAsElementData(root, key);
-    if (attr) return attr;
+    var attr = "";
+    // *[xxx] or *[data-xxx]
+    if (attr = attrAsElementAttr(root, key)) return attr;
+    if (attr = attrAsElementAttr(root, "data-" + key)) return attr;
     // *[rel] in footer
-    var attr = attrAsRelUnderFooter(root, key);
-    if (attr) return attr;
+    if (attr = attrAsRelUnderFooter(root, key)) return attr;
     return "";
 };
 
@@ -82,12 +77,12 @@ var findFooter = function (elem, inSection) {
         var tag = child.tagName.toLowerCase();
         if (sectioningRoots.indexOf(tag) >= 0 || 
             sectioningContents.indexOf(tag) >= 0) {
-            if (inSection) continue;
-            var ret = findFooter(child, true);
+            if (inSection) continue; // skip
+            return findFooter(child, true); // search footer only in it
+        } else {
+            var ret = findFooter(child, inSection);
             if (ret) return ret;
         }
-        var ret = findFooter(child, inSection);
-        if (ret) return ret;
     }
     return null;
 };
@@ -96,23 +91,13 @@ var findFooter = function (elem, inSection) {
 // map attr as element attribute
 var attrAsElementAttr = function (elem, key) {
     var value = elem.getAttribute(key);
-    if (value) return value;
-    return "";
+    return value ? value : "";
 };
 
-// map attr as dataset API data
-var attrAsElementData = function (elem, key) {
-    var value = elem.getAttribute("data-" + key);
-    if (value) return value;
-    return "";
-};
-
-
-// map attr as meta element 
+// map attr as meta element
 var attrAsMeta = function (elem, key, metaKey) {
     var meta = elem.querySelector("head meta[" + metaKey + "='" + key + "']");
-    if (meta) return meta.getAttribute("content");
-    return "";
+    return meta ? meta.getAttribute("content") : "";
 };
 
 // map attr as *[rel] under footer element
@@ -124,7 +109,6 @@ var attrAsRelUnderFooter = function (elem, key) {
     }
     return "";
 };
-
 
 
 exports.Link = Link;
