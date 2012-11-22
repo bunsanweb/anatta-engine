@@ -4,7 +4,7 @@ var q = require("q");
 
 
 var Request = function Request(method, uri, headers, body, from) {
-    headers = headers || {};
+    headers = normalizeHeaders(headers || {});
     body = new Buffer(body || []);
     if (body.length && !headers["content-length"]) {
         headers["content-length"] = body.length.toString();
@@ -29,7 +29,7 @@ Request.prototype.origin = function () {
 var Response = function Response(status, headers, body) {
     status = status.toString();
     var statusText = http.STATUS_CODES[status];
-    headers = headers || {};
+    headers = normalizeHeaders(headers || {});
     body = new Buffer(body || []);
     if (body.length) {
         headers["content-length"] = body.length.toString();
@@ -59,7 +59,7 @@ Space.prototype.access = function (request) {
             response.headers["location"] &&
             request.step() < self.opts.redirectMax) {
             var redirect = Request(
-                request.method, request.headers["location"],
+                request.method, response.headers["location"],
                 request.headers, request.body, request);
             return self.access(redirect);
         } else {
@@ -126,6 +126,12 @@ FieldManager.prototype.resolve = function (request) {
     return UnknownField;
 };
 
+var normalizeHeaders = function (headers) {
+    return Object.keys(headers).reduce(function (o, key) {
+        o[key.toLowerCase()] = headers[key];
+        return o;
+    }, {});
+};
 
 exports.Request = Request;
 exports.Response = Response;

@@ -5,6 +5,7 @@ exports.space = {
     core: require("./engine/space/core"),
     data: require("./engine/space/data"),
     file: require("./engine/space/file"),
+    web: require("./engine/space/web"),
 };
 exports.metadata = {
     core: require("./engine/metadata/core"),
