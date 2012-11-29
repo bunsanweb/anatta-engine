@@ -13,8 +13,10 @@ test("Get Atom resource", function (done) {
     var uri = 'file:assets/feed.atom';
     var link = engine.link({href: uri});
     assert.equal(link.href(), uri);
-    link.get().then(function (entry) {
-        assert.equal(entry.attr("author"), "Taro Yamada");
+    link.get().then(function (entity) {
+        assert.equal(entity.attr("href"), uri);
+        var entries = entity.all();
+        //console.log(entries[0].attr("body"))
+        assert.equal(entries[0].attr("href"), "file:assets/article1.atom");
     }).then(done, done);
 });
-

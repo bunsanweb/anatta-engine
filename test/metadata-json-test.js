@@ -7,11 +7,15 @@ test("Get JSON resource", function (done) {
     engine.space.manager.bind("data", "data:", anatta.space.data.DataField());
     engine.porter.map["application/json"] = anatta.metadata.json;
     
-    var uri = 'data:application/json,{"name": "taro"}'
+    var body =  '{"name": "taro"}';
+    var contentType = "application/json";
+    var uri = 'data:' + contentType + ',' + encodeURI(body);
     var link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(function (entity) {
-        assert.equal(entity.attr("name"), "taro");
+        assert.equal(entity.attr("href"), uri);
+        assert.equal(entity.attr("content-type"), contentType);
+        assert.equal(entity.attr("body"), body);
     }).then(done, done);
 });
 
@@ -28,15 +32,14 @@ test("Get JSON resource from relative link", function (done) {
     var link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(function (entity) {
-        assert.equal(entity.attr("name"), "linker");
         var links = entity.all();
         assert.equal(links.length, 1);
-        assert.equal(links[0].attr("name"), "target1");
         assert.equal(links[0].href(), "file:assets/target.json");
         assert.equal(links[0].attr("href"), "target.json");
         return links[0].get();
     }).then(function (target) {
-        assert.equal(target.attr("name"), "target");
+        assert.equal(target.attr("href"), "file:assets/target.json");
+        assert.equal(target.attr("body"), '{"name": "target"}\n');
     }).then(done, done);
 });
 

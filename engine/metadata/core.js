@@ -1,5 +1,8 @@
 var url = require("url");
 var q = require("q");
+var termset = {
+    core: require("../termset/core"),
+};
 
 // Metadata common value interface
 var Metadata = function Metadata() {
@@ -18,7 +21,13 @@ Metadata.prototype.get = function () {
 // methods as metadata dict
 Metadata.prototype.href = function () {
     var href = this.attr("href");
-    return this.parent ? url.resolve(this.parent.href(), href) : href;
+    if (!this.parent) return href;
+    var parentUri = url.parse(this.parent.href());
+    var uri = url.parse(href);
+    if (uri.protocol && parentUri.protocol !== uri.protocol) {
+        return href; // avoid nodejs bug
+    }
+    return url.resolve(parentUri, uri);
 };
 Metadata.prototype.attr = function (key) {
     // return as a string
@@ -27,6 +36,7 @@ Metadata.prototype.attr = function (key) {
 
 // methods as metadata list
 Metadata.prototype.all = function () {
+    // TBD:
     return [];
 };
 Metadata.prototype.find = function (query) {
@@ -47,10 +57,14 @@ var Entity = function Entity() {
 };
 Entity.prototype = Metadata();
 Entity.prototype.attr = function (key) {
-    if (key === "href") return this.request.uri;
-    var headerKeys = Object.keys(this.request.headers);
-    if (headerKeys[key]) return headerKeys[key];
-    return "";
+    return this.glossary.entityAttr(this, key);
+};
+Entity.prototype.all = function () {
+    var contentType = this.attr("content-type");
+    var entries = this.glossary.entityLinkAll(this);
+    return entries.map(function (entry) {
+        return this.engine.porter.link(this.engine, entry, contentType, this);
+    }, this);
 };
 
 
@@ -59,12 +73,16 @@ var Link = function Link() {
     return Object.create(Link.prototype, {});
 };
 Link.prototype = Metadata();
-
+Link.prototype.attr = function (key) {
+    return this.parent.glossary.linkAttr(this, key);
+};
 
 // nil Metadata
 var NilEntity = function NilEntity(engine, request, response) {
     return Object.create(NilEntity.prototype, {
         engine: {value: engine},
+        glossary: {value: termset.core.EntityGlossary(
+            "*", engine.glossary)},
         request: {value: request},
         response: {value: response},
     });
@@ -90,8 +108,16 @@ Porter.prototype.entity = function (engine, request, response) {
     var contentType = response.headers["content-type"];
     return this.resolve(contentType).Entity(engine, request, response);
 };
-Porter.prototype.link = function (engine, data, contentType) {
-    return this.resolve(contentType).Link(engine, data);
+Porter.prototype.link = function (engine, data, contentType, parent) {
+    if (!parent) {
+        var body = JSON.stringify(data);
+        var uri = "data:" + contentType + "," + body;
+        var request = engine.space.request("GET", uri);
+        var response = engine.space.response(
+            "200", {"content-type": contentType}, body);
+        parent = this.entity(engine, request, response);
+    }
+    return this.resolve(contentType).Link(engine, data, parent);
 };
 Porter.prototype.resolve = function (contentType) {
     var paramStart = contentType.indexOf(";");

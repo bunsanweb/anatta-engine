@@ -19,7 +19,7 @@ DataField.prototype.access = function (request) {
     if (!data) {
         return core.FieldUtil.error(request, "Invalid Data Scheme URI", "404");
     }
-    var body = new Buffer(data[3], data[2] ? "base64" : "utf-8");
+    var body = new Buffer(decodeURI(data[3]), data[2] ? "base64" : "utf-8");
     var response = core.Response("200", {
         "content-type": data[1] ? data[1] : "text/plain;charset=utf-8",
         "content-length": body.length.toString(),

@@ -13,3 +13,7 @@ exports.metadata = {
     atom: require("./engine/metadata/atom"),
     html: require("./engine/metadata/html"),
 };
+exports.termset = {
+    core: require("./engine/termset/core"),
+    builtin: require("./engine/termset/builtin"),
+};

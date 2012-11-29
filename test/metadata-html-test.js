@@ -1,7 +1,7 @@
 var assert = require("assert");
 
-suite("[Metadata for Atom format]");
-test("Get Atom resource", function (done) {
+suite("[Metadata for HTML format]");
+test("Get HTML resource", function (done) {
     var anatta = require("../anatta");
     var engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
@@ -13,8 +13,9 @@ test("Get Atom resource", function (done) {
     var uri = 'file:assets/doc.html';
     var link = engine.link({href: uri});
     assert.equal(link.href(), uri);
-    link.get().then(function (entry) {
-        assert.equal(entry.attr("author"), "Taro");
+    link.get().then(function (entity) {
+        assert.equal(entity.attr("href"), uri);
+        var entries = entity.all();
+        assert.equal(entries[0].attr("href"), "http://taro.com/");
     }).then(done, done);
 });
-
