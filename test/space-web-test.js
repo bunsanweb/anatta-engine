@@ -2,6 +2,7 @@ var assert = require("assert");
 
 suite("[Space Web]");
 test("Create space core with http", function (done) {
+    this.timeout(5000);
     var core = require("../engine/space/core");
     var web = require("../engine/space/web");
     
