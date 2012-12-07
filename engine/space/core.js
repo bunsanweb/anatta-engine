@@ -143,7 +143,7 @@ var ContentType = function ContentType(full) {
     full = full || "";
     // TBD: quated string value
     var list = full.split(";");
-    var content = list[0];
+    var content = list[0].toLowerCase();
     var detail = content.split("/");
     var parameter = list.slice(1).reduce(function (params, param) {
         var kv = param.split("=");
