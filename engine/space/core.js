@@ -18,6 +18,9 @@ var Request = function Request(method, uri, headers, body, from) {
         from: {value: from},
     });
 };
+Request.prototype.contentType = function () {
+    return ContentType(this.headers["content-type"]);
+};
 Request.prototype.step = function () {
     return this.from ? 1 + this.from.step() : 0;
 };
@@ -40,6 +43,9 @@ var Response = function Response(status, headers, body) {
         headers: {value: headers, enumerable: true},
         body: {get: function () {return new Buffer(body)}, enumerable: true},
     });
+};
+Response.prototype.contentType = function () {
+    return ContentType(this.headers["content-type"]);
 };
 
 var Space = function Space(opts) {
@@ -133,8 +139,36 @@ var normalizeHeaders = function (headers) {
     }, {});
 };
 
+var ContentType = function ContentType(full) {
+    full = full || "";
+    // TBD: quated string value
+    var list = full.split(";");
+    var content = list[0];
+    var detail = content.split("/");
+    var parameter = list.slice(1).reduce(function (params, param) {
+        var kv = param.split("=");
+        params[kv[0].trim().toLowerCase()] = kv[1].trim();
+        return params;
+    }, {});
+    return Object.create(ContentType.prototype, {
+        full: {value: full, enumerable: true},
+        value: {value: content, enumerable: true},
+        parameter: {value: Object.freeze(parameter), enumerable: true},
+        type: {value: detail[0], enumerable: true},
+        subtype: {value: detail[1], enumerable: true},
+    });
+};
+ContentType.prototype.valueOf = function () {
+    return this.value;
+};
+ContentType.prototype.toString = function () {
+    return this.full;
+};
+
+
 exports.Request = Request;
 exports.Response = Response;
+exports.ContentType = ContentType;
 exports.Space = Space;
 exports.FieldUtils = FieldUtils;
 exports.UnknownField = UnknownField;

@@ -19,7 +19,9 @@ var ResourceBinder = function ResourceBinder() {
 ResourceBinder.prototype = core.TermBinder();
 ResourceBinder.prototype.entityAttr = function (entity, key) {
     if (key === "href") return entity.request.uri;
-    if (key === "content-type") return entity.response.headers["content-type"];
+    if (key === "content-type") {
+        return entity.response.contentType().toString();
+    }
     if (key === "body") return entity.response.body.toString();
     return "";
 };

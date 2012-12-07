@@ -105,11 +105,12 @@ var Porter = function Porter() {
 Porter.map = {};
 Porter.nil = {Entity: NilEntity, Link: NilLink};
 Porter.prototype.entity = function (engine, request, response) {
-    var contentType = response.headers["content-type"];
-    return this.resolve(contentType).Entity(engine, request, response);
+    var contentType = response.contentType();
+    return this.resolve(contentType.value).Entity(engine, request, response);
 };
 Porter.prototype.link = function (engine, data, contentType, parent) {
     if (!parent) {
+        contentType = contentType.valueOf();
         var body = JSON.stringify(data);
         var uri = "data:" + contentType + "," + body;
         var request = engine.space.request("GET", uri);
