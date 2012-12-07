@@ -17,3 +17,7 @@ exports.termset = {
     core: require("./engine/termset/core"),
     builtin: require("./engine/termset/builtin"),
 };
+exports.weaver = {
+    core: require("./engine/weaver/core"),
+};
+
