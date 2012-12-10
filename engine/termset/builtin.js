@@ -74,13 +74,13 @@ var HtmlBinder = function HtmlBinder() {
 };
 HtmlBinder.prototype = ResourceBinder();
 HtmlBinder.prototype.entityLinkAll = function (entity) {
-    var entries = entity.html.querySelectorAll("a[href]");
+    var entries = entity.html.querySelectorAll("[href], [src]");
     return Array.prototype.map.call(entries, function (entry) {
         return entry;
     });
 };
 HtmlBinder.prototype.linkAttr = function (link, key) {
-    if (key === "href") return link.html.href;
+    if (key === "href") return link.html.href || link.html.src;
     if (key === "content-type") "text/html;charset=utf-8";
     if (key === "body") return xmlSerializer.serializeToString(link.html);
     return "";

@@ -22,9 +22,9 @@ var Engine = function Engine(opts) {
         glossary: {value: glossary},
     });
 };
-Engine.prototype.link = function (data, contentType) {
+Engine.prototype.link = function (data, contentType, parent) {
     contentType = contentType || "application/json";
-    return this.porter.link(this, data, contentType);
+    return this.porter.link(this, data, contentType, parent);
 };
 
 exports.Engine = Engine;

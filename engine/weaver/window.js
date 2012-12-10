@@ -93,13 +93,13 @@ var loadScripts = function loadScripts(agent, scriptTags, index) {
     }
     // when linked script
     // TBD: use restricted space engine
-    var scriptLink = agent.engine.link({href: scriptTag.src});
+    var scriptLink = agent.engine.link(scriptTag, "text/html", agent.entity);
     return scriptLink.get().then(function (entity) {
         var typeAttr = scriptTag.getAttribute("type");
         var type = typeAttr ? space.core.ContentType(typeAttr) :
             entity.response.contentType();
-        if (type === "application/javascript" ||
-            type === "text/javascript") {
+        if (type.value === "application/javascript" ||
+            type.value === "text/javascript") {
             var charset = (scriptTag.getAttribute("charset") ||
                            type.parameter["charset"] || "utf-8");
             var code = entity.response.body.toString(charset);
