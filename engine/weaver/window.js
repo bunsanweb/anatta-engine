@@ -59,7 +59,7 @@ var access = function (agent, request) {
                 "content-type": "text/html;charset=utf-8"
             }, agent.window.document.outerHTML);
         } else {
-            event.rdetail.respond("405", {"allow": "GET"});
+            event.detail.respond("405", {"allow": "GET"});
         }
     }
     return d.promise;
