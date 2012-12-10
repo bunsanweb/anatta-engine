@@ -8,12 +8,12 @@ var bindEventTarget = function (target) {
         if (!listener) return;
         name = name.toLowerCase();
         capture = !!capture;
-        listeners[name] = listeners[name] || {true: [], false: []};
+        if (!listeners[name]) listeners[name] = emptyHandlers();
         var list = listeners[name][capture];
         for (var i = 0; i < list.length; i++) {
             if (list[i] === listener) return;
         }
-        list.push(listeners);
+        list.push(listener);
     };
     var removeEventListener = function (name, listener, capture) {
         if (!listener) return;
@@ -39,24 +39,14 @@ var bindEventTarget = function (target) {
         }
         event.target = event.currentTarget = target;
         if (!listeners[event.type]) return true;
-        var list = listeners[event.type][event.bubble];
+        var list = listeners[event.type][event.bubbles];
         if (event.bubbles) {
             for (var i = 0; i < list.length; i++) {
-                try {
-                    list[i].call(target, event);
-                    if (event._stopPropagation) break;
-                } catch (err) {
-                    console.log(err);
-                }
+                if (callHandler(list[i], target, event)) break;
             }
         } else {
             for (var i = list.length - 1; i >= 0; i--) {
-                try {
-                    list[i].call(target, event);
-                    if (event._stopPropagation) break;
-                } catch (err) {
-                    console.log(err);
-                }
+                if (callHandler(list[i], target, event)) break;
             }
         }
         return !event._preventDefault;
@@ -67,6 +57,29 @@ var bindEventTarget = function (target) {
     target.dispatchEvent = dispatchEvent;
     return target;
 };
+
+var emptyHandlers = function () {
+    var h = {};
+    h[true] = [];
+    h[false] = [];
+    return h;
+};
+
+var callHandler = function  (handler, target, event) {
+    try {
+        var ret = handler.call(target, event);
+        if (ret === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (event._stopPropagation) return true;
+    } catch (err) {
+        console.log(err);
+    }
+    return false;
+};
+
+
 
 var createEvent = function (eventName) {
     return new jsdom.dom.level3.events[eventName];

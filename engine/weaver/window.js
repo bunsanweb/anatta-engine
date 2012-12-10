@@ -29,6 +29,8 @@ var bindApi = function (agent) {
         },
         engine: agent.engine,
     };
+    window.window = window;
+    window.console = console;
 };
 
 var loaded = function (agent) {
@@ -84,7 +86,7 @@ var loadScripts = function loadScripts(agent, scriptTags, index) {
     var scriptTag = scriptTags[index];
     if (!scriptTag.src) {
         // when embeded script
-        var code = scriptTag.innerText;
+        var code = scriptTag.innerHTML;
         var uri = agent.entity.request.uri;
         runScript(agent, code, uri);
         return loadScripts(agent, scriptTags, index + 1);
@@ -110,7 +112,7 @@ var loadScripts = function loadScripts(agent, scriptTags, index) {
 
 var runScript = function (agent, code, uri) {
     try {
-        vm.createScript(code, uri).runInContent(agent.window);
+        vm.createScript(code, uri).runInContext(agent.window);
     } catch (err) {
         // pass errors in user code
         // TBD: logging to engine
