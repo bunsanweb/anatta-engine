@@ -55,10 +55,11 @@ var access = function (agent, request) {
     if (agent.window.dispatchEvent(event)) {
         //TBD: do default
         if (request.method === "GET") {
-            event.respond("200", {"content-type": "text/html;charset=utf-8"},
-                          agent.document.outerHTML);
+            event.detail.respond("200", {
+                "content-type": "text/html;charset=utf-8"
+            }, agent.window.document.outerHTML);
         } else {
-            event.respond("405", {"allow": "GET"});
+            event.rdetail.respond("405", {"allow": "GET"});
         }
     }
     return d.promise;

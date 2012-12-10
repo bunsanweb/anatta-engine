@@ -11,7 +11,7 @@ var Agent = function Agent(opts) {
     });
 };
 Agent.prototype.activate = function () {
-    if (this.window) {
+    if (this.entity) {
         var d = q.defer();
         d.resolve(this);
         return d.promise;
@@ -25,7 +25,7 @@ Agent.prototype.activate = function () {
     });
 };
 Agent.prototype.access = function (request) {
-    window.access(this, request);
+    return window.access(this, request);
 };
 
 
