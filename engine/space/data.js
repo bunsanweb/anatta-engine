@@ -1,9 +1,10 @@
 var q = require("q");
 var core = require("./core");
+var conftree = require("../conftree");
 
 var DataField = function DataField(opts) {
     return Object.create(DataField.prototype, {
-        opts: {value: opts},
+        opts: {value: conftree.create(opts, {})},
     });
 };
 var uric = "[^/;?:@&=+,]";

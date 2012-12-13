@@ -1,7 +1,7 @@
 var http = require("http");
 var url = require("url");
 var q = require("q");
-
+var conftree = require("../conftree");
 
 var Request = function Request(method, uri, headers, body, from) {
     headers = normalizeHeaders(headers || {});
@@ -49,8 +49,7 @@ Response.prototype.contentType = function () {
 };
 
 var Space = function Space(opts) {
-    opts = opts || {};
-    opts.redirectMax = opts.redirectMax || 5;
+    opts = conftree.create(opts, {redirectMax: 5});
     return Object.create(Space.prototype, {
         opts: {value: opts, enumerable: true},
         manager: {value: FieldManager(), enumerable: true},

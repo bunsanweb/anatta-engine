@@ -1,11 +1,12 @@
 var q = require("q");
 var fs = require("fs");
 var path = require("path");
+var conftree = require("../conftree");
 var core = require("./core");
 
 var FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
-        opts: {value: opts},
+        opts: {value: conftree.create(opts, {root: "", prefix: ""})},
     });
 };
 FileField.prototype.access = function (request) {

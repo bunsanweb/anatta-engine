@@ -1,10 +1,10 @@
 var q = require("q");
 var window = require("./window");
-
+var conftree = require("../conftree");
 
 var Agent = function Agent(opts) {
     return Object.create(Agent.prototype, {
-        opts: {value: opts},
+        opts: {value: conftree.create(opts, {uri: "", })},
         window: {value: window.Window()},
         entity: {value: null, writable: true},
         engine: {value: null, writable: true},

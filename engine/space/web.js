@@ -5,10 +5,11 @@ var protocols = {
 };
 var q = require("q");
 var core = require("./core");
+var conftree = require("../conftree");
 
 var WebField = function WebField(opts) {
     return Object.create(WebField.prototype, {
-        opts: {value: opts},
+        opts: {value: conftree.create(opts, {})},
     });
 };
 WebField.prototype.access = function (request) {

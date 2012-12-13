@@ -1,3 +1,4 @@
+var conftree = require("./conftree");
 var space = {
     core: require("./space/core"),
 };
@@ -10,9 +11,7 @@ var termset = {
 };
 
 var Engine = function Engine(opts) {
-    opts = opts || {};
-    opts.space = opts.space || {};
-    opts.metadata = opts.metadata || {};
+    opts = conftree.create(opts, {space: {}, medatata: {}});
     var glossary = termset.core.EngineGlossary();
     glossary.add(termset.builtin.termset);
     return Object.create(Engine.prototype, {

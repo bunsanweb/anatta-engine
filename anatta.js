@@ -1,5 +1,6 @@
 exports.engine = {
     core: require("./engine/core"),
+    conftree: require("./engine/conftree"),
 };
 exports.space = {
     core: require("./engine/space/core"),
