@@ -21,4 +21,7 @@ exports.termset = {
 exports.weaver = {
     core: require("./engine/weaver/core"),
 };
+exports.webgate = {
+    core: require("./engine/webgate/core"),
+};
 

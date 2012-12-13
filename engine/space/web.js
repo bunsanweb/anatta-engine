@@ -27,7 +27,7 @@ WebField.prototype.access = function (request) {
         });
     });
     req.on("error", function (err) {
-        deferred.resolve(core.FieldUtil.error(request, error, "400"));
+        deferred.resolve(core.FieldUtils.error(request, err, "400"));
     });
     req.end(request.body);
     return deferred.promise;
