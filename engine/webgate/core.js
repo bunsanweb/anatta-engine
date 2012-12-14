@@ -32,10 +32,7 @@ WebGate.prototype.handler = function (req, res) {
         var request = self.space.request(
             req.method, uri, req.headers, body, gateReq);
         self.space.access(request).spread(function (request, response) {
-            res.statusCode = response.status;
-            Object.keys(response.headers).forEach(function (key) {
-                res.setHeader(key, response.headers[key]);
-            });
+            res.writeHead(response.status, response.headers);
             res.end(response.body);
         });
     });
