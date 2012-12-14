@@ -1,3 +1,5 @@
+"use strict";
+
 var core = require("./core");
 var termset = {
     core: require("../termset/core"),

@@ -1,3 +1,5 @@
+"use strict";
+
 exports.engine = {
     core: require("./engine/core"),
     conftree: require("./engine/conftree"),

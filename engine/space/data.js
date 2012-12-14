@@ -1,3 +1,5 @@
+"use strict";
+
 var q = require("q");
 var core = require("./core");
 var conftree = require("../conftree");

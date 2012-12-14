@@ -1,3 +1,5 @@
+"use strict";
+
 //console.log("boot");
 window.addEventListener("agent-load", function (ev) {
   //console.log("load");

@@ -1,3 +1,5 @@
+"use strict";
+
 var url = require("url");
 var q = require("q");
 var termset = {

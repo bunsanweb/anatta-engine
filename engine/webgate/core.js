@@ -1,3 +1,5 @@
+"use strict";
+
 var protocols = {
     http: require("http"),
     https: require("https"),

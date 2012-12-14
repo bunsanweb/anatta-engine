@@ -1,3 +1,5 @@
+"use strict";
+
 var jsdom = require("jsdom");
 
 
@@ -37,7 +39,8 @@ var bindEventTarget = function (target) {
             if (event.detail) ev.detail = event.detail;
             event = ev;
         }
-        event.target = event.currentTarget = target;
+        // see inside jsdom Event at lib/jsdom/level2/events.js
+        event._target = event._currentTarget = target;
         if (!listeners[event.type]) return true;
         var list = listeners[event.type][event.bubbles];
         if (event.bubbles) {

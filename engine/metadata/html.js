@@ -1,3 +1,5 @@
+"use strict";
+
 var core = require("./core");
 var jsdom = require("./jsdom");
 var termset = {

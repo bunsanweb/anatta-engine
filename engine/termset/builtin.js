@@ -1,3 +1,5 @@
+"use strict";
+
 //[core builtin termsets]
 // supported terms:
 // - "href": uri to the resource of the metadata

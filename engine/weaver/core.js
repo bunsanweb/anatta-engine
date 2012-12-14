@@ -1,3 +1,5 @@
+"use strict";
+
 var q = require("q");
 var window = require("./window");
 var conftree = require("../conftree");

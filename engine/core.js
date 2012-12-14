@@ -1,3 +1,5 @@
+"use strict";
+
 var conftree = require("./conftree");
 var space = {
     core: require("./space/core"),

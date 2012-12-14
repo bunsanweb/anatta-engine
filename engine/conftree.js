@@ -1,3 +1,5 @@
+"use strict";
+
 var ConfTree = function ConfTree(json, parent, name) {
     var conf = Object.create(ConfTree.prototype);
     var descs = Object.keys(json).reduce(function (descs, key) {
