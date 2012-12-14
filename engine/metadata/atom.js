@@ -19,6 +19,9 @@ var Entity = function AtomEntity(engine, request, response) {
     });
 };
 Entity.prototype = core.Entity();
+Entity.prototype.select = function (selector) {
+    return this.atom.querySelectorAll(selector);
+};
 
 var Link = function AtomLink(engine, atom, parent) {
     return Object.create(AtomLink.prototype, {
@@ -28,6 +31,7 @@ var Link = function AtomLink(engine, atom, parent) {
     });
 };
 Link.prototype = core.Link();
+Link.prototype.select = Entity.prototype.select;
 
 
 exports.Link = Link;

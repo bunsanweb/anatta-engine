@@ -20,6 +20,9 @@ var Entity = function HtmlEntity(engine, request, response) {
     });
 };
 Entity.prototype = core.Entity();
+Entity.prototype.select = function (selector) {
+    return this.html.querySelectorAll(selector);
+};
 
 var Link = function HtmlLink(engine, html, parent) {
     return Object.create(HtmlLink.prototype, {
@@ -29,6 +32,7 @@ var Link = function HtmlLink(engine, html, parent) {
     });
 };
 Link.prototype = core.Link();
+Link.prototype.select = Entity.prototype.select;
 
 
 exports.Link = Link;

@@ -19,6 +19,7 @@ exports.metadata = {
 exports.termset = {
     core: require("./engine/termset/core"),
     builtin: require("./engine/termset/builtin"),
+    desc: require("./engine/termset/desc"),
 };
 exports.weaver = {
     core: require("./engine/weaver/core"),

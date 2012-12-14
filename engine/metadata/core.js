@@ -52,6 +52,10 @@ Metadata.prototype.first = function (query) {
     return r[0];
 };
 
+// selector of the content
+Metadata.prototype.select = function (selector) {
+    return [];
+};
 
 // base of metadata as Request/Response
 var Entity = function Entity() {

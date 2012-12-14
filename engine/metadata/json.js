@@ -16,6 +16,12 @@ var Entity = function JsonEntity(engine, request, response) {
     });
 };
 Entity.prototype = core.Entity();
+Entity.prototype.select = function (selector) {
+    var value = this.json[selector];
+    if (value === undefined) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+};
 
 var Link = function JsonLink(engine, json, parent) {
     return Object.create(JsonLink.prototype, {
@@ -25,6 +31,8 @@ var Link = function JsonLink(engine, json, parent) {
     });
 };
 Link.prototype = core.Link();
+Link.prototype.select = Entity.prototype.select;
+
 
 exports.Link = Link;
 exports.Entity = Entity;
