@@ -63,7 +63,8 @@ EntityGlossary.prototype.add = function (binder) {
     this.binders.unshift(binder);
 };
 EntityGlossary.prototype.binderList = function () {
-    return this.parent.binderList(this.contentType).concat(this.binders);
+    var list = this.parent.binderList(this.contentType).concat(this.binders);
+    return list.length === 0 ? this.parent.binderList("*") : list;
 };
 EntityGlossary.prototype.entityAttr = function (entity, key) {
     var binderList = this.binderList();
