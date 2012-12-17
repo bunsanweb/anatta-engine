@@ -30,5 +30,10 @@ test("Set JSON description and use", function (done) {
         assert.equal(entity.attr("title"), "Title");
         assert.equal(entity.attr("updated"), "2012/11/30");
         assert.equal(entity.attr("author"), "http://taro.com/");
+        
+        // builtin is also available
+        assert.equal(entity.attr("href"), uri);
+        var entries = entity.all();
+        assert.equal(entries[0].attr("href"), "http://taro.com/");
     }).then(done, done);
 });
