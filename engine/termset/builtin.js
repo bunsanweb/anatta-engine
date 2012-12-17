@@ -62,7 +62,7 @@ AtomBinder.prototype.entityLinkAll = function (entity) {
 };
 AtomBinder.prototype.linkAttr = function (link, key) {
     if (key === "href") {
-        var elem = link.atom.querySelector("feed > entry > link[rel='self']");
+        var elem = link.atom.querySelector("entry > link[rel='self']");
         return elem ? elem.getAttribute("href") : "";
     }
     if (key === "content-type") return "application/atom+xml";
