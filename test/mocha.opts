@@ -8,4 +8,4 @@ test/metadata-atom-test.js
 test/metadata-html-test.js
 test/agent-boot-test.js
 test/webgate-core-test.js
-
+test/termset-desc-test.js
