@@ -30,6 +30,7 @@ var bindApi = function (agent) {
             querystring: require("querystring"),
         },
         engine: agent.engine,
+        form: require("./form"),
     };
     window.window = window;
     window.console = console;
