@@ -28,6 +28,23 @@ Metadata.prototype.put = function (message) {
         return engine.porter.entity(engine, req, res);
     });
 };
+Metadata.prototype.post = function (message) {
+    var engine = this.engine;
+    var uri = this.href();
+    var request = engine.space.request(
+        "POST", uri, message.headers, message.body);
+    return engine.space.access(request).spread(function (req, res) {
+        return engine.porter.entity(engine, req, res);
+    });
+};
+Metadata.prototype.delete = function () {
+    var engine = this.engine;
+    var uri = this.href();
+    var request = engine.space.request("DELETE", uri);
+    return engine.space.access(request).spread(function (req, res) {
+        return engine.porter.entity(engine, req, res);
+    });
+};
 
 
 // methods as metadata dict
