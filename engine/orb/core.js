@@ -22,8 +22,16 @@ var Entry = function Entry(pathname, type, value, timestamp) {
 Entry.fromValue = function (pathname, data) {
     return Entry(pathname, data.type, data.value, data.timestamp);
 };
+Entry.prototype.toJson = function () {
+    return JSON.stringify({
+        pathname: this.pathname,
+        type: this.type,
+        value: this.value.toString("base64"),
+        timestamp: this.timestamp.toUTCString(),
+    });
+};
 Entry.fromJson = function (json) {
-    return Entry(json.pathname, json.type, json.value,
+    return Entry(json.pathname, json.type, Buffer(json.value, "base64"),
                  new Date(json.timestamp));
 };
 Entry.exists = function (entry) {
