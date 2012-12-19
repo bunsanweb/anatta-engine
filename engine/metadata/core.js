@@ -19,6 +19,16 @@ Metadata.prototype.get = function () {
         return engine.porter.entity(engine, req, res);
     });
 };
+Metadata.prototype.put = function (message) {
+    var engine = this.engine;
+    var uri = this.href();
+    var request = engine.space.request(
+        "PUT", uri, message.headers, message.body);
+    return engine.space.access(request).spread(function (req, res) {
+        return engine.porter.entity(engine, req, res);
+    });
+};
+
 
 // methods as metadata dict
 Metadata.prototype.href = function () {

@@ -62,11 +62,12 @@ Space.prototype.response = Response;
 Space.prototype.access = function (request) {
     var self = this;
     var redirector = function (request, response) {
-        if (response.status.toString()[0] === "3" && 
+        var status = response.status.toString()[0];
+        if ((status === "3" || (request.method === "PUT" && status == "2")) &&
             response.headers["location"] &&
             request.step() < self.opts.redirectMax) {
             var redirect = Request(
-                request.method, response.headers["location"],
+                "GET", response.headers["location"],
                 request.headers, request.body, request);
             return self.access(redirect);
         } else {

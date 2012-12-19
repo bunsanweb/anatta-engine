@@ -15,6 +15,7 @@ exports.metadata = {
     json: require("./engine/metadata/json"),
     atom: require("./engine/metadata/atom"),
     html: require("./engine/metadata/html"),
+    multipart: require("./engine/metadata/multipart"),
 };
 exports.termset = {
     core: require("./engine/termset/core"),

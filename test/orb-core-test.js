@@ -16,14 +16,9 @@ test("Create Orb field, do put then get", function (done) {
     }, Buffer(body));
     space.access(put).spread(function (request, response) {
         assert.equal(response.status, "200");
-        assert.equal(response.headers.location, "orb:/foo/bar/buzz.html");
-        var get = space.request("GET", response.headers.location);
-        return space.access(get).spread(function (request, response) {
-            assert.equal(response.status, "200");
-            assert.equal(response.headers["content-type"],
-                         put.headers["content-type"]);
-            assert.equal(response.headers["content-length"], body.length);
-            assert.equal(response.body.toString(), body);
-        });
+        assert.equal(response.headers["content-type"],
+                     put.headers["content-type"]);
+        assert.equal(response.headers["content-length"], body.length);
+        assert.equal(response.body.toString(), body);
     }).then(done, done);
 });
