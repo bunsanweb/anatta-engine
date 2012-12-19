@@ -27,4 +27,6 @@ exports.weaver = {
 exports.webgate = {
     core: require("./engine/webgate/core"),
 };
-
+exports.orb = {
+    core: require("./engine/orb/core"),
+};
