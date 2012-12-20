@@ -31,3 +31,6 @@ exports.webgate = {
 exports.orb = {
     core: require("./engine/orb/core"),
 };
+exports.galaxy = {
+    core: require("./engine/galaxy/core"),
+};
