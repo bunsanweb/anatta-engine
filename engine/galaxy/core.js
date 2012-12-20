@@ -20,11 +20,11 @@ GalaxyField.prototype.access = function (request) {
             request, Error("invalid settings"), "404");
     }
     var uri = this.opts.to + req.url.substring(this.opts.from.length);
-    var req = engine.space.request(
+    var req = this.engine.space.request(
         request.method, uri, request.headers, request.body, request);
     return this.engine.space.access(req).spread(function (req, res) {
         // TBD: rewrite response info
-        return [request, response];
+        return [request, res];
     });
 };
 
