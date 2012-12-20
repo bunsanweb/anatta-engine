@@ -33,7 +33,12 @@ var bindApi = function (agent) {
         form: require("./form"),
     };
     window.window = window;
+    // basic service
     window.console = console;
+    window.setTimeout = setTimeout;
+    window.clearTimeout = clearTimeout;
+    window.setInterval = setInterval
+    window.clearInterval = clearInterval;
 };
 
 var loaded = function (agent) {
