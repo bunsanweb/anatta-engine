@@ -11,3 +11,4 @@ test/agent-boot-test.js
 test/webgate-core-test.js
 test/termset-desc-test.js
 test/orb-core-test.js
+test/galaxy-core-test.js
