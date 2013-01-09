@@ -20,13 +20,13 @@ window.addEventListener("load", function (ev) {
         var name = location.hash.substring(1);
         var url = "/orb/" + name;
         var req = new XMLHttpRequest();
-        req.addEventListener("load", doRender.bind(req), false);
-        req.addEventListener("error", doRender.bind(req), false);
+        var renderer = doRender.bind(req);
+        req.addEventListener("load", renderer, false);
+        req.addEventListener("error", renderer, false);
         req.open("GET", url, true);
         req.send();
     };
     var doRender = function (ev) {
-        console.log(this.status);
         var plain = this.status === 200 ? this.responseText : "";
         title.textContent = heading.textContent = name;
         content.innerHTML = plain.replace(wikiName, linker);
