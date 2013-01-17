@@ -153,7 +153,7 @@ var encodeKeyValue = function (key, value) {
     var headers = {
         "content-disposition": disposition,
     };
-    return encodeMessage(headers, value);
+    return encodeMessage(headers, Buffer(value).toString("binary"));
 };
 var encodeSingleFile = function (key, fileData) {
     var disposition = ["form-data", 'name="' + key + '"', 
