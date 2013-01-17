@@ -1,31 +1,31 @@
 "use strict";
 window.addEventListener("agent-load", function (ev) {
+    var files = document.querySelector("#files");
+
+    var updateFiles = function (file) {
+        var url = "/orb/" + file.filename;
+        var a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.textContent = file.filename;
+        var li = document.createElement("li");
+        li.appendChild(a);
+        files.appendChild(li);
+    };
+
+    var putOrb = function (file) {
+        var url = "root:/orb/" + file.filename;
+        window.anatta.engine.link({href: url}).put(file);
+    };
+
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();
-        var files = document.querySelector("#files");
         if (ev.detail.request.method == "POST") {
-            var data = window.anatta.form.decode(ev.detail.request);
-            var file = data.file;
-
-            var url = "/orb/" + file.filename;
-            var li = document.createElement("li");
-            var a = document.createElement("a");
-            a.setAttribute("href", url);
-            a.textContent = file.filename;
-            li.appendChild(a);
-            files.appendChild(li);
-
-            var orb = window.anatta.engine.link({href: "root:" + url});
-            orb.put(file);
-            //orb.put(file).then(function (entity) {
-            //    orb.get().then(function (entity) {
-            //        console.log(entity.attr("content-type"));
-            //        console.log(entity.response.body.toString());
-            //    });
-            //});
+            var file = window.anatta.form.decode(ev.detail.request).file;
+            updateFiles(file);
+            putOrb(file);
         }
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, document.querySelector("#files").outerHTML);
+        }, files.outerHTML);
     }, false);
 }, false);
