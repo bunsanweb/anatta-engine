@@ -53,7 +53,7 @@ var parseMultipart = function (body, boundary) {
         
         var name = type.match(/\bname="([^"]+)"/)[1];
         if (!contentType) {
-            result[name] = disposition.body;
+            result[name] = new Buffer(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
             result[name] = parseMixed(disposition);
         } else {
