@@ -51,7 +51,8 @@ var parseMultipart = function (body, boundary) {
         var contentType = disposition.headers["content-type"];
         if (!type.match(/^form-data/)) return result;
         
-        var name = type.match(/\bname="([^"]+)"/)[1];
+        var name = Buffer(
+            type.match(/\bname="([^"]+)"/)[1], "binary").toString();
         if (!contentType) {
             result[name] = new Buffer(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
@@ -112,7 +113,7 @@ var parseDisposition = function (part) {
         var keyLast = line.indexOf(": ");
         var key = line.substring(0, keyLast);
         var value = line.substring(keyLast + 2);
-        headers[key.toLowerCase()] = value;
+        headers[key.toLowerCase()] = value; //TBD: RFC5987 for non-ascii vals
         return headers;
     }, {});
     var body = part.substring(headerLast + 4, part.length);
@@ -124,9 +125,10 @@ var parseDisposition = function (part) {
 var encodeMultipart = function (obj) {
     var bodies = Object.keys(obj).map(function (key) {
         var value = obj[key];
-        if (typeof value === "string") return encodeKeyValue(key, value);
-        if (Array.isArray(value)) return encodeFileList(key, value);
-        return encodeSingleFile(key, value);
+        var binkey = Buffer(key).toString("binary");
+        if (typeof value === "string") return encodeKeyValue(binkey, value);
+        if (Array.isArray(value)) return encodeFileList(binkey, value);
+        return encodeSingleFile(binkey, value);
     });
     var boundary = makeBoundary(bodies);
     var sep = "--" + boundary;
@@ -142,7 +144,7 @@ var encodeMultipart = function (obj) {
 
 var encodeMessage = function (headers, body) {
     var headerPart = Object.keys(headers).reduce(function (part, key) {
-        var line = key + ": " + headers[key];
+        var line = key + ": " + headers[key]; //TBD: RFC5987 for non-ascii vals
         return part + line + "\r\n";
     }, "");
     return headerPart + "\r\n" + body;
