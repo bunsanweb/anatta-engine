@@ -14,18 +14,22 @@ window.addEventListener("agent-load", function (ev) {
 
     var putOrb = function (file) {
         var url = "root:/orb/" + encodeURIComponent(file.filename);
-        window.anatta.engine.link({href: url}).put(file);
+        return window.anatta.engine.link({href: url}).put(file);
     };
 
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();
+        var render = function () {
+            ev.detail.respond("200", {
+                "content-type": "text/html;charset=utf-8"
+            }, files.outerHTML);
+        };
+        if (ev.detail.request.method == "GET") return render();
         if (ev.detail.request.method == "POST") {
-            var file = window.anatta.form.decode(ev.detail.request).file;
-            updateFiles(file);
-            putOrb(file);
+            var formdata = window.anatta.form.decode(ev.detail.request);
+            window.anatta.q.all(formdata.file.map(putOrb)).then(function () {
+                formdata.file.map(updateFiles);
+            }).then(render);
         }
-        ev.detail.respond("200", {
-            "content-type": "text/html;charset=utf-8"
-        }, files.outerHTML);
     }, false);
 }, false);

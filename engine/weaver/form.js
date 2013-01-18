@@ -9,8 +9,8 @@ var decode = function (message) {
         "application/x-www-form-urlencoded") {
         return querystring.parse(message.body.toString());
     }
-    return multipart.decode(message);
+    return multipart.decode5(message);
 };
 
-exports.encode = multipart.encode;
+exports.encode = multipart.encode5;
 exports.decode = decode;

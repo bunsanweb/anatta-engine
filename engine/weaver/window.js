@@ -31,6 +31,7 @@ var bindApi = function (agent) {
         },
         engine: agent.engine,
         form: require("./form"),
+        q: q,
     };
     window.window = window;
     // basic service
