@@ -66,7 +66,8 @@ var parseMultipart = function (body, boundary) {
 
 var parseFile = function (disposition) {
     var type = disposition.headers["content-disposition"];
-    var filename = type.match(/\bfilename="([^"]+)"/)[1];
+    var filename = Buffer(
+        type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
     return {filename: filename,
             body: Buffer(disposition.body, "binary"),
             headers: disposition.headers};
@@ -158,8 +159,9 @@ var encodeKeyValue = function (key, value) {
     return encodeMessage(headers, Buffer(value).toString("binary"));
 };
 var encodeSingleFile = function (key, fileData) {
+    var filename = Buffer(fileData.filename).toString("binary");
     var disposition = ["form-data", 'name="' + key + '"', 
-                       'filename="' + fileData.filename + '"'].join("; ");
+                       'filename="' + filename + '"'].join("; ");
     var headers = updateHeaders(fileData.headers, {
         "content-disposition": disposition,
         //"content-transfer-encoding": "binary",
@@ -184,8 +186,9 @@ var encodeFileList = function (key, fileDataList) {
     return encodeMessage(headers, body);
 };
 var encodeFileData = function (fileData) {
+    var filename = Buffer(fileData.filename).toString("binary");
     var disposition = ["file",
-                       'filename="' + fileData.filename + '"'].join("; ");
+                       'filename="' + filename + '"'].join("; ");
     var headers = updateHeaders(fileData.headers, {
         "content-disposition": disposition,
         "content-transfer-encoding": "binary",
