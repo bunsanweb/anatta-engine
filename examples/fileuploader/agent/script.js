@@ -14,7 +14,7 @@ window.addEventListener("agent-load", function (ev) {
 
     var putOrb = function (file) {
         var url = "root:/orb/" + encodeURIComponent(file.filename);
-        return window.anatta.engine.link({href: url}).put(file);
+        return anatta.engine.link({href: url}).put(file);
     };
 
     window.addEventListener("agent-access", function (ev) {
@@ -26,8 +26,8 @@ window.addEventListener("agent-load", function (ev) {
         };
         if (ev.detail.request.method == "GET") return render();
         if (ev.detail.request.method == "POST") {
-            var formdata = window.anatta.form.decode(ev.detail.request);
-            window.anatta.q.all(formdata.file.map(putOrb)).then(function () {
+            var formdata = anatta.form.decode(ev.detail.request);
+            return anatta.q.all(formdata.file.map(putOrb)).then(function () {
                 formdata.file.map(updateFiles);
             }).then(render);
         }
