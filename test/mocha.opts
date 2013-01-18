@@ -7,6 +7,7 @@ test/metadata-json-test.js
 test/metadata-atom-test.js
 test/metadata-html-test.js
 test/metadata-multipart-test.js
+test/metadata-multipart5-test.js
 test/agent-boot-test.js
 test/webgate-core-test.js
 test/termset-desc-test.js
