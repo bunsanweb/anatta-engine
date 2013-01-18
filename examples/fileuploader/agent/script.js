@@ -3,7 +3,7 @@ window.addEventListener("agent-load", function (ev) {
     var files = document.querySelector("#files");
 
     var updateFiles = function (file) {
-        var url = "/orb/" + file.filename;
+        var url = "/orb/" + encodeURIComponent(file.filename);
         var a = document.createElement("a");
         a.setAttribute("href", url);
         a.textContent = file.filename;
@@ -13,7 +13,7 @@ window.addEventListener("agent-load", function (ev) {
     };
 
     var putOrb = function (file) {
-        var url = "root:/orb/" + file.filename;
+        var url = "root:/orb/" + encodeURIComponent(file.filename);
         window.anatta.engine.link({href: url}).put(file);
     };
 
