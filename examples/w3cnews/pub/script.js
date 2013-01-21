@@ -1,8 +1,7 @@
 "use strict";
 window.addEventListener("load", function (ev) {
     var doRender = function (ev) {
-        var plain = this.status == 200 ? this.responseText : "";
-        document.querySelector("#contents").innerHTML = plain;
+        document.querySelector("#contents").innerHTML = this.responseText;
     };
     var doLoad = function (ev) {
         var url = "/agent/";

@@ -11,6 +11,7 @@ var termset = anatta.termset.desc.create({
     name: "w3cnews-feed",
     "content-type": "application/atom+xml",
     link: {
+        href: {selector: "link[rel='alternate']", value: "href"},
         title: {selector: "entry > title", value: "textContent"},
         date: {selector: "updated", value: "textContent"},
         desc: {selector: "entry > content > p", value: "textContent"},
