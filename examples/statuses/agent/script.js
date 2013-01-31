@@ -3,16 +3,17 @@
 window.addEventListener("agent-load", function (ev) {
     var container = document.querySelector("#statuses");
     var template = document.querySelector(".status");
-    var indexURI = "/agent/";
-    var nextURI = "/agent/next/";
-    var prevURI = "/agent/prev/";
+    var indexURI = "/stream/";
+    var refreshURI = "/stream/?on=refresh&id=";
+    var backwardURI = "/stream/?on=backward&id=";
     var orbURI = "/orb/";
     var NUM = 5;
 
     var createStatus = function (source) {
         var status = template.cloneNode(true);
         var date = new Date();
-        var id = Math.round(date.getTime() / 10);
+        var sec = Math.round(date.getTime() / 10);
+        var id = "status-" + sec;
         status.setAttribute("id", id);
         status.querySelector(".href").href = orbURI + id;
         status.querySelector(".href").textContent = id;
@@ -33,37 +34,22 @@ window.addEventListener("agent-load", function (ev) {
         return doc;
     };
 
-    var putStatus = function (status) {
-        var linkRel = {
+    var getLinkRel = function (first, last) {
+        return {
             index: indexURI,
-            next: nextURI + status.id,
-            prev: prevURI + status.id
+            refresh: refreshURI + (first ? first.id : ""),
+            backward: backwardURI + (last ? last.id : "")
         };
+    };
+
+    var putStatus = function (status) {
+        var linkRel = getLinkRel(status, status);
         var doc = createHTMLDoc(status.id, linkRel, status);
         var uri = "root:" + orbURI + status.id;
         anatta.engine.link({href: uri}).put({
             headers: {"content-type": "text/html;charset=utf-8"},
             body: doc.outerHTML
         });
-    };
-
-    var getLinkRel = function (div) {
-        var linkRel = {index: indexURI};
-        var first = div.firstChild;
-        if (!!first) {
-            var first_ = document.getElementById(first.id);
-            if (!!first_ && !!first_.previousSibling) {
-                linkRel["next"] = nextURI + first_.id;
-            }
-        }
-        var last = div.lastChild;
-        if (!!last) {
-            var last_ = document.getElementById(last.id);
-            if (last_ && !!last_.nextSibling) {
-                linkRel["prev"] = prevURI + last_.id;
-            }
-        }
-        return linkRel;
     };
 
     var getNextStatuses = function (div, elem, num) {
@@ -84,8 +70,8 @@ window.addEventListener("agent-load", function (ev) {
 
     var getStatuses = function (ev) {
         var div = document.createElement("div");
-        var path = ev.detail.request.uriObject.path.split("/");
-        var elem = document.getElementById(path[3]);
+        var query = ev.detail.request.uriObject.query;
+        var elem = document.getElementById(query.id);
         var num = NUM;
         var idExist = !!elem;
         if (!idExist) {
@@ -95,13 +81,16 @@ window.addEventListener("agent-load", function (ev) {
                 num -= 1;
             }
         }
-        if (path[2] == "next" && idExist) {
+        if (query.on == "refresh" && idExist) {
             getNextStatuses(div, elem, num);
         }
         else {
             getPrevStatuses(div, elem, num);
         }
-        return createHTMLDoc("statuses", getLinkRel(div), div).outerHTML;
+        var first = div.firstChild || elem;
+        var last = div.lastChild || elem;
+        var linkRel = getLinkRel(first, last);
+        return createHTMLDoc("statuses", linkRel, div).outerHTML;
     };
 
     window.addEventListener("agent-access", function (ev) {

@@ -11,7 +11,7 @@ engine.space.manager.bind("fileAgent", "file:", anatta.space.file.FileField({
 var agentField = anatta.weaver.core.AgentField({
     uri: "file:/index.html"});
 agentField.agent.engine = engine;
-engine.space.manager.bind("agent", "root:/agent/", agentField);
+engine.space.manager.bind("agent", "root:/stream/", agentField);
 
 engine.space.manager.bind("orb", "root:/orb", anatta.orb.core.OrbField());
 
