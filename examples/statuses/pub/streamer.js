@@ -32,8 +32,7 @@ var Streamer = (function () {
         var args = Array.prototype.slice.call(arguments, 1);
         try {
             this.events[name].apply(this, args);
-        }
-        catch (ex) {
+        } catch (ex) {
         }
     };
 
@@ -55,6 +54,7 @@ var Streamer = (function () {
 
     var handlers = {
         load: function (doc) {
+            this.entries.innerHTML = "";
             this.spawn("clear");
             this.links.refresh = getHref(doc, this.selectors.refresh);
             this.links.backward = getHref(doc, this.selectors.backward);
@@ -102,10 +102,12 @@ var Streamer = (function () {
             return updated;
         },
         insert: function (entry, getter) {
-            var entry_ = this.formatter(entry);
-            if (!!this.entries.querySelector("#" + entry_.id)) return false;
-            this.entries.insertBefore(entry_, getter(this.entries));
-            this.spawn("insert", entry_, getter);
+            if (!!this.entries.querySelector("#" + entry.id)) return false;
+            var pivot = getter(this.entries);
+            this.entries.insertBefore(
+                    this.entries.ownerDocument.importNode(entry), pivot);
+            var id = !!pivot ? pivot.id : null;
+            this.spawn("insert", this.formatter(entry), id);
             return true;
         }
     };

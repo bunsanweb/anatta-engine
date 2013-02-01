@@ -14,8 +14,9 @@ window.addEventListener("load", function (ev) {
     streamer.on("clear", function () {
         timeline.innerHTML = "";
     });
-    streamer.on("insert", function (entry, getter) {
-        timeline.insertBefore(entry, getter(timeline));
+    streamer.on("insert", function (entry, id) {
+        var elem = timeline.querySelector("#" + id);
+        timeline.insertBefore(entry, elem);
     });
     streamer.on("refresh", function (updated) {
         return setTimeout(streamer.get("refresh"),

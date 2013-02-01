@@ -7,13 +7,15 @@ window.addEventListener("agent-load", function (ev) {
     var refreshURI = "/stream/?on=refresh&id=";
     var backwardURI = "/stream/?on=backward&id=";
     var orbURI = "/orb/";
+    var postURI = "root:/orb/";
     var NUM = 5;
 
-    var createStatus = function (source) {
+    var createStatus = function (ev) {
+        var source = anatta.form.decode(ev.detail.request).source;
+        if (!source) return "";
         var status = template.cloneNode(true);
         var date = new Date();
-        var sec = Math.round(date.getTime() / 10);
-        var id = "status-" + sec;
+        var id = "status-" + Math.round(date.getTime() / 10);
         status.setAttribute("id", id);
         status.querySelector(".href").href = orbURI + id;
         status.querySelector(".href").textContent = id;
@@ -22,93 +24,80 @@ window.addEventListener("agent-load", function (ev) {
         return status;
     };
 
-    var createHTMLDoc = function (title, linkRel, elem) {
-        var doc = document.implementation.createHTMLDocument(title);
-        for (var rel in linkRel) {
-            var link = doc.createElement("link");
-            link.setAttribute("rel", rel);
-            link.setAttribute("href", linkRel[rel]);
-            doc.head.appendChild(link);
-        }
-        doc.body.appendChild(doc.importNode(elem, true));
+    var formatMessage = function (statuses, uri) {
+        var doc = document.implementation.createHTMLDocument("statuses");
+        var div = doc.createElement("div");
+        statuses.forEach(function (status) {
+            div.appendChild(doc.importNode(status, true));
+        });
+        doc.body.appendChild(div);
+
+        var refresh = doc.createElement("link");
+        refresh.rel = "refresh";
+        refresh.href = div.firstChild ? refreshURI + div.firstChild.id : uri;
+        doc.head.appendChild(refresh);
+
+        var backward = doc.createElement("link");
+        backward.rel = "backward";
+        backward.href = div.lastChild ? backwardURI + div.lastChild.id : uri;
+        doc.head.appendChild(backward);
+
         return doc;
     };
 
-    var getLinkRel = function (first, last) {
-        return {
-            index: indexURI,
-            refresh: refreshURI + (first ? first.id : ""),
-            backward: backwardURI + (last ? last.id : "")
-        };
+    var postStatus = function (ev) {
+        var status = createStatus(ev);
+        if (status) {
+            container.insertBefore(status, container.firstChild);
+            anatta.engine.link({href: postURI + status.id}).put({
+                headers: {"content-type": "text/html;charset=utf-8"},
+                body: formatMessage([status], orbURI).outerHTML
+            });
+        }
+        ev.detail.respond("200", {
+            "content-type": "text/html;charset=utf-8"
+        }, "");
     };
 
-    var putStatus = function (status) {
-        var linkRel = getLinkRel(status, status);
-        var doc = createHTMLDoc(status.id, linkRel, status);
-        var uri = "root:" + orbURI + status.id;
-        anatta.engine.link({href: uri}).put({
-            headers: {"content-type": "text/html;charset=utf-8"},
-            body: doc.outerHTML
-        });
+    var statusSlice = function (pivot, max, getBack) {
+        var sibling = getBack ? "nextSibling" : "previousSibling";
+        var append = getBack ? "push" : "unshift";
+        var slice = [];
+        for (var i = 0; pivot && i < max; i++) {
+            slice[append](pivot);
+            pivot = pivot[sibling];
+        }
+        return slice;
     };
 
-    var getNextStatuses = function (div, elem, num) {
-        while (!!elem && 0 < num--) {
-            var sib = elem.previousSibling;
-            if (!!sib) div.insertBefore(sib.cloneNode(true), div.firstChild);
-            elem = sib;
+    var findStatuses = function (query) {
+        var pivot = container.ownerDocument.getElementById(query.id);
+        switch (query.on) {
+            case "refresh":
+                var slice = statusSlice(pivot, NUM+1, false);
+                return slice.slice(0, NUM);
+            case "backward":
+                var slice = statusSlice(pivot, NUM+1, true);
+                return slice.slice(1);
+            default:
+                return statusSlice(container.firstChild, NUM, true);
         }
     };
 
-    var getPrevStatuses = function (div, elem, num) {
-        while (!!elem && 0 < num--) {
-            var sib = elem.nextSibling;
-            if (!!sib) div.appendChild(sib.cloneNode(true));
-            elem = sib;
-        }
-    };
-
-    var getStatuses = function (ev) {
-        var div = document.createElement("div");
-        var query = ev.detail.request.uriObject.query;
-        var elem = document.getElementById(query.id);
-        var num = NUM;
-        var idExist = !!elem;
-        if (!idExist) {
-            elem = container.firstChild;
-            if (!!elem) {
-                div.appendChild(elem.cloneNode(true));
-                num -= 1;
-            }
-        }
-        if (query.on == "refresh" && idExist) {
-            getNextStatuses(div, elem, num);
-        }
-        else {
-            getPrevStatuses(div, elem, num);
-        }
-        var first = div.firstChild || elem;
-        var last = div.lastChild || elem;
-        var linkRel = getLinkRel(first, last);
-        return createHTMLDoc("statuses", linkRel, div).outerHTML;
+    var replyStatuses = function (ev) {
+        var request = ev.detail.request;
+        var statuses = findStatuses(request.uriObject.query);
+        ev.detail.respond("200", {
+            "content-type": "text/html;charset=utf-8"
+        }, formatMessage(statuses, indexURI).outerHTML);
     };
 
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();
-        var responseText = "";
-        if (ev.detail.request.method == "POST") {
-            var source = anatta.form.decode(ev.detail.request).source;
-            if (!!source) {
-                var status = createStatus(source);
-                container.insertBefore(status, container.firstChild);
-                putStatus(status);
-            }
+        switch (ev.detail.request.method) {
+            case "GET": return replyStatuses(ev);
+            case "POST": return postStatus(ev);
+            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
-
-        if (ev.detail.request.method == "GET") responseText = getStatuses(ev);
-
-        ev.detail.respond("200", {
-            "content-type": "text/html;charset=utf-8"
-        }, responseText);
     }, false);
 }, false);
