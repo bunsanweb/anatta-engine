@@ -38,7 +38,7 @@ test("", function (done) {
     }).then(done, done);
 });
 
-test("get original URI from request", function (done) {
+test("http request.origin().uri is absolute URI", function (done) {
     var anatta = require("../anatta");
     var q = require("q");
 
@@ -53,8 +53,8 @@ test("get original URI from request", function (done) {
             access: function (request) {
                 assert.equal(request.origin().uri, originalUri);
                 var d = q.defer();
-                var response = anatta.space.core.Response("200",
-                    {"content-type": "text/plain"}, "");
+                var response = anatta.space.core.Response("200", {
+                    "content-type": "text/plain"}, "");
                 d.resolve([request, response]);
                 return d.promise;
             }
@@ -73,15 +73,14 @@ test("get original URI from request", function (done) {
     }).then(done, done);
 });
 
-test("get original URI from request https", function (done) {
+test("https request.origin().uri is absolute URI", function (done) {
     var anatta = require("../anatta");
     var fs = require("fs");
     var q = require("q");
 
     var engine = anatta.engine.core.Engine();
     var webField = anatta.space.web.WebField();
-    engine.space.manager.bind("http", "http:", webField);
-    engine.space.manager.bind("https", "https:", webField);
+    engine.space.manager.bind("https", "https:", anatta.space.web.WebField());
     engine.porter.map["application/json"] = anatta.metadata.json;
 
     var port = process.env.PORT || "8000";
@@ -91,8 +90,8 @@ test("get original URI from request https", function (done) {
             access: function (request) {
                 assert.equal(request.origin().uri, originalUri);
                 var d = q.defer();
-                var response = anatta.space.core.Response("200",
-                    {"content-type": "text/plain"}, "");
+                var response = anatta.space.core.Response("200", {
+                    "content-type": "text/plain"}, "");
                 d.resolve([request, response]);
                 return d.promise;
             }
