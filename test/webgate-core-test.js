@@ -36,5 +36,81 @@ test("", function (done) {
                      "Hello from Linked Script!");
         webgate.stop();
     }).then(done, done);
-
 });
+
+test("get original URI from request", function (done) {
+    var anatta = require("../anatta");
+    var q = require("q");
+
+    var engine = anatta.engine.core.Engine();
+    engine.space.manager.bind("http", "http:", anatta.space.web.WebField());
+    engine.porter.map["application/json"] = anatta.metadata.json;
+
+    var port = process.env.PORT || "8000";
+    var originalUri = "http://localhost:" + port + "/";
+    var AssertField = function AssertField () {
+        return Object.create({
+            access: function (request) {
+                assert.equal(request.origin().uri, originalUri);
+                var d = q.defer();
+                var response = anatta.space.core.Response("200",
+                    {"content-type": "text/plain"}, "");
+                d.resolve([request, response]);
+                return d.promise;
+            }
+        });
+    };
+    
+    engine.space.manager.bind("inner-uri", "inner-uri:", AssertField());
+    var webgate = anatta.webgate.core.WebGate(engine.space, {
+        from: "/",
+        to: "inner-uri:/",
+    });
+    webgate.start(port);
+    
+    engine.link({href: originalUri}).get().then(function (entity) {
+        webgate.stop();
+    }).then(done, done);
+});
+
+test("get original URI from request https", function (done) {
+    var anatta = require("../anatta");
+    var fs = require("fs");
+    var q = require("q");
+
+    var engine = anatta.engine.core.Engine();
+    var webField = anatta.space.web.WebField();
+    engine.space.manager.bind("http", "http:", webField);
+    engine.space.manager.bind("https", "https:", webField);
+    engine.porter.map["application/json"] = anatta.metadata.json;
+
+    var port = process.env.PORT || "8000";
+    var originalUri = "https://localhost:" + port + "/";
+    var AssertField = function AssertField () {
+        return Object.create({
+            access: function (request) {
+                assert.equal(request.origin().uri, originalUri);
+                var d = q.defer();
+                var response = anatta.space.core.Response("200",
+                    {"content-type": "text/plain"}, "");
+                d.resolve([request, response]);
+                return d.promise;
+            }
+        });
+    };
+    
+    engine.space.manager.bind("inner-uri", "inner-uri:", AssertField());
+    var webgate = anatta.webgate.core.WebGate(engine.space, {
+        from: "/",
+        to: "inner-uri:/",
+    });
+    webgate.start(port, "localhost", {
+        key: fs.readFileSync("./test/assets/https/privatekey.pem"),
+        cert: fs.readFileSync("./test/assets/https/certificate.pem")
+    });
+    
+    engine.link({href: originalUri}).get().then(function (entity) {
+        webgate.stop();
+    }).then(done, done);
+});
+
