@@ -3,9 +3,6 @@
 window.addEventListener("agent-load", function (ev) {
     var container = document.querySelector("#statuses");
     var template = document.querySelector(".status");
-    var indexURI = "/stream/";
-    var refreshURI = "/stream/?on=refresh&id=";
-    var backwardURI = "/stream/?on=backward&id=";
     var orbURI = "/orb/";
     var postURI = "root:/orb/";
     var NUM = 5;
@@ -24,7 +21,14 @@ window.addEventListener("agent-load", function (ev) {
         return status;
     };
 
-    var formatMessage = function (statuses, uri) {
+    var formatUri = function (uriObj, on, elem) {
+        var base = uriObj.protocol + "//" + uriObj.host + uriObj.pathname;
+        var id = elem ? elem.id : uriObj.query.id;
+        var search = id ? "?on=" + on + "&id=" + id : "";
+        return base + search;
+    };
+
+    var formatMessage = function (statuses, uriObj) {
         var doc = document.implementation.createHTMLDocument("statuses");
         var div = doc.createElement("div");
         statuses.forEach(function (status) {
@@ -34,12 +38,12 @@ window.addEventListener("agent-load", function (ev) {
 
         var refresh = doc.createElement("link");
         refresh.rel = "refresh";
-        refresh.href = div.firstChild ? refreshURI + div.firstChild.id : uri;
+        refresh.href = formatUri(uriObj, "refresh", div.firstChild);
         doc.head.appendChild(refresh);
 
         var backward = doc.createElement("link");
         backward.rel = "backward";
-        backward.href = div.lastChild ? backwardURI + div.lastChild.id : uri;
+        backward.href = formatUri(uriObj, "backward", div.lastChild);
         doc.head.appendChild(backward);
 
         return doc;
@@ -51,7 +55,8 @@ window.addEventListener("agent-load", function (ev) {
             container.insertBefore(status, container.firstChild);
             anatta.engine.link({href: postURI + status.id}).put({
                 headers: {"content-type": "text/html;charset=utf-8"},
-                body: formatMessage([status], orbURI).outerHTML
+                body: formatMessage([status],
+                    ev.detail.request.origin().uriObject).outerHTML
             });
         }
         ev.detail.respond("200", {
@@ -75,7 +80,7 @@ window.addEventListener("agent-load", function (ev) {
         switch (query.on) {
             case "refresh":
                 var slice = statusSlice(pivot, NUM+1, false);
-                return slice.slice(0, NUM);
+                return slice.slice(0, slice.length-1);
             case "backward":
                 var slice = statusSlice(pivot, NUM+1, true);
                 return slice.slice(1);
@@ -89,7 +94,7 @@ window.addEventListener("agent-load", function (ev) {
         var statuses = findStatuses(request.uriObject.query);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, formatMessage(statuses, indexURI).outerHTML);
+        }, formatMessage(statuses, request.origin().uriObject).outerHTML);
     };
 
     window.addEventListener("agent-access", function (ev) {

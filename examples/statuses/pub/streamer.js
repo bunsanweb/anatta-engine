@@ -131,7 +131,7 @@ var Streamer = (function () {
 
     var getHref = function (doc, selector) {
         var elem = doc.querySelector(selector);
-        return elem ? elem.getAttribute("href") : "";
+        return elem ? elem.href : "";
     };
 
     return Streamer;
