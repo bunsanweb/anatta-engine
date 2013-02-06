@@ -6,18 +6,6 @@ var engine = anatta.engine.core.Engine();
 engine.porter.map["text/html"] = anatta.metadata.html;
 engine.porter.map["application/json"] = anatta.metadata.json;
 
-var termset = anatta.termset.desc.create({
-    name: "w3cnews-feed",
-    "content-type": "application/atom+xml",
-    link: {
-        href: {selector: "link[rel='alternate']", value: "href"},
-        title: {selector: "entry > title", value: "textContent"},
-        date: {selector: "updated", value: "textContent"},
-        desc: {selector: "entry > content > p", value: "textContent"},
-    },
-});
-engine.glossary.add(termset);
-
 var webField = anatta.space.web.WebField({});
 engine.space.manager.bind("http", "http:", webField);
 engine.space.manager.bind("https", "https:", webField);
