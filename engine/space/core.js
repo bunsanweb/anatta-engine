@@ -123,15 +123,20 @@ FieldManager.prototype.build = function (factoryId, name, args) {
     return this.bind(fid, prefix, field);
 };
 FieldManager.prototype.resolve = function (request) {
-    var ids = Object.keys(this.fields);
-    for (var i = 0; i < ids.length; i++) {
-        var field = this.fields[ids[i]];
-        var prefix = field.prefix;
+    var field = "";
+    var fields = this.fields;
+    Object.keys(fields).map(function (id) {
+        return fields[id];
+    }).sort(function (a, b) {
+        return a.prefix < b.prefix;
+    }).some(function (elem) {
+        var prefix = elem.prefix;
         if (request.uri.substring(0, prefix.length) === prefix) {
-            return field.field;
+            field = elem.field;
+            return true;
         }
-    }
-    return UnknownField;
+    });
+    return field ? field : UnknownField;
 };
 
 var normalizeHeaders = function (headers) {
