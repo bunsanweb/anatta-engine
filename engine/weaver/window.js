@@ -30,6 +30,9 @@ var bindApi = function (agent) {
             querystring: require("querystring"),
         },
         engine: agent.engine,
+        termset: {
+            desc: require("../termset/desc"),
+        },
         form: require("./form"),
         q: q,
     };
