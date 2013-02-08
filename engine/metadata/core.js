@@ -95,7 +95,7 @@ Entity.prototype.attr = function (key) {
 Entity.prototype.all = function () {
     var contentType = this.attr("content-type");
     var entries = this.glossary.entityLinkAll(this);
-    return entries.map(function (entry) {
+    return Array.prototype.map.call(entries, function (entry) {
         return this.engine.porter.link(this.engine, entry, contentType, this);
     }, this);
 };
