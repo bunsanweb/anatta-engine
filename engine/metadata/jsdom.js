@@ -15,7 +15,7 @@ var browser = jsdom.browserAugmentation(jsdom.dom.level3.html, {
 var createHTMLDocument = exports.createHTMLDocument = function (title) {
     var html = jsdom.jsdom(
         "<!doctype html><html><head></head><body></body></html>",
-        jsdom.dom.level3.html, {features: features});
+        jsdom.dom.level3.html, {features: features, url: "./"});
     if (typeof title === "string") {
         var titleNode = html.createElement("title");
         titleNode.textContent = title;
