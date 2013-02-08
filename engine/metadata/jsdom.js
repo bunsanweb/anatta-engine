@@ -30,7 +30,7 @@ var createHTMLDocument = exports.createHTMLDocument = function (title) {
 // compat function for "document.implementation.createDocument"
 var createDocument = exports.createDocument = function () {
     var xml = jsdom.jsdom(
-        "", jsdom.dom.level3.core, {features: features});
+        "", jsdom.dom.level3.core, {features: features, url: "./"});
     if (!xml.implementation.createDocument) {
         xml.implementation.createDocument = createDocument;
     }
