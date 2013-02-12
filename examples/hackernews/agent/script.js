@@ -24,7 +24,7 @@ window.addEventListener("agent-load", function (ev) {
         }
     }));
 
-    var createContent = function (entity) {
+    var linkToContent = function (entity) {
         var content = contentTemplate.cloneNode(true);
         var uri = entity.request.uri;
         content.querySelector(".href").href = uri;
@@ -48,11 +48,9 @@ window.addEventListener("agent-load", function (ev) {
 
         var contents = container.querySelector(".contents");
         return anatta.q.all(item.links.map(function (link) {
-            return link.get();
-        })).then(function (linkEntities) {
-            linkEntities.forEach(function (linkEntity) {
-                contents.appendChild(createContent(linkEntity));
-            });
+            return link.get().then(linkToContent);
+        })).then(function (linkContents) {
+            linkContents.forEach(contents.appendChild, contents);
             return container;
         });
     };
