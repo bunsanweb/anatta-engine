@@ -1,48 +1,28 @@
 "use strict";
 window.addEventListener("agent-load", function (ev) {
-    var url = anatta.builtin.url;
-    var rootUri = document.getElementById("rootUri").href;
-    var root = anatta.engine.link({href: rootUri});
-    var container = document.querySelector(".container").cloneNode(true);
-    var contents = container.querySelector(".contents");
+    var rootUri = document.getElementById("rootUri");
+    var root = anatta.engine.link(rootUri, "text/html", anatta.entity);
+    var containerTemplate = document.querySelector(".container");
     var contentTemplate = document.querySelector(".content");
     anatta.engine.glossary.add(anatta.termset.desc.create({
         name: "hackernews",
         "content-type": "text/html",
-        "uri-pattern": "^" + rootUri + "*",
+        "uri-pattern": "^" + rootUri.href + "*",
         entity: {
-            topItemHref: {selector: "a[href^='item?id']", value: "href"},
+            link: {selector: "a[href^='item?id']", value: "href"},
+        }
+    }));
+    anatta.engine.glossary.add(anatta.termset.desc.create({
+        name: "hackernews-item",
+        "content-type": "text/html",
+        "uri-pattern": "^" + rootUri.href + "item*",
+        entity: {
             title: {selector: ".title > a", value: "textContent"},
-            titleHref: {selector: ".title > a", value: "href"},
-            moreHref: {selector: "a[href^='/x?fnid']", value: "href"},
+            src: {selector: ".title > a", value: "href"},
+            more: {selector: "a[href^='/x?fnid']", value: "href"},
             link: {selector: "a[href^='http'][rel='nofollow']"}
         }
     }));
-
-    var setContainer = function (itemHref, title, titleHref) {
-        container.querySelector(".href").href = titleHref;
-        container.querySelector(".href").textContent = title;
-        container.querySelector(".itemHref").href = itemHref;
-        container.querySelector(".itemHref").textContent = itemHref;
-    };
-
-    var getPages = function (firstHref, href, title, titleHref, pages) {
-        var link = anatta.engine.link({href: href});
-        return link.get().then(function (entity) {
-            title = entity.attr("title") || title;
-            titleHref = entity.attr("titleHref") || titleHref;
-            pages.push(entity);
-            var moreHref = entity.attr("moreHref");
-            if (moreHref) {
-                var next = url.resolve(rootUri, moreHref);
-                return getPages(firstHref, next, title, titleHref, pages);
-            } else {
-                var deferred = anatta.q.defer();
-                deferred.resolve([firstHref, title, titleHref, pages]);
-                return deferred.promise;
-            }
-        });
-    };
 
     var createContent = function (entity) {
         var content = contentTemplate.cloneNode(true);
@@ -59,28 +39,43 @@ window.addEventListener("agent-load", function (ev) {
         return content;
     };
 
+    var itemToContainer = function (item) {
+        var container = containerTemplate.cloneNode(true);
+        container.querySelector(".src").href = item.src;
+        container.querySelector(".src").textContent = item.title;
+        container.querySelector(".href").href = item.href;
+        container.querySelector(".href").textContent = item.href;
+
+        var contents = container.querySelector(".contents");
+        return anatta.q.all(item.links.map(function (link) {
+            return link.get();
+        })).then(function (linkEntities) {
+            linkEntities.forEach(function (linkEntity) {
+                contents.appendChild(createContent(linkEntity));
+            });
+            return container;
+        });
+    };
+
+    var getMore = function (item) {
+        if (!item.more) return item;
+        var link = anatta.engine.link({href: item.more});
+        return link.get().then(function (moreItem) {
+            return {href: item.href, title: item.title, src: item.src,
+                    links: item.links.concat(moreItem.all()),
+                    more: moreItem.attr("more")}
+        }).then(getMore);
+    };
+
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();
-        root.get().then(function (entity) {
-            var href = url.resolve(rootUri, entity.attr("topItemHref"));
-            return getPages(href, href, "", "", []);
-        }).spread(function (itemHref, title, titleHref, pages) {
-            setContainer(itemHref, title, titleHref);
-            var links = pages.map(function (page) {
-                return page.all().map(function (link) {
-                    return link.html.href;
-                });
-            }).reduce(function (prev, cur) {
-                return prev.concat(cur);
-            });
-            return anatta.q.all(links.map(function (link) {
-                return anatta.engine.link({href: link}).get();
-            }));
-        }).then(function (entities) {
-            entities.forEach(function (entity) {
-                contents.appendChild(createContent(entity));
-            });
-        }).then(function () {
+        root.get().then(function (rootEntity) {
+            return rootEntity.all()[0].get();
+        }).then(function (itemEntity) {
+            return {href: itemEntity.href(), title: itemEntity.attr("title"),
+                    src: itemEntity.attr("src"),
+                    links: itemEntity.all(), more: itemEntity.attr("more")};
+        }).then(getMore).then(itemToContainer).then(function (container) {
             ev.detail.respond(200, {
                 "content-type": "text/html;charset=utf-8"
             }, container.innerHTML);
