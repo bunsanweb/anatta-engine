@@ -6,6 +6,18 @@ window.addEventListener("agent-load", function (ev) {
     var container = document.querySelector(".container").cloneNode(true);
     var contents = container.querySelector(".contents");
     var contentTemplate = document.querySelector(".content");
+    anatta.engine.glossary.add(anatta.termset.desc.create({
+        name: "hackernews",
+        "content-type": "text/html",
+        "uri-pattern": "^" + rootUri + "*",
+        entity: {
+            topItemHref: {selector: "a[href^='item?id']", value: "href"},
+            title: {selector: ".title > a", value: "textContent"},
+            titleHref: {selector: ".title > a", value: "href"},
+            moreHref: {selector: "a[href^='/x?fnid']", value: "href"},
+            link: {selector: "a[href^='http'][rel='nofollow']"}
+        }
+    }));
 
     var setContainer = function (itemHref, title, titleHref) {
         container.querySelector(".href").href = titleHref;
@@ -47,25 +59,8 @@ window.addEventListener("agent-load", function (ev) {
         return content;
     };
 
-    var createTermSet = function () {
-        var termset = anatta.termset.desc.create({
-            name: "hackernews",
-            "content-type": "text/html",
-            "uri-pattern": "^" + rootUri + "*",
-            entity: {
-                topItemHref: {selector: "a[href^='item?id']", value: "href"},
-                title: {selector: ".title > a", value: "textContent"},
-                titleHref: {selector: ".title > a", value: "href"},
-                moreHref: {selector: "a[href^='/x?fnid']", value: "href"},
-                link: {selector: "a[href^='http'][rel='nofollow']"}
-            }
-        });
-        anatta.engine.glossary.add(termset);
-    };
-
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();
-        createTermSet();
         root.get().then(function (entity) {
             var href = url.resolve(rootUri, entity.attr("topItemHref"));
             return getPages(href, href, "", "", []);
