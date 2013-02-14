@@ -6,6 +6,7 @@ var q = require("q");
 var space = {
     core: require("../space/core"),
 };
+var conftree = require("../conftree");
 
 var Entry = function Entry(pathname, type, value, timestamp) {
     value = value || Buffer();
@@ -68,9 +69,10 @@ Orb.prototype.put = function (pathname, data) {
     return q.resolve(entry);
 };
 
-var OrbField = function OrbField(orb) {
+var OrbField = function OrbField(opts) {
     return Object.create(OrbField.prototype, {
-        orb: {value: orb || Orb(), writable: true},
+        opts: {value: conftree.create(opts, {})},
+        orb: {value: Orb(), writable: true},
     });
 };
 OrbField.prototype.access = function (request) {
