@@ -2,6 +2,7 @@
 
 exports.engine = {
     core: require("./engine/core"),
+    builder: require("./engine/builder"),
     conftree: require("./engine/conftree"),
 };
 exports.space = {
