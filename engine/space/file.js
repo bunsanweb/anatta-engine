@@ -77,6 +77,7 @@ var mimeTypes = {
     "html": "text/html",
     "xml": "application/xml",
     "atom": "application/atom+xml",
+    "css": "text/css",
 };
 
 var contentType = function (pathname, charset) {
