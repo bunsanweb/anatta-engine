@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>timeline</title>
+    <script src="streamer.js"></script>
+    <script src="script.js"></script>
+    <style type="text/css">
+      <!--
+      h1 {font-size: 130%;}
+      h2 {font-size: 110%;}
+      h3 {font-size: 105%;}
+      div.content {margin-left: 1em;}
+      article {
+        margin: 0.5em;
+        padding: 0.5em;
+        border: solid 1px #000;
+      }
+      .reblogged {
+        background-color: #e0e0ff;
+        border: dashed 2px #000;
+      }
+      -->
+    </style>
+  </head>
+  <body>
+    <h1>timeline</h1>
+    <input type="text" id="follower" size="64" maxlength="256">
+    <button type="button" id="follow" tabindex="0">follow</button>
+    <ul id="followings"></ul>
+    <br>
+    <textarea id="source" rows="3" cols="60" tabindex="0">...</textarea>
+    <button type="button" id="post" tabindex="0">post</button>
+
+    <div id="timeline"></div>
+    <button type="button" id="backward" tabindex="0">prev</button>
+  </body>
+</html>
