@@ -26,7 +26,7 @@ builders.generic = (function () {
         },
         agent: function (anatta, engine, opts) {
             var field = anatta.weaver.core.AgentField(opts);
-            field.engine = engine;
+            field.agent.engine = engine;
             return field;
         },
         galaxy: function (anatta, engine, opts) {
@@ -96,7 +96,7 @@ builders.simple = (function () {
                 var uri = opts[prefix];
                 var id = "agent|" + prefix;
                 var field = anatta.weaver.core.AgentField({uri: uri});
-                field.engine = engine;
+                field.agent.engine = engine;
                 engine.space.manager.bind(id, prefix, field);
             });
         },
