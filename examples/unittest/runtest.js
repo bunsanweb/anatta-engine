@@ -15,6 +15,7 @@ var engine = anatta.engine.builder.engine({
         "module:/unittest/": {field: "agent", uri: "src:/unittest.html"},
     },
 });
-var gate = anatta.webgate.core.WebGate(
-    engine.space, {from: "/", to: "module:/"});
-gate.start(process.env.PORT || "8000");
+
+engine.link({href: "module:/unittest/"}).get().then(function (entity) {
+    console.log(entity.attr("body"));
+});

@@ -1,3 +1,5 @@
+"use strict";
+
 var tap = (function () {
     var q = anatta.q;
     var tests = {};
@@ -5,51 +7,81 @@ var tap = (function () {
     
     var format = function (index, desc, value) {
         if (value instanceof Error) {
-            var msg = "not ok " + (index + 1) + " " + desc + "\n";
+            var msg = "not ok " + (index + 1) + " - " + desc + "\n";
             value.stack.split("\n").forEach(function (line) {
-                msg += "    " + line + "\n";
+                msg += "  " + line + "\n";
             });
-            return msg;
-        } else return "ok " + (index + 1) + " " + desc + "\n";
+            return {log: msg, success: 0, failure: 1};
+        } else {
+            var msg = "ok " + (index + 1) + " - " + desc + "\n";
+            return {log: msg, success: 1, failure: 0};
+        }
+    };
+    
+    var callTest = function (context, test, done) {
+        try {
+            if (test.length > 0) {
+                test.call(context, done);
+            } else {
+                var promise = test.call(context);
+                if (promise && typeof promise.then === "function") {
+                    promise.then(done, done);
+                } else {
+                    done(promise);
+                }
+            }
+        } catch (error) {
+            done(error);
+        }
     };
     
     var runTest = function (index, desc, test) {
         var d = q.defer();
         var quit = false;
+        var wait = timeout;
+        
         var done = function (value) {
             if (quit) return;
             quit = true;
             clearTimeout(tid);
             d.resolve(format(index, desc, value));
         };
-        var tid = setTimeout(function () {
+        var handleTimeout = function () {
             done(new Error("timeout"));
-        }, timeout);
-        try {
-            if (test.length > 0) {
-                test(done);
-            } else {
-                test();
-                done();
-            }
-        } catch (error) {
-            done(error);
-        }
+        };
+        var tid = setTimeout(handleTimeout, wait);
+        var context = {
+            get timeout() {return wait;},
+            set timeout(ms) {
+                wait = ms;
+                clearTimeout(tid);
+                tid = setTimeout(handleTimeout, wait);
+            },
+        };
+        callTest(context, test, done);
         return d.promise;
     };
     
     var runTests = function (tests) {
         var descs = Object.keys(tests);
-        var cur = q.resolve("1.." + descs.length + "\n");
-        descs.forEach(function (desc, index) {
+        var head = {log: "1.." + descs.length + "\n", success: 0, failure: 0};
+        var join = function (summary) {
+            return function (result) {
+                return {log: summary.log + result.log,
+                        success: summary.success + result.success,
+                        failure: summary.failure + result.failure};
+            };
+        };
+        return descs.reduce(function (prev, desc, index) {
             var test = tests[desc];
-            cur = cur.then(function (msg) {
-                return runTest(index, desc, test).then(function (log) {
-                    return msg + log;
-                });
+            return prev.then(function (summary) {
+                return runTest(index, desc, test).then(join(summary));
             });
+        }, q.resolve(head)).then(function (result) {
+            return result.log +
+                "# total success: " + result.success +
+                ", total failure: " + result.failure + "\n";
         });
-        return cur;
     };
     
     var getResult = function (ev) {
@@ -63,17 +95,100 @@ var tap = (function () {
     };
     window.addEventListener("agent-access", getResult, false);
     
+    // for assertion
+    var deq = function deq(a, b, cache) {
+        if (a == b) return true;
+        if (typeof a !== "object" || typeof b !== "object") return a === b;
+        if (a.prototype !== b.prototype) return false;
+        cache = cache || [];
+        if (cache.some(function (pair) {
+            return pair.a === a && pair.b === b ||
+                pair.a === b && pair.b === a;
+        })) return true;
+        cache.push({a: a, b: b});
+        var ka = Object.keys(a), kb = Object.keys(b);
+        if (!vaeq(ka, kb)) return false;
+        return ka.every(function (name) {
+            return deq(a[name], b[name], cache);
+        });
+    };
+    var vaeq = function (a, b) {
+        if (a.length !== b.length) return false;
+        a.sort(), b.sort();
+        return a.every(function (e, i) {
+            return e == b[i];
+        });
+    };
+    
+    var AssertionError = function AssertionError(message, actual, expected) {
+        this.message = message;
+        this.actaual = actual;
+        this.expected = expected;
+        Error.captureStackTrace(this, AssertionError);
+    };
+    AssertionError.prototype = new Error();
+    AssertionError.prototype.constructor = AssertionError;
+    AssertionError.prototype.name = AssertionError.name;
+    AssertionError.toString = function () {
+        return "function AsserionError() {}";
+    };
+    
     return {
         test: function (desc, func) {
             tests[desc] = func;
         },
-        ok: function (obj, message) {
-            message = message || "ok(object)";
-            if (!obj) throw Error("[ok(object)] " + message + " not existed");
+        // from CommonsJS Unit Testing/1.0
+        AssertionError: AssertionError,
+        ok: function (guard, message) {
+            message = message || "guard not existed";
+            if (!guard) throw new AssertionError(
+                "[ok(guard)] " + message, guard, true);
         },
-        equal: function (actual, expected) {
-            if (actual !== expected) throw Error(
-                "[equal(actual, expected)] " + actual + " !== " + expected);
+        equal: function (actual, expected, message) {
+            message = message || actual + " != " + expected;
+            if (actual != expected) throw new AssertionError(
+                "[equal(actual, expected)] " + message, actual, expected);
+            },
+        notEqual: function (actual, expected, message) {
+            message = message || actual + " == " + expected;
+            if (actual == expected) throw new AssertionError(
+                "[notEqual(actual, expected)] " + message), actual, expected;
         },
-    }
+        strictEqual: function (actual, expected, message) {
+            message = message || actual + " !== " + expected;
+            if (actual !== expected) throw new AssertionError(
+                "[strictEqual(actual, expected)] " + message,
+                actual, expected);
+        },
+        notStrictEqual: function (actual, expected, message) {
+            message = message || actual + " === " + expected;
+            if (actual === expected) throw new AssertionError(
+                "[notStrictEqual(actual, expected)] " + message,
+                actual, expected);
+        },
+        deepEqual: function (actual, expected, message) {
+            message = message || actual + " not deep equal " + expected;
+            if (!deq(actual, expected)) throw new AssertionError(
+                "[deepEqual(actual, expected)] " + message, actual, expected);
+        },
+        notDeepEqual: function (actual, expected, message) {
+            message = message || actual + " deep equal " + expected;
+            if (deq(actual, expected)) throw new AssertionError(
+                "[notDeepEqual(actual, expected)] " + message,
+                actual, expected);
+        },
+        throws: function (block, expected, message) {
+            var actual = null;
+            message = message || 
+                (expected ? expected : "Error") + " not thrown";
+            try {
+                block.call();
+            } catch (err) {
+                if (!expected || err instanceof expected) return;
+                actual = err;
+            }
+            throw new AssertionError(
+                "[throws(block, expected)] " + message, actual, expected);
+        },
+    };
 })();

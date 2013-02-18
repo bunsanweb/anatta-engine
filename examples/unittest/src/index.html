@@ -5,19 +5,21 @@
 <title>main</title>
 <script src="library.js"></script>
 <script>
+"use strict";
+
 console.log("read");
 window.addEventListener("agent-load", function (ev) {
-    console.log("load");
     var template = document.getElementById("link");
     window.addEventListener("agent-access", function (ev) {
         if (ev.detail.request.method !== "GET") return;
         ev.detail.accept();
-        
-        var doc = document.implementation.createHTMLDocument();
+
+        var doc = document.implementation.createHTMLDocument(
+            "unittest example");
         var content = doc.importNode(template, true);
         content.href = "/unittest/";
         doc.body.appendChild(content);
-        console.log(content.outerHTML);
+
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8",
         }, doc.outerHTML);
