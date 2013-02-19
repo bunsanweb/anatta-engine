@@ -9,64 +9,61 @@ window.addEventListener("agent-load", function (ev) {
     var postURI = "root:/orb/";
     var NUM = 5;
 
-    var setReblog = function (form, status) {
-        var link = anatta.engine.link({href: form.href});
-        return link.get().then(function (entity) {
-            var content = status.querySelector(".content");
-            var doc = content.ownerDocument;
-
-            var info = infoTemplate.cloneNode(true);
-            info.querySelector(".author > .href").href = form.author;
-            info.querySelector(".author > .href").textContent = form.author;
-            var via = info.querySelector(".via");
-            if (form.via) {
-                via.querySelector(".href").href = form.via;
-                via.querySelector(".href").textContent = form.via;
-            } else {
-                via.parentNode.removeChild(via);
-            }
-            content.appendChild(doc.importNode(info, true));
-
-            var resource = entity.html.querySelector(form.selector);
-            resource.id += "-" + status.id;
-            resource.className += " reblogged";
-            content.appendChild(doc.importNode(resource, true));
-
-            return status;
-        });
-    };
-
-    var setContent = function (request, status) {
-        var form = anatta.form.decode(request);
-        if (form.source) {
-            status.querySelector(".text").textContent = form.source;
-            return status;
-        }
-        if (form.author && form.href && form.selector) {
-            return setReblog(form, status);
-        }
-        return "";
-    };
-
-    var formatUri = function (uriObj, id) {
-        var base = uriObj.protocol + "//" + uriObj.host + "/";
-        var path = url.resolve(orbURI, id);
-        return url.resolve(base, path);
-    };
-
-    var createStatus = function (request) {
-        var d = anatta.q.defer();
-        var date = new Date();
-        var id = "status-" + Math.round(date.getTime() / 10);
-        var uri = formatUri(request.origin().uriObject, id);
+    var createStatusItem = function (data) {
         var status = statusTemplate.cloneNode(true);
-        status.setAttribute("id", id);
-        status.querySelector(".href").href = uri;
-        status.querySelector(".href").textContent = id;
-        status.querySelector(".date").textContent = date;
+        status.setAttribute("id", data.id);
+        status.querySelector(".href").href = data.uri;
+        status.querySelector(".href").textContent = data.id;
+        status.querySelector(".date").textContent = data.date;
+        return status;
+    };
 
-        d.resolve([request, status]);
-        return d.promise;
+    var toReblog = function (data) {
+        var status = createStatusItem(data);
+        var content = status.querySelector(".content");
+        var doc = content.ownerDocument;
+        var form = data.form;
+
+        var info = infoTemplate.cloneNode(true);
+        info.querySelector(".author > .href").href = form.author;
+        info.querySelector(".author > .href").textContent = form.author;
+        var via = info.querySelector(".via");
+        if (form.via) {
+            via.querySelector(".href").href = form.via;
+            via.querySelector(".href").textContent = form.via;
+        } else {
+            via.parentNode.removeChild(via);
+        }
+        content.appendChild(doc.importNode(info, true));
+
+        var resource = data.origin.html.querySelector(form.selector);
+        resource.id += "-" + data.id;
+        resource.className += " reblogged";
+        content.appendChild(doc.importNode(resource, true));
+
+        return status;
+    };
+
+    var toStatus = function (data) {
+        var status = createStatusItem(data);
+        status.querySelector(".text").textContent = data.form.source;
+        return status;
+    };
+
+    var createItem = function (data) {
+        var form = data.form;
+        if (form.author && form.href && form.selector) {
+            var link = anatta.engine.link({href: form.href});
+            return link.get().then(function (entity) {
+                var reblog = {
+                    id: data.id, uri: data.uri, form: form,
+                    date: data.date, origin: entity
+                };
+                return toReblog(reblog);
+            });
+        } else if (form.source) {
+            return anatta.q.resolve(toStatus(data));
+        }
     };
 
     var createLink = function (uriObj, rel, elem) {
@@ -99,18 +96,29 @@ window.addEventListener("agent-load", function (ev) {
         return doc;
     };
 
+    var putStatus = function (uri, item, uriObj) {
+        container.insertBefore(item, container.firstChild);
+        return anatta.engine.link({href: uri}).put({
+            headers: {"content-type": "text/html;charset=utf-8"},
+            body: formatMessage([item], uriObj).outerHTML
+        });
+    };
+
+    var formatUri = function (uriObj, id) {
+        var base = uriObj.protocol + "//" + uriObj.host + "/";
+        var path = url.resolve(orbURI, id);
+        return url.resolve(base, path);
+    };
+
     var postStatus = function (ev) {
-        var request = ev.detail.request;
-        createStatus(request).spread(setContent).then(function (status) {
-            if (status) {
-                container.insertBefore(status, container.firstChild);
-                var uri = url.resolve(postURI, status.id);
-                return anatta.engine.link({href: uri}).put({
-                    headers: {"content-type": "text/html;charset=utf-8"},
-                    body: formatMessage([status],
-                        ev.detail.request.origin().uriObject).outerHTML
-                });
-            }
+        var form = anatta.form.decode(ev.detail.request);
+        var orgUriObj = ev.detail.request.origin().uriObject;
+        var date = new Date();
+        var id = "status-" + Math.round(date.getTime() / 10);
+        var uri = formatUri(orgUriObj, id);
+        var data = {id: id, uri: uri, form: form, date: date};
+        createItem(data).then(function (item) {
+            return item ? putStatus(uri, item, orgUriObj) : "";
         }).then(function () {
             ev.detail.respond("200", {
                 "content-type": "text/html;charset=utf-8"
