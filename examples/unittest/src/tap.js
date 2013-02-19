@@ -2,23 +2,36 @@
 
 var tap = (function () {
     var q = anatta.q;
-    var suite = {
-        tests: {},
-        context: {},
-        timeout: 1000,
-    };
+    var suites = {}; 
     
-    var format = function (index, desc, value) {
+    var newSuite = function () {
+        return {
+            tests: {},
+            context: {},
+            timeout: 1000,
+        };
+    };
+    var suite = suites[""] = newSuite();
+    
+    var formatTest = function (index, desc, name, value) {
         if (value instanceof Error) {
-            var msg = "not ok " + (index + 1) + " - " + desc + "\n";
+            var msg = "not ok " + (index + 1) + " - " + name + desc + "\n";
             value.stack.split("\n").forEach(function (line) {
                 msg += "  " + line + "\n";
             });
             return {log: msg, success: 0, failure: 1};
         } else {
-            var msg = "ok " + (index + 1) + " - " + desc + "\n";
+            var msg = "ok " + (index + 1) + " - " + name + desc + "\n";
             return {log: msg, success: 1, failure: 0};
         }
+    };
+    var formatResult = function (result) {
+        var total = result.success + result.failure;
+        var head = "1.." + total + "\n";
+        var tail = "# tests " + total + "\n";
+        tail += "# pass " + result.success + "\n";
+        tail += "# fail " + result.failure + "\n";
+        return head + result.log + tail;
     };
     
     var callTest = function (context, test, done) {
@@ -38,7 +51,7 @@ var tap = (function () {
         }
     };
     
-    var runTest = function (index, desc, test, suite) {
+    var runTest = function (index, desc, name, test, suite) {
         var d = q.defer();
         var quit = false;
         var wait = suite.timeout;
@@ -47,7 +60,7 @@ var tap = (function () {
             if (quit) return;
             quit = true;
             clearTimeout(tid);
-            d.resolve(format(index, desc, value));
+            d.resolve(formatTest(index, desc, name, value));
         };
         var handleTimeout = function () {
             done(new Error("timeout"));
@@ -67,32 +80,41 @@ var tap = (function () {
         return d.promise;
     };
     
-    var runTests = function (suite) {
-        var descs = Object.keys(suite.tests);
-        var head = {log: "1.." + descs.length + "\n", success: 0, failure: 0};
-        var join = function (summary) {
-            return function (result) {
-                return {log: summary.log + result.log,
-                        success: summary.success + result.success,
-                        failure: summary.failure + result.failure};
+    var empty = function () {
+        return {log: "", count: 0, success: 0, failure: 0};
+    };
+    var join = function (summary) {
+        return function (result) {
+            return {
+                log: summary.log + result.log,
+                success: summary.success + result.success,
+                failure: summary.failure + result.failure,
             };
         };
-        return descs.reduce(function (prev, desc, index) {
-            var test = suite.tests[desc];
-            return prev.then(function (summary) {
-                return runTest(index, desc, test, suite).then(join(summary));
+    };
+    
+    var runSuites = function (suites) {
+        var index = 0;
+        var cur = q.resolve(empty());
+        Object.keys(suites).forEach(function (name) {
+            var suite = suites[name];
+            Object.keys(suite.tests).forEach(function (desc) {
+                var test = suite.tests[desc];
+                var i = index;
+                index += 1;
+                cur = cur.then(function (summary) {
+                    return runTest(i, desc, name, test, suite).then(
+                        join(summary));
+                });
             });
-        }, q.resolve(head)).then(function (result) {
-            return result.log +
-                "# total success: " + result.success +
-                ", total failure: " + result.failure + "\n";
         });
+        return cur.then(formatResult);
     };
     
     var getResult = function (ev) {
         if (ev.detail.request.method !== "GET") return;
         ev.detail.accept();
-        runTests(suite).then(function (result) {
+        runSuites(suites).then(function (result) {
             ev.detail.respond("200", {
                 "content-type": "text/plain;charset=UTF-8",
             }, result);
@@ -139,6 +161,10 @@ var tap = (function () {
     };
     
     return {
+        suite: function (desc) {
+            if (!suites[desc]) suites[desc] = newSuite();
+            suite = suites[desc];
+        },
         test: function (desc, func) {
             suite.tests[desc] = func;
         },

@@ -55,6 +55,7 @@ tap.test("[another async fail] library.get", function () {
 
 
 // self test
+tap.suite("[tap.js]");
 tap.test("[test of test] deepEqual", function () {
     // deep eq
     tap.deepEqual({foo: "bar"}, {foo: "bar"});
