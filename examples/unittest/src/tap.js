@@ -2,8 +2,11 @@
 
 var tap = (function () {
     var q = anatta.q;
-    var tests = {};
-    var timeout = 1000;
+    var suite = {
+        tests: {},
+        context: {},
+        timeout: 1000,
+    };
     
     var format = function (index, desc, value) {
         if (value instanceof Error) {
@@ -35,10 +38,10 @@ var tap = (function () {
         }
     };
     
-    var runTest = function (index, desc, test) {
+    var runTest = function (index, desc, test, suite) {
         var d = q.defer();
         var quit = false;
-        var wait = timeout;
+        var wait = suite.timeout;
         
         var done = function (value) {
             if (quit) return;
@@ -50,20 +53,22 @@ var tap = (function () {
             done(new Error("timeout"));
         };
         var tid = setTimeout(handleTimeout, wait);
-        var context = {
-            get timeout() {return wait;},
-            set timeout(ms) {
-                wait = ms;
-                clearTimeout(tid);
-                tid = setTimeout(handleTimeout, wait);
-            },
-        };
+        var context = Object.create(suite.context, {
+            timeout: {
+                get: function () {return wait;},
+                set: function(ms) {
+                    wait = ms;
+                    clearTimeout(tid);
+                    tid = setTimeout(handleTimeout, wait);
+                },
+            }
+        });
         callTest(context, test, done);
         return d.promise;
     };
     
-    var runTests = function (tests) {
-        var descs = Object.keys(tests);
+    var runTests = function (suite) {
+        var descs = Object.keys(suite.tests);
         var head = {log: "1.." + descs.length + "\n", success: 0, failure: 0};
         var join = function (summary) {
             return function (result) {
@@ -73,9 +78,9 @@ var tap = (function () {
             };
         };
         return descs.reduce(function (prev, desc, index) {
-            var test = tests[desc];
+            var test = suite.tests[desc];
             return prev.then(function (summary) {
-                return runTest(index, desc, test).then(join(summary));
+                return runTest(index, desc, test, suite).then(join(summary));
             });
         }, q.resolve(head)).then(function (result) {
             return result.log +
@@ -87,7 +92,7 @@ var tap = (function () {
     var getResult = function (ev) {
         if (ev.detail.request.method !== "GET") return;
         ev.detail.accept();
-        runTests(tests).then(function (result) {
+        runTests(suite).then(function (result) {
             ev.detail.respond("200", {
                 "content-type": "text/plain;charset=UTF-8",
             }, result);
@@ -135,7 +140,7 @@ var tap = (function () {
     
     return {
         test: function (desc, func) {
-            tests[desc] = func;
+            suite.tests[desc] = func;
         },
         // from CommonsJS Unit Testing/1.0
         AssertionError: AssertionError,
