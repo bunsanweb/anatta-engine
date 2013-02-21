@@ -5,6 +5,9 @@ var q = require("q");
 var termset = {
     core: require("../termset/core"),
 };
+var metadata = {
+    query: require("./query"),
+};
 
 // Metadata common value interface
 var Metadata = function Metadata() {
@@ -69,9 +72,7 @@ Metadata.prototype.all = function () {
     return [];
 };
 Metadata.prototype.find = function (query) {
-    // TBD: query language
-    // query as function
-    return this.all().filter(query);
+    return this.all().filter(metadata.query.toQuery(query));
 };
 Metadata.prototype.first = function (query) {
     var r = this.find(query);
@@ -83,6 +84,7 @@ Metadata.prototype.first = function (query) {
 Metadata.prototype.select = function (selector) {
     return [];
 };
+
 
 // base of metadata as Request/Response
 var Entity = function Entity() {
