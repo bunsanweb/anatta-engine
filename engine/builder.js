@@ -24,6 +24,9 @@ builders.generic = (function () {
         file: function (anatta, engine, opts) {
             return anatta.space.file.FileField(opts);
         },
+        data: function (anatta, engine, opts) {
+            return anatta.space.data.DataField(opts);
+        },
         agent: function (anatta, engine, opts) {
             var field = anatta.weaver.core.AgentField(opts);
             field.agent.engine = engine;
@@ -88,6 +91,13 @@ builders.simple = (function () {
                 var field = anatta.space.file.FileField({
                     root: root, prefix: pathPrefix,
                 });
+                engine.space.manager.bind(id, prefix, field);
+            });
+        },
+        data: function (anatta, engine, opts) {
+            opts.forEach(function (prefix) {
+                var id = "data|" + prefix;
+                var field = anatta.space.data.DataField();
                 engine.space.manager.bind(id, prefix, field);
             });
         },
