@@ -34,7 +34,7 @@ var bindApi = function (agent) {
         termset: {
             desc: require("../termset/desc"),
         },
-        ciper: require("./cipher"),
+        cipher: require("./cipher"),
         form: require("./form"),
         q: q,
     };
