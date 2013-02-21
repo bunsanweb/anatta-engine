@@ -10,7 +10,8 @@
     "dependencies": {
         "jsdom": "*",
         "iconv": "*",
-        "q": "*"
+        "q": "*",
+        "ursa": "*"
     },
     "devDependencies": {
         "mocha": "*"

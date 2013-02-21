@@ -15,3 +15,4 @@ test/orb-core-test.js
 test/galaxy-core-test.js
 test/builder-test.js
 test/metadata-query-test.js
+test/agent-cipher-test.js
