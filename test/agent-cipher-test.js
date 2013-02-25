@@ -112,3 +112,34 @@ test("sign with Buffer and verify", function (done) {
     assert.strictEqual(server.pubs[1].verify(sign), false);
     done();
 });
+
+test("check kind of key", function (done) {
+    var cipher = require("../engine/weaver/cipher");
+
+    var priv = cipher.generate();
+    var pub = cipher.load(priv.getPublicPem());
+
+    assert.strictEqual(priv.isPrivateKey(), true);
+    assert.strictEqual(priv.isPublicKey(), false);
+
+    assert.strictEqual(pub.isPrivateKey(), false);
+    assert.strictEqual(pub.isPublicKey(), true);
+    done();
+});
+
+test("check kind of key with pem", function (done) {
+    var cipher = require("../engine/weaver/cipher");
+
+    var priv = cipher.generate();
+    var pub = cipher.load(priv.getPublicPem());
+
+    assert.strictEqual(cipher.isPrivateKeyPem("foo"), false);
+    assert.strictEqual(cipher.isPublicKeyPem("bar"), false);
+
+    assert.strictEqual(cipher.isPrivateKeyPem(priv.getPem()), true);
+    assert.strictEqual(cipher.isPrivateKeyPem(pub.getPem()), false);
+
+    assert.strictEqual(cipher.isPublicKeyPem(priv.getPem()), false);
+    assert.strictEqual(cipher.isPublicKeyPem(pub.getPem()), true);
+    done();
+});

@@ -8,6 +8,14 @@ var Key = function (key) {
         key: {value: key}
     });
 };
+Key.prototype.isPrivateKey = function () {
+    if (!this.key) return false;
+    return ursa.isPrivateKey(this.key);
+};
+Key.prototype.isPublicKey = function () {
+    if (!this.key) return false;
+    return ursa.isPublicKey(this.key);
+};
 Key.prototype.getPem = function () {
     if (!this.key) return "";
     if (ursa.isPrivateKey(this.key)) {
@@ -112,5 +120,25 @@ var load = function (pem) {
     if (ursa.isPublicKey(key)) return new Public(key);
 };
 
+var isPrivateKeyPem = function (pem) {
+    try {
+        var key = load(pem);
+        return key.isPrivateKey();
+    } catch (err) {
+        return false;
+    }
+};
+
+var isPublicKeyPem = function (pem) {
+    try {
+        var key = load(pem);
+        return key.isPublicKey();
+    } catch (err) {
+        return false;
+    }
+};
+
 exports.generate = generate;
 exports.load = load;
+exports.isPrivateKeyPem = isPrivateKeyPem;
+exports.isPublicKeyPem = isPublicKeyPem;
