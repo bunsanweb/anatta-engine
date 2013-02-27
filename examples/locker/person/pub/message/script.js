@@ -1,21 +1,16 @@
 "use strict";
 
 window.addEventListener("load", function (ev) {
-    var registerd = document.getElementById("registered");
-    var house = document.getElementById("house");
-    var register = document.getElementById("register");
-    var pem = document.getElementById("pem");
-    var pubkeys = document.getElementById("pubkeys");
-    var add = document.getElementById("add");
+    var text = document.getElementById("text");
+    var refresh = document.getElementById("refresh");
+    var message = document.getElementById("message");
     var agent = "/agent/";
 
     var doRender = function (ev) {
         var doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = this.responseText;
-        var house_ = doc.querySelector("link[rel='house']");
-        registered.textContent = house_ ? house_.href : "";
-        var pubkeys_ = doc.getElementById("pubkeys");
-        pubkeys.innerHTML = pubkeys_ ? pubkeys_.innerHTML : "";
+        var message_ = doc.getElementById("message");
+        message.textContent = message_ ? message_.textContent : "";
     };
 
     var doLoad = function (ev) {
@@ -38,19 +33,12 @@ window.addEventListener("load", function (ev) {
         return data;
     };
 
-    register.addEventListener("click", function () {
+    refresh.addEventListener("click", function () {
         var req = Request("POST");
-        req.send(Data(house));
-        house.value = "";
+        req.send(Data(text));
+        text.value = "";
     }, false);
-    house.value = "";
-
-    add.addEventListener("click", function () {
-        var req = Request("POST");
-        req.send(Data(pem));
-        pem.value = "";
-    }, false);
-    pem.value = "";
+    text.value = "";
 
     doLoad();
 });

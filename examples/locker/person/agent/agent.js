@@ -4,36 +4,18 @@ window.addEventListener("agent-load", function (ev) {
     var priv = "";
     var pub = "";
     var house = "";
+    var keybox = anatta.engine.link(
+        document.getElementById("keybox"), "text/html", anatta.entity);
     var load = function () {
         priv = anatta.cipher.generate();
         var publicPem = priv.getPublicPem();
         pub = anatta.cipher.load(publicPem);
-        var pubkey = document.getElementById("pubkey");
-        anatta.engine.link(pubkey, "text/html", anatta.entity).post({
+        keybox.post({
             headers: {"content-type": "text/plain;charset=utf-8"},
             body: publicPem
         });
     };
     load();
-
-    var parseChallenge = function (challenge) {
-        var index = challenge.indexOf(" ");
-        var scheme = challenge.slice(0, index).trim();
-        var param = {};
-        challenge.slice(index).split(",").forEach(function (elem) {
-            var elems = elem.split("=");
-            param[elems[0].trim()] = elems[1].trim().slice(1, -1);
-        });
-        return {scheme: scheme, param: param};
-    };
-
-    var formatAuth = function (parsedChallenge, resultObj) {
-        var str = "";
-        Object.keys(resultObj).forEach(function (key) {
-            str += key + '="' + resultObj[key] + '", ';
-        });
-        return parsedChallenge.scheme + " " + str.slice(0, -2);
-    };
 
     var auth = function (entity) {
         if (entity.response.status != "401") return entity;
@@ -41,40 +23,60 @@ window.addEventListener("agent-load", function (ev) {
         var challenge = entity.response.headers["www-authenticate"];
         if (!challenge) return entity;
 
-        var parsed = parseChallenge(challenge);
-        if (parsed.scheme != "sign") return entity;
+        var parsed = LockerAuth.parse(challenge);
+        if (parsed.scheme != LockerAuth.scheme) return entity;
 
         var signed = priv.sign(parsed.param);
         if (signed.error) return entity;
 
-        entity.request.headers.authorization = formatAuth(parsed, signed);
+        entity.request.headers.authorization = LockerAuth.format(signed);
         return entity.post(entity.request);
+    };
+
+    var insertLink = function (doc) {
+        if (doc.head) {
+            var link = doc.createElement("link");
+            link.rel = "house";
+            link.href = house;
+            doc.head.appendChild(link);
+        }
+        return doc;
     };
 
     var respond = function (entity) {
         var res = entity.response;
-        this.detail.respond(res.status, res.headers, res.body.toString());
+        var doc = entity.html;
+        var resText = doc ? insertLink(doc).outerHTML : res.body.toString();
+        this.detail.respond(res.status, res.headers, resText);
     };
 
     var postToHouse= function (ev) {
-        house = anatta.form.decode(ev.detail.request).house;
-        if (house) {
-            var link = anatta.engine.link({href: house});
-            link.post(ev.detail.request).then(auth).then(respond.bind(ev));
-        } else {
-            ev.detail.respond("200", {
-                "content-type": "text/html;charset=utf-8"
-            }, "");
+        var status = "400";
+        var responseText = "400 Bad Request, house is not registered";
+        var req = ev.detail.request;
+        var form = anatta.form.decode(req);
+        if (form) {
+            if (form.house) {
+                house = form.house;
+                status = "200";
+                responseText = house + " is registered as house";
+            } else if (house) {
+                var link = anatta.engine.link({href: house});
+                return link.post(req).then(auth).then(respond.bind(ev));
+            }
         }
+        ev.detail.respond(status, {
+            "content-type": "text/html;charset=utf-8"
+        }, responseText);
     };
 
     var getFromHouse = function (ev) {
         if (house) {
             anatta.engine.link({href: house}).get().then(respond.bind(ev));
         } else {
-            ev.detail.respond("200", {
+            ev.detail.respond("400", {
                 "content-type": "text/html;charset=utf-8"
-            }, "");
+            }, "400 Bad Request, house is not registered");
         }
     };
 

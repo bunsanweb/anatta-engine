@@ -11,9 +11,10 @@ var engine = anatta.engine.builder.engine({
         "http:": {field: "web"},
         "https:": {field: "web"},
         "file:": {field: "file", root: "./agent/", prefix: "/"},
-        "root:/": {field: "agent", uri: "file:/auth.html"},
-        "root:/message": {field: "agent", uri: "file:/message.html"},
-        "private:/pubkey": {field: "agent", uri: "file:/pubkey.html"},
+        "lib:/": {field: "file", root: "../lib/", prefix: "/"},
+        "root:/": {field: "agent", uri: "file:/gatekeeper.html"},
+        "private:/keybox": {field: "agent", uri: "file:/keybox.html"},
+        "private:/message": {field: "agent", uri: "file:/message.html"},
     }
 });
 var gate = anatta.webgate.core.WebGate(
@@ -28,7 +29,7 @@ if (!adminPubKeyUri) {
         var form = anatta.metadata.multipart.encode({
             pem: entity.response.body.toString()
         });
-        engine.link({href: "private:/pubkey"}).post(form);
+        engine.link({href: "private:/keybox"}).post(form);
     });
 }
 

@@ -7,14 +7,26 @@
   </head>
   <body>
     <h1>person</h1>
+
+    <h2>house</h2>
+    <h3 id="registered"></h3>
     <input type="text" id="house" tabindex="0">
-    <br>
-    <textarea id="pem" rows="3" cols="45" tabindex="0">...</textarea>
     <button type="button" id="register" tabindex="0">register</button>
-    <br>
-    <textarea id="text" rows="3" cols="45" tabindex="0">...</textarea>
-    <button type="button" id="refresh" tabindex="0">refresh</button>
-    <h2>message</h2>
-    <div id="message"></div>
+
+
+    <h2>publickey</h2>
+    <textarea id="pem" rows="3" cols="45" tabindex="0">...</textarea>
+    <button type="button" id="add" tabindex="0">add</button>
+
+    <h2>added publickeys</h2>
+    <ul id="pubkeys">
+    </ul>
+
+    <h2>link</h2>
+    <ul>
+      <li><a href="/message/">message</a></li>
+      <li><a href="/pubkey/">my publickey</a></li>
+    </ul>
+
   </body>
 </html>
