@@ -7,7 +7,7 @@ var space = {
 };
 var conftree = require("../conftree");
 var memory = require("./memory");
-
+var dir = require("./dir");
 
 var OrbField = function OrbField(opts) {
     return Object.create(OrbField.prototype, {

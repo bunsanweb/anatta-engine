@@ -29,8 +29,10 @@ Entry.prototype.toJson = function () {
     });
 };
 Entry.fromJson = function (json) {
-    return Entry(json.pathname, json.type, Buffer(json.value, "base64"),
-                 new Date(json.timestamp));
+    var data = JSON.parse(json);
+    var value = Buffer(data.value, "base64");
+    var date = new Date(data.timestamp);
+    return Entry(data.pathname, data.type, value, date);
 };
 Entry.exists = function (entry) {
     return entry && entry.value !== null;

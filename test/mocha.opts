@@ -8,11 +8,12 @@ test/metadata-atom-test.js
 test/metadata-html-test.js
 test/metadata-multipart-test.js
 test/metadata-multipart5-test.js
+test/metadata-query-test.js
 test/agent-boot-test.js
+test/agent-cipher-test.js
 test/webgate-core-test.js
 test/termset-desc-test.js
 test/orb-core-test.js
+test/orb-dir-test.js
 test/galaxy-core-test.js
 test/builder-test.js
-test/metadata-query-test.js
-test/agent-cipher-test.js
