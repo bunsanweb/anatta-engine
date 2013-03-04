@@ -1,0 +1,20 @@
+{
+    "from": "/",
+    "to": "package:",
+    "engine" : {
+        "type": "generic",
+        "porter": {
+            "text/html": "html",
+            "application/json": "json"
+        },
+        "space": {
+            "http:": {"field": "web"},
+            "package:/agent": {
+                "field": "agent", "uri": "package:/wall.html"},
+            "package:/": {
+                "field": "galaxy",
+                "from": "package:/",
+                "to": "PACKAGE_ROOT"}
+        }
+    }
+}

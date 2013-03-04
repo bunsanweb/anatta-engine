@@ -1,0 +1,16 @@
+{
+    "from": "/",
+    "to": "package:",
+    "engine" : {
+        "type": "generic",
+        "space": {
+            "http:": {"field": "web"},
+            "package:/orb": {"field": "orb"},
+            "package:/": {
+                "field": "galaxy",
+                "from": "package:/",
+                "to": "PACKAGE_ROOT"
+            }
+        }
+    }
+}
