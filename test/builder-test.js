@@ -29,6 +29,7 @@ test("build as generic config", function () {
                     "private:": {field: "orb"},
                 },
             }},
+            "me:/pub/": {field: "galaxy", from: "me:/pub/", to: "file:/pub/"},
         },
     };
     var engine = anatta.engine.builder.engine(config);
@@ -44,6 +45,8 @@ test("build as generic config", function () {
     assert.ok(engine.space.manager.fields["galaxy|me:"].field);
     assert.ok(engine.space.manager.fields["galaxy|me:"].field.
               engine.space.manager.fields["orb|private:"].field);
+    assert.ok(engine.space.manager.fields["galaxy|me:/pub/"].field.
+              engine.space.manager.fields["file|file:/"].field);
 });
 
 
@@ -62,16 +65,19 @@ test("build as simple config", function () {
             orb: ["orb:"],
             data: ["data:"],
             agent: {"myagent:": "file:empty.html"},
-            galaxy: {"me:": {
-                to: "orb:",
-                porter: {
-                    "text/html": "html",
-                    "application/json": "json",
+            galaxy: {
+                "me:": {
+                    to: "orb:",
+                    porter: {
+                        "text/html": "html",
+                        "application/json": "json",
+                    },
+                    space: {
+                        orb: ["private:"],
+                    },
                 },
-                space: {
-                    orb: ["private:"],
-                },
-            }},
+                "me:/pub/": "file:/pub/",
+            },
         },
     };
     var engine = anatta.engine.builder.engine(config);
@@ -87,4 +93,6 @@ test("build as simple config", function () {
     assert.ok(engine.space.manager.fields["galaxy|me:"].field);
     assert.ok(engine.space.manager.fields["galaxy|me:"].field.
               engine.space.manager.fields["orb|private:"].field);
+    assert.ok(engine.space.manager.fields["galaxy|me:/pub/"].field.
+              engine.space.manager.fields["file|file:/"].field);
 });

@@ -34,7 +34,11 @@ builders.generic = (function () {
         },
         galaxy: function (anatta, engine, opts) {
             var field = anatta.galaxy.core.GalaxyField(opts);
-            field.engine = builder(opts.engine);
+            if (typeof opts.engine === "object") {
+                field.engine = builder(opts.engine);
+            } else if (opts.engine === undefined || opts.engine === "self") {
+                field.engine = engine;
+            }
             return field;
         },
     };
@@ -114,9 +118,15 @@ builders.simple = (function () {
             Object.keys(opts).forEach(function (prefix) {
                 var subOpts = opts[prefix];
                 var id = "galaxy|" + prefix;
-                var field = anatta.galaxy.core.GalaxyField({
-                    from: prefix, to: subOpts.to});
-                field.engine = builder(subOpts);
+                if (typeof subOpts === "string") {
+                    var field = anatta.galaxy.core.GalaxyField({
+                        from: prefix, to: subOpts});
+                    field.engine = engine;
+                } else {
+                    var field = anatta.galaxy.core.GalaxyField({
+                        from: prefix, to: subOpts.to});
+                    field.engine = builder(subOpts);
+                }
                 engine.space.manager.bind(id, prefix, field);
             });
         },
