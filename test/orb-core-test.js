@@ -19,6 +19,6 @@ test("Create Orb field, do put then get", function (done) {
         assert.equal(response.headers["content-type"],
                      put.headers["content-type"]);
         assert.equal(response.headers["content-length"], body.length);
-        assert.equal(response.body.toString(), body);
+        assert.equal(response.text(), body);
     }).then(done, done);
 });

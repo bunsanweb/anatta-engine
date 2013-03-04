@@ -15,7 +15,7 @@ test("Create space core with data", function (done) {
     space.access(req).spread(function (req, res) {
         assert.equal("200", res.status);
         assert.equal("text/plain;charset=utf-8", res.headers["content-type"]);
-        assert.equal("foo", res.body.toString());
+        assert.equal("foo", res.text());
     }).then(done, done);
 });
 test("data scheme URI with content-type", function (done) {
@@ -31,7 +31,7 @@ test("data scheme URI with content-type", function (done) {
     space.access(req).spread(function (req, res) {
         assert.equal("200", res.status);
         assert.equal("text/html;charset=utf-8", res.headers["content-type"]);
-        assert.equal("<body>foo</body>", res.body.toString());
+        assert.equal("<body>foo</body>", res.text());
     }).then(done, done);
 });
 test("data scheme URI encoded base64", function (done) {

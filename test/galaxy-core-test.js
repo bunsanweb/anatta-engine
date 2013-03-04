@@ -29,7 +29,6 @@ test("Connect to sub engine as a galaxy", function (done) {
     var uri = engine.link({href: "me:/sub/"});
     uri.get().then(function (entity) {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
-        assert.equal(entity.response.body.toString(),
-                     "Hello from Linked Script!");
+        assert.equal(entity.response.text(), "Hello from Linked Script!");
     }).then(done, done);
 });

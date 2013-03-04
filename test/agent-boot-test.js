@@ -41,7 +41,7 @@ test("boot embeded script agent", function (done) {
     var baseUri = engine.link({href: "myagent:/"});
     baseUri.get().then(function (entity) {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
-        assert.equal(entity.response.body.toString(), "Hello from Script!");
+        assert.equal(entity.response.text(), "Hello from Script!");
     }).then(done, done);
 });
 
@@ -63,8 +63,7 @@ test("boot linked script agent", function (done) {
     var baseUri = engine.link({href: "myagent:/"});
     baseUri.get().then(function (entity) {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
-        assert.equal(entity.response.body.toString(), 
-                     "Hello from Linked Script!");
+        assert.equal(entity.response.text(), "Hello from Linked Script!");
     }).then(done, done);
 });
 

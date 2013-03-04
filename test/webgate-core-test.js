@@ -32,8 +32,7 @@ test("", function (done) {
     var gateUri = engine.link({href: "http://localhost:" + port + "/"});
     gateUri.get().then(function (entity) {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
-        assert.equal(entity.response.body.toString(), 
-                     "Hello from Linked Script!");
+        assert.equal(entity.response.text(), "Hello from Linked Script!");
         webgate.stop();
     }).then(done, done);
 });

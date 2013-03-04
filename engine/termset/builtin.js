@@ -24,7 +24,7 @@ ResourceBinder.prototype.entityAttr = function (entity, key) {
     if (key === "content-type") {
         return entity.response.contentType().toString();
     }
-    if (key === "body") return entity.response.body.toString();
+    if (key === "body") return entity.response.text();
     return "";
 };
 

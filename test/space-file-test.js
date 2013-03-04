@@ -15,7 +15,6 @@ test("Create space core with file", function (done) {
     space.access(req).spread(function (req, res) {
         var fs = require("fs");
         assert.equal("200", res.status);
-        assert.equal(fs.readFileSync("package.json").toString(), 
-                     res.body.toString());
+        assert.equal(fs.readFileSync("package.json").toString(), res.text());
     }).then(done, done);
 });

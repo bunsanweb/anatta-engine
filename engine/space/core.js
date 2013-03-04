@@ -34,6 +34,11 @@ Request.prototype.step = function () {
 Request.prototype.origin = function () {
     return this.from ? this.from.origin() : this;
 };
+Request.prototype.text = function (charset) {
+    var type = this.contentType();
+    charset = charset || type.parameter.charset || "binary";
+    return this.body.toString(charset);
+};
 
 var Response = function Response(status, headers, body) {
     status = status.toString();
@@ -52,6 +57,11 @@ var Response = function Response(status, headers, body) {
 };
 Response.prototype.contentType = function () {
     return ContentType(this.headers["content-type"]);
+};
+Response.prototype.text = function (charset) {
+    var type = this.contentType();
+    charset = charset || type.parameter.charset || "binary";
+    return this.body.toString(charset);
 };
 
 var Space = function Space(opts) {
@@ -151,7 +161,7 @@ var normalizeHeaders = function (headers) {
 };
 
 var ContentType = function ContentType(full) {
-    full = full || "";
+    full = full || "application/octet-stream";
     // TBD: quated string value
     var list = full.split(";");
     var content = list[0].toLowerCase();

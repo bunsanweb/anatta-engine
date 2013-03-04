@@ -9,8 +9,7 @@ test("Create raw space core", function (done) {
     var req = core.Request("GET", "http://foo.bar.com");
     space.access(req).spread(function (req, res) {
         assert.equal("404", res.status);
-        assert.equal("Resource not found: http://foo.bar.com", 
-                     res.body.toString());
+        assert.equal("Resource not found: http://foo.bar.com", res.text());
     }).then(done, done);
 });
 
@@ -39,6 +38,6 @@ test("access to field with longest matched prefix", function (done) {
     var req = core.Request("GET", "foo:/bar/buz");
     space.access(req).spread(function (req, res) {
         assert.equal("200", res.status);
-        assert.equal(field2.text, res.body.toString());
+        assert.equal(field2.text, res.text());
     }).then(done, done);
 });

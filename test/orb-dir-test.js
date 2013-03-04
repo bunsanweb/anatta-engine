@@ -21,7 +21,7 @@ test("Create Orb field with dir.Orb , do put then get", function (done) {
         assert.equal(response.headers["content-type"],
                      put.headers["content-type"]);
         assert.equal(response.headers["content-length"], body.length);
-        assert.equal(response.body.toString(), body);
+        assert.equal(response.text(), body);
     }).then(function () {
         var get = space.request("GET", "orb:/foo/bar/buzz.html");
         return space.access(get).spread(function (request, response) {
@@ -29,7 +29,7 @@ test("Create Orb field with dir.Orb , do put then get", function (done) {
             assert.equal(response.headers["content-type"],
                          put.headers["content-type"]);
             assert.equal(response.headers["content-length"], body.length);
-            assert.equal(response.body.toString(), body);
+            assert.equal(response.text(), body);
         });
     }).then(function () {
         cleanupDir(dir);
