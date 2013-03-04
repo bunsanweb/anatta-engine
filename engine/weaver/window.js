@@ -20,7 +20,7 @@ var bindApi = function (agent) {
     var window = agent.window;
     weaver.event.bindEventTarget(window);
     Object.defineProperty(window, "location", {get: function () {
-        return url.parse(agent.entity.request.uri, false, true);
+        return url.parse(agent.entity.request.href, false, true);
     }});
     window.XMLSerializer = jsdom.XMLSerializer;
     window.anatta = {
@@ -101,7 +101,7 @@ var loadScripts = function loadScripts(agent, scriptTags, index) {
     if (!scriptTag.src) {
         // when embeded script
         var code = scriptTag.innerHTML;
-        var uri = agent.entity.request.uri;
+        var uri = agent.entity.request.href;
         runScript(agent, code, uri);
         return loadScripts(agent, scriptTags, index + 1);
     }
@@ -117,7 +117,7 @@ var loadScripts = function loadScripts(agent, scriptTags, index) {
             var charset = (scriptTag.getAttribute("charset") ||
                            type.parameter["charset"] || "utf-8");
             var code = entity.response.body.toString(charset);
-            var uri = entity.request.uri;
+            var uri = entity.request.href;
             runScript(agent, code, uri);
         }
         return loadScripts(agent, scriptTags, index + 1);

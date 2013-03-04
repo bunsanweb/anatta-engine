@@ -17,7 +17,7 @@ FileField.prototype.access = function (request) {
     }
     try {
         var prefix = RegExp("^" + this.opts.prefix);
-        var relPath = request.uriObject.pathname.replace(prefix, "");
+        var relPath = request.location.pathname.replace(prefix, "");
         var pathname = path.resolve(this.opts.root, relPath);
         return getPath(request, pathname);
     } catch (ex) {
@@ -78,6 +78,7 @@ var mimeTypes = {
     "xml": "application/xml",
     "atom": "application/atom+xml",
     "css": "text/css",
+    "png": "image/png",
 };
 
 var contentType = function (pathname, charset) {

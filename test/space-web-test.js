@@ -18,7 +18,7 @@ test("Create space core with http", function (done) {
         assert.equal("200", res.status);
         // redirected
         //console.log([req.uri, req.from.uri, req.from.from.uri]);
-        assert.equal(req.origin().uri, "http://example.com/");
-        assert.equal(req.uri, "http://www.iana.org/domains/example");
+        assert.equal(req.origin().href, "http://example.com/");
+        assert.equal(req.href, "http://www.iana.org/domains/example");
     }).then(done, done);
 });

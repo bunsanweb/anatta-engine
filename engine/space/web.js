@@ -16,7 +16,7 @@ var WebField = function WebField(opts) {
 };
 WebField.prototype.access = function (request) {
     var deferred = q.defer();
-    var opts = url.parse(request.uri);
+    var opts = url.parse(request.href);
     opts.method = request.method;
     opts.headers = request.headers;
     var req = protocols[opts.protocol].request(opts, function (res) {

@@ -18,7 +18,7 @@ DataField.prototype.access = function (request) {
     if (request.method !== "GET") {
         return q.resolve([request, core.Response("405", {allow: "GET"})]);
     }
-    var data = dsPattern.exec(request.uri);
+    var data = dsPattern.exec(request.href);
     if (!data) {
         return core.FieldUtil.error(request, "Invalid Data Scheme URI", "404");
     }

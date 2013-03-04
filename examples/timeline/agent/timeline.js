@@ -70,10 +70,10 @@ window.addEventListener("agent-load", function (ev) {
 
     var replyStatuses = function (ev) {
         var request = ev.detail.request;
-        var statuses = findStatuses(request.uriObject.query);
+        var statuses = findStatuses(request.location.query);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, formatMessage(statuses, request.origin().uriObject).outerHTML);
+        }, formatMessage(statuses, request.origin().location).outerHTML);
     };
 
     var formatStatus = function (uri, entry) {

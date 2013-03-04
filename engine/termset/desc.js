@@ -36,7 +36,7 @@ var JsonDescBinder = function JsonDescBinder(json) {
 };
 JsonDescBinder.prototype = core.TermBinder();
 JsonDescBinder.prototype.entityAttr = function (entity, key) {
-    if (!entity.request.uri.match(this.uriPattern)) return "";
+    if (!entity.request.href.match(this.uriPattern)) return "";
     var binders = this.desc["entity"] || {};
     var desc = binders[key];
     if (!desc) return "";
@@ -49,7 +49,7 @@ JsonDescBinder.prototype.entityAttr = function (entity, key) {
     return (desc.value ? elem[desc.value] : elem.valueOf().toString()) || "";
 };
 JsonDescBinder.prototype.entityLinkAll = function (entity) {
-    if (!entity.request.uri.match(this.uriPattern)) return [];
+    if (!entity.request.href.match(this.uriPattern)) return [];
     var binders = this.desc["entity"] || {};
     var desc = binders["link"];
     if (!desc) return [];
@@ -59,7 +59,7 @@ JsonDescBinder.prototype.entityLinkAll = function (entity) {
 };
 JsonDescBinder.prototype.linkAttr = function (link, key) {
     if (!link.parent) return "";
-    if (!link.parent.request.uri.match(this.uriPattern)) return "";
+    if (!link.parent.request.href.match(this.uriPattern)) return "";
     var binders = this.desc["link"] || {};
     var desc = binders[key];
     if (!desc) return "";

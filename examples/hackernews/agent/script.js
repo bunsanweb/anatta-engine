@@ -26,7 +26,7 @@ window.addEventListener("agent-load", function (ev) {
 
     var linkToContent = function (entity) {
         var content = contentTemplate.cloneNode(true);
-        var uri = entity.request.uri;
+        var uri = entity.request.href;
         content.querySelector(".href").href = uri;
         content.querySelector(".href").textContent = uri;
         var contentType = entity.response.headers["content-type"];

@@ -13,12 +13,17 @@ var Request = function Request(method, uri, headers, body, from) {
     }
     return Object.create(Request.prototype, {
         method: {value: method.toUpperCase(), enumerable: true},
-        uri: {value: uri, enumerable: true},
-        uriObject: {value: url.parse(uri, true, true), enumerable: true},
+        href: {value: uri, enumerable: true},
+        location: {value: url.parse(uri, true, true), enumerable: true},
         headers: {value: headers, enumerable: true},
         body: {get: function () {return new Buffer(body)}, enumerable: true},
         from: {value: from},
     });
+};
+// NOTE: for compatibility
+Request.prototype = {
+    get uri() {return this.href;},
+    get uriObject() {return this.location;},
 };
 Request.prototype.contentType = function () {
     return ContentType(this.headers["content-type"]);
@@ -29,7 +34,6 @@ Request.prototype.step = function () {
 Request.prototype.origin = function () {
     return this.from ? this.from.origin() : this;
 };
-
 
 var Response = function Response(status, headers, body) {
     status = status.toString();
@@ -95,7 +99,7 @@ var FieldUtils = {
 var UnknownField = Object.freeze({
     access: function (request) {
         return FieldUtils.error(
-            request, "Resource not found: " + request.uri, "404");
+            request, "Resource not found: " + request.href, "404");
     },
 });
 
@@ -131,7 +135,7 @@ FieldManager.prototype.resolve = function (request) {
         return a.prefix < b.prefix;
     }).some(function (elem) {
         var prefix = elem.prefix;
-        if (request.uri.substring(0, prefix.length) === prefix) {
+        if (request.href.substring(0, prefix.length) === prefix) {
             field = elem.field;
             return true;
         }

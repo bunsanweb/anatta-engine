@@ -23,7 +23,7 @@ OrbField.prototype.access = function (request) {
 };
 
 var accessGet = function (request) {
-    return this.orb.get(request.uriObject.pathname).then(function (entry) {
+    return this.orb.get(request.location.pathname).then(function (entry) {
         if (!entry) return [request, space.core.Response("404", {})];
         return [request, space.core.Response("200", {
             "content-type": entry.type,
@@ -33,7 +33,7 @@ var accessGet = function (request) {
 };
 var accessPut = function (request) {
     var data = {type: request.headers["content-type"], value: request.body};
-    var pathname = request.uriObject.pathname;
+    var pathname = request.location.pathname;
     return this.orb.put(pathname, data).then(function (entry) {
         return [request, space.core.Response("200", {
             "location": request.uri,

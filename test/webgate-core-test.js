@@ -51,7 +51,7 @@ test("http request.origin().uri is absolute URI", function (done) {
     var AssertField = function AssertField () {
         return Object.create({
             access: function (request) {
-                assert.equal(request.origin().uri, originalUri);
+                assert.equal(request.origin().href, originalUri);
                 var d = q.defer();
                 var response = anatta.space.core.Response("200", {
                     "content-type": "text/plain"}, "");
@@ -88,7 +88,7 @@ test("https request.origin().uri is absolute URI", function (done) {
     var AssertField = function AssertField () {
         return Object.create({
             access: function (request) {
-                assert.equal(request.origin().uri, originalUri);
+                assert.equal(request.origin().href, originalUri);
                 var d = q.defer();
                 var response = anatta.space.core.Response("200", {
                     "content-type": "text/plain"}, "");
