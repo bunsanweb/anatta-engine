@@ -8,7 +8,7 @@ var termset = {
 
 var Entity = function AtomEntity(engine, request, response) {
     var atom = jsdom.createDocument();
-    atom._URL = request.uri;
+    atom._URL = request.href;
     atom.innerHTML = response.body.toString();
     return Object.create(AtomEntity.prototype, {
         engine: {value: engine},

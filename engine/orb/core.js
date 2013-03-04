@@ -36,7 +36,7 @@ var accessPut = function (request) {
     var pathname = request.location.pathname;
     return this.orb.put(pathname, data).then(function (entry) {
         return [request, space.core.Response("200", {
-            "location": request.uri,
+            "location": request.href,
         })];
     });
 };

@@ -9,7 +9,7 @@ var termset = {
 
 var Entity = function HtmlEntity(engine, request, response) {
     var html = jsdom.createHTMLDocument();
-    html._URL = request.uri; // hack of jsdom
+    html._URL = request.href; // hack of jsdom
     html.innerHTML = response.body.toString();
     return Object.create(HtmlEntity.prototype, {
         engine: {value: engine},
