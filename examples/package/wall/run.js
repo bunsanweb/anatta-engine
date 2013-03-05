@@ -10,4 +10,5 @@ var engine = anatta.engine.builder.engine({
 });
 
 var gate = anatta.webgate.core.WebGate(
-    engine.space, {from: "/", to: "wall:/"}).start("8002");
+    engine.space, {from: "/", to: "wall:/"});
+gate.start(process.argv[2] || process.env.PORT || "8002");

@@ -9,4 +9,5 @@ var engine = anatta.engine.builder.engine({
     }
 });
 anatta.webgate.core.WebGate(
-    engine.space, {from: "/", to: "wiki:/"}).start("8001");
+    engine.space, {from: "/", to: "wiki:/"});
+gate.start(process.argv[2] || process.env.PORT || "8001");
