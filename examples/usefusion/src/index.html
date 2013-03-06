@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>use fusion</title>
+<script src="/shared/contrib/fusion.js"></script>
+<script src="main.js"></script>
+</head>
+<body>
+
+<div class="items">
+  <a href="" data-fusion="href: href">
+    <span data-fusion="text: title">Title Name</span> list
+  </a>
+  <article class="item" data-fusion="links: *">
+    <h1 data-fusion="text: title">Article Title</h1>
+    <div data-fusion="html: content">
+      content ...
+    </div>
+    <div class="tags" style="font-size: small" data-fusion="when: tags">
+      tag: <span data-fusion="text: tags">list</span>
+    </div>
+  </article>
+  <a href="" data-fusion="when: next, href: next">next</a>
+</div>
+
+</body>
+</html>
