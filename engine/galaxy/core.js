@@ -15,7 +15,7 @@ var GalaxyField = function GalaxyField(opts) {
     });
 };
 GalaxyField.prototype.access = function (request) {
-    if (!this.engine || request.href.search(this.opts.from) !== 0) {
+    if (!this.engine || request.href.indexOf(this.opts.from) !== 0) {
         return space.core.FieldUtils.error(
             request, Error("invalid settings"), "404");
     }

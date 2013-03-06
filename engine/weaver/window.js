@@ -11,21 +11,6 @@ var weaver = {
     event: require("./event"),
 };
 
-var builder = require("../builder");
-var galaxy = {
-    core: require("../galaxy/core"),
-}
-var install = function (engine, root, manifest) {
-    var prefix = url.resolve(root.href, manifest.id);
-    manifest.config.from = prefix;
-    var field = galaxy.core.GalaxyField(manifest.config);
-    field.engine = builder.engine(manifest.config.engine);
-    var id = "galaxy|" + prefix;
-    engine.space.manager.bind(id, prefix, field);
-    var uri = url.resolve(root.origin().href, manifest.id) + "/";
-    manifest.uri = url.resolve(uri, manifest.ui);
-    return manifest;
-};
 
 var Window = function Window() {
     return vm.createContext(Object.create(Window.prototype, {}));
@@ -51,8 +36,8 @@ var bindApi = function (agent) {
         },
         cipher: require("./cipher"),
         form: require("./form"),
+        inst: require("./inst"),
         q: q,
-        install: install,
     };
     window.window = window;
     // basic service

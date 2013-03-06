@@ -1,6 +1,7 @@
 {
+    "id": "wall",
     "from": "/",
-    "to": "package:",
+    "to": "inst:",
     "engine" : {
         "type": "generic",
         "porter": {
@@ -9,12 +10,12 @@
         },
         "space": {
             "http:": {"field": "web"},
-            "package:/agent": {
-                "field": "agent", "uri": "package:/wall.html"},
-            "package:/": {
+            "inst:/agent": {
+                "field": "agent", "uri": "inst:/wall.html"},
+            "inst:": {
                 "field": "galaxy",
-                "from": "package:/",
-                "to": "PACKAGE_ROOT"}
+                "from": "inst:",
+                "to": "inst+src:/"}
         }
     }
 }

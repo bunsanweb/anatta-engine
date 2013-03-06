@@ -1,15 +1,16 @@
 {
+    "id": "wiki",
     "from": "/",
-    "to": "package:",
+    "to": "inst:",
     "engine" : {
         "type": "generic",
         "space": {
             "http:": {"field": "web"},
-            "package:/orb": {"field": "orb"},
-            "package:/": {
+            "inst:/orb": {"field": "orb"},
+            "inst:": {
                 "field": "galaxy",
-                "from": "package:/",
-                "to": "PACKAGE_ROOT"
+                "from": "inst:",
+                "to": "inst+src:"
             }
         }
     }

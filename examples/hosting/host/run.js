@@ -12,7 +12,7 @@ var engine = anatta.engine.builder.engine({
         "http:": {field: "web"},
         "https:": {field: "web"},
         "file:": {field: "file", root: "./agent/", prefix: "/"},
-        "root:/package": {field: "agent", uri: "file:/"},
+        "root:/inst": {field: "agent", uri: "file:/"},
         "root:/": {field: "file", root: "./pub/", prefix: "/"},
     }
 });

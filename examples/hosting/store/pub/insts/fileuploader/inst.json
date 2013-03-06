@@ -1,6 +1,7 @@
 {
+    "id": "fileuploader",
     "from": "/",
-    "to": "package:",
+    "to": "inst:",
     "engine" : {
         "type": "generic",
         "porter": {
@@ -9,15 +10,15 @@
         },
         "space": {
             "http:": {"field": "web"},
-            "package:/orb": {"field": "orb"},
-            "package:/agent": {
+            "inst:/orb": {"field": "orb"},
+            "inst:/agent": {
                 "field": "agent",
-                "uri": "package:/fileuploader.html"
+                "uri": "inst:/fileuploader.html"
             },
-            "package:/": {
+            "inst:": {
                 "field": "galaxy",
-                "from": "package:/",
-                "to": "PACKAGE_ROOT"
+                "from": "inst:",
+                "to": "inst+src:"
             }
         }
     }

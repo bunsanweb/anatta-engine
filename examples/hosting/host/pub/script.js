@@ -1,16 +1,16 @@
 "use strict";
 
 window.addEventListener("load", function (ev) {
-    var packageUri = document.getElementById("packageUri");
-    var packages = document.getElementById("packages");
+    var instUri = document.getElementById("instUri");
+    var insts = document.getElementById("insts");
     var add = document.getElementById("add");
-    var agent = "/package/";
+    var agent = document.querySelector("link[rel='agent']").href;
 
     var doRender = function (ev) {
         var doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = this.responseText;
-        var packages_ = doc.getElementById("packages");
-        packages.innerHTML = packages_ ? packages_.innerHTML : "";
+        var insts_ = doc.getElementById("insts");
+        insts.innerHTML = insts_ ? insts_.innerHTML : "";
     };
 
     var doLoad = function (ev) {
@@ -35,10 +35,10 @@ window.addEventListener("load", function (ev) {
 
     add.addEventListener("click", function () {
         var req = Request("POST");
-        req.send(Data(packageUri));
-        packageUri.value = "";
+        req.send(Data(instUri));
+        instUri.value = "";
     }, false);
-    packageUri.value = "";
+    instUri.value = "";
 
     doLoad();
 });
