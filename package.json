@@ -11,7 +11,8 @@
         "jsdom": "*",
         "iconv": "*",
         "q": "*",
-        "ursa": "*"
+        "ursa": "*",
+        "mongodb": "*"
     },
     "devDependencies": {
         "mocha": "*"

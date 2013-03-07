@@ -33,6 +33,7 @@ exports.orb = {
     core: require("./engine/orb/core"),
     memory: require("./engine/orb/memory"),
     dir: require("./engine/orb/dir"),
+    mongodb: require("./engine/orb/mongodb"),
 };
 exports.galaxy = {
     core: require("./engine/galaxy/core"),
