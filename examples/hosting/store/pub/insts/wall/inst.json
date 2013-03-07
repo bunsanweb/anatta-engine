@@ -1,5 +1,5 @@
 {
-    "id": "wall",
+    "name": "wall",
     "from": "/",
     "to": "inst:",
     "engine" : {

@@ -1,5 +1,6 @@
 "use strict";
 
+var q = require("q");
 var url = require("url");
 var builder = require("../builder");
 var galaxy = {
@@ -14,15 +15,20 @@ var insertSrcField = function (inst) {
     };
     return inst;
 };
-var activate = function (engine, inst) {
+var createGalaxy = function (inst) {
+    var d = q.defer();
     inst = insertSrcField(inst);
+    d.resolve([galaxy.core.GalaxyField(inst), builder.engine(inst.engine)]);
+    return d.promise;
+};
+var activate = function (engine, inst) {
     var prefix = url.resolve(inst.root, inst.id);
     inst.from = prefix;
-    inst.manifest = inst.from + "/manifest.html";
-    var field = galaxy.core.GalaxyField(inst);
-    field.engine = builder.engine(inst.engine);
-    engine.space.manager.bind("galaxt|"+prefix, prefix, field);
-    return inst;
+    return createGalaxy(inst).spread(function (field, subEngine) {
+        field.engine = subEngine;
+        engine.space.manager.bind("galaxy|" + prefix, prefix, field);
+        return engine.link({href: prefix + "/manifest.html"}).get();
+    });
 };
 
 exports.activate = activate;

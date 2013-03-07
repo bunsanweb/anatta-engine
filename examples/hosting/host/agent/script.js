@@ -9,33 +9,40 @@ window.addEventListener("agent-load", function (ev) {
         var inst = entity.html.querySelector("[rel='inst']");
         var link = anatta.engine.link(inst, "text/html", entity);
         return link.get().then(function (entity) {
-            return JSON.parse(entity.response.text());
+            return entity.json;
         });
     };
 
-    var getUI = function (inst) {
-        var link = anatta.engine.link({href: inst.manifest});
-        return link.get().then(function (entity) {
-            var ui = entity.html.querySelector("[rel='ui']");
-            var uiPath = ui ? url.parse(ui.href).path : "";
-            var desc = entity.html.getElementById("description");
-            var descText = desc ? desc.textContent : "";
-            var info = instTemplate.cloneNode(true);
-            info.querySelector(".id").textContent = inst.id;
-            info.querySelector(".id").href = uiPath;
-            info.querySelector(".description").textContent = descText;
-            insts.appendChild(info);
-        });
+    var getUI = function (instID, manifest) {
+        var name = manifest.html.getElementById("name");
+        var nameText = name ? name.textContent : "";
+        var ui = manifest.html.querySelector("[rel='ui']");
+        var uiPath = ui ? url.parse(ui.href).path : "";
+        var desc = manifest.html.getElementById("description");
+        var descText = desc ? desc.textContent : "";
+        var info = instTemplate.cloneNode(true);
+        info.setAttribute("rel", nameText);
+        info.querySelector(".id").textContent = instID;
+        info.querySelector(".id").href = uiPath;
+        info.querySelector(".description").textContent = descText;
+        insts.appendChild(info);
+    };
+
+    var generateID = function (name) {
+        var selector = "[class='inst'][rel='" + name + "']";
+        var num = insts.querySelectorAll(selector).length;
+        return name + "/" + (num + 1);
     };
 
     var post = function (ev) {
         var form = anatta.form.decode(ev.detail.request);
         var link = anatta.engine.link({href: form.instUri});
         return link.get().then(getInst).then(function (inst) {
+            inst.id = generateID(inst.name);
             inst.root = ev.detail.request.href;
             inst.src = form.instUri;
-            return anatta.inst.activate(anatta.engine, inst);
-        }).then(getUI).then(function () {
+            return [inst.id, anatta.inst.activate(anatta.engine, inst)];
+        }).spread(getUI).then(function () {
             ev.detail.respond("200", {
                 "content-type": "text/html;charset=utf-8"
             }, "");
