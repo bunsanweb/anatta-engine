@@ -23,6 +23,8 @@ Orb.prototype.entryList = function () {
         }).fin(function () {
             db.close();
         });
+    }).fail(function (err) {
+        return {};
     });
 };
 Orb.prototype.get = function (pathname) {
@@ -35,6 +37,8 @@ Orb.prototype.get = function (pathname) {
         }).fin(function () {
             db.close();
         });
+    }).fail(function (err) {
+        return null;
     });
 };
 Orb.prototype.put = function (pathname, data) {
@@ -50,6 +54,8 @@ Orb.prototype.put = function (pathname, data) {
         }).fin(function () {
             db.close();
         });
+    }).fail(function (err) {
+        return null;
     });
 };
 
