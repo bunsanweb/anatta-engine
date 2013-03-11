@@ -20,19 +20,25 @@ var Entry = function Entry(pathname, type, value, timestamp) {
 Entry.fromValue = function (pathname, data) {
     return Entry(pathname, data.type, data.value, data.timestamp);
 };
-Entry.prototype.toJson = function () {
-    return JSON.stringify({
+Entry.prototype.toObject = function () {
+    return {
         pathname: this.pathname,
         type: this.type,
         value: this.value.toString("base64"),
         timestamp: this.timestamp.toUTCString(),
-    });
+    };
 };
-Entry.fromJson = function (json) {
-    var data = JSON.parse(json);
+Entry.prototype.toJson = function () {
+    return JSON.stringify(this.toObject());
+};
+Entry.fromObject = function (data) {
     var value = Buffer(data.value, "base64");
     var date = new Date(data.timestamp);
     return Entry(data.pathname, data.type, value, date);
+};
+Entry.fromJson = function (json) {
+    var data = JSON.parse(json);
+    return Entry.fromObject(data);
 };
 Entry.exists = function (entry) {
     return entry && entry.value !== null;

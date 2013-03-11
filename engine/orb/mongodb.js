@@ -10,48 +10,63 @@ var Orb = function Orb(uri, collection) {
         collection: {value: collection || "entries", enumerable: true}
     });
 };
-Orb.prototype.get = function (pathname) {
-    var self = this;
-    var d = q.defer();
-    mongodb.connect(self.uri, function (err, db) {
-        if (err) return exit(db, d, err);
-        db.collection(self.collection, function (err, collection) {
-            if (err) return exit(db, d, err);
-            var query = {pathname: pathname};
-            collection.findOne(query, function (err, doc) {
-                if (err) return exit(db, d, err);
-                var entry = memory.Entry.fromJson(JSON.stringify(doc));
-                d.resolve(entry);
-                db.close();
-            });
+Orb.prototype.entryList = function () {
+    var entries = this.collection;
+    return async(mongodb, "connect")(this.uri).then(function (db) {
+        return async(db, "collection")(entries).then(function (collection) {
+            return async(collection.find(), "toArray")();
+        }).then(function (docs) {
+            return docs.reduce(function (result, doc) {
+                result[doc.pathname] = memory.Entry.fromObject(doc);
+                return result;
+            }, {});
+        }).fin(function () {
+            db.close();
         });
     });
-    return d.promise;
+};
+Orb.prototype.get = function (pathname) {
+    var entries = this.collection;
+    return async(mongodb, "connect")(this.uri).then(function (db) {
+        return async(db, "collection")(entries).then(function (collection) {
+            return async(collection, "findOne")({pathname: pathname});
+        }).then(function (doc) {
+            return memory.Entry.fromObject(doc);
+        }).fin(function () {
+            db.close();
+        });
+    });
 };
 Orb.prototype.put = function (pathname, data) {
-    var self = this;
-    var d = q.defer();
-    mongodb.connect(self.uri, function (err, db) {
-        if (err) return exit(db, d, err);
-        db.collection(self.collection, function (err, collection) {
-            if (err) return exit(db, d, err);
+    var entries = this.collection;
+    var entry = memory.Entry.fromValue(pathname, data);
+    return async(mongodb, "connect")(this.uri).then(function (db) {
+        return async(db, "collection")(entries).then(function (collection) {
             var query = {pathname: pathname};
-            var entry = memory.Entry.fromValue(pathname, data);
-            var doc = JSON.parse(entry.toJson());
-            collection.update(query, doc, {upsert: true},
-                function (err, doc) {
-                    if (err) return exit(db, d, err);
-                    d.resolve(doc);
-                    db.close();
-            });
+            var doc = entry.toObject();
+            return async(collection, "update")(query, doc, {upsert: true});
+        }).then(function (doc) {
+            return entry;
+        }).fin(function () {
+            db.close();
         });
     });
-    return d.promise;
 };
 
-var exit = function (db, defer, error) {
-    if (db) db.close();
-    return defer.resolve(error);
+// convert method with callback to promise function as:
+//  obj.method(args..., function (err, result) {}) =>
+//  async(obj, "method")(args...).then(function (result) {}, function (err) {})
+var async = function (obj, name) {
+    return function () {
+        var d = q.defer();
+        var args = Array.prototype.slice.call(arguments);
+        args.push(function (err, result) {
+            if (err) d.reject(err);
+            d.resolve(result);
+        });
+        obj[name].apply(obj, args);
+        return d.promise;
+    };
 };
 
 exports.Orb = Orb;
