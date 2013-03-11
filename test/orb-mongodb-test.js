@@ -4,10 +4,14 @@ var assert = require("assert");
 
 suite("[Orb MongoDB]");
 test("Create Orb field with mongodb.Orb, do put then get", function (done) {
+    this.timeout(10000);
     var anatta = require("../anatta");
+    
+    var dbname = "anatta-engine-orb-mongodb-test-" + pid;
+    var uri = "mongodb://127.0.0.1:27017/" + dbname;
+    
     var space = anatta.space.core.Space();
     var orbField = anatta.orb.core.OrbField();
-    var uri = "mongodb://127.0.0.1:27017/mongorb";
     orbField.orb = anatta.orb.mongodb.Orb(uri);
     space.manager.bind("orb", "orb:", orbField);
     
@@ -31,5 +35,21 @@ test("Create Orb field with mongodb.Orb, do put then get", function (done) {
             assert.equal(response.headers["content-length"], body.length);
             assert.equal(response.text(), body);
         });
+    }).fin(function () {
+        return cleanupDatabase(uri);
     }).then(done, done);
 });
+
+var cleanupDatabase = function (uri) {
+    var q = require("q");
+    var mongodb = require("mongodb");
+    var d = q.defer();
+    mongodb.connect(uri, function (err, db) {
+        if (err) return d.reject(err);
+        db.dropDatabase(function (err, result) {
+            if (err) return d.reject(err);
+            return d.resolve();
+        });
+    });
+    return d.promise;
+};

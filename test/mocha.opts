@@ -15,6 +15,6 @@ test/webgate-core-test.js
 test/termset-desc-test.js
 test/orb-core-test.js
 test/orb-dir-test.js
+test/orb-mongodb-test.js
 test/galaxy-core-test.js
 test/builder-test.js
-test/orb-mongodb-test.js
