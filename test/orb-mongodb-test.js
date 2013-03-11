@@ -7,7 +7,7 @@ test("Create Orb field with mongodb.Orb, do put then get", function (done) {
     this.timeout(10000);
     var anatta = require("../anatta");
     
-    var dbname = "anatta-engine-orb-mongodb-test-" + pid;
+    var dbname = "anatta-engine-orb-mongodb-test-" + process.pid;
     var uri = "mongodb://127.0.0.1:27017/" + dbname;
     
     var space = anatta.space.core.Space();
