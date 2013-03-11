@@ -33,5 +33,6 @@ $ node run.js [HOST_PORT]
     * insts 以下に fileuploader, wiki, wall という三つのinst(動的に追加するagent)へのリンクが存在しているので、hostに追加したいinstのURIをコピーする
 
 * ブラウザを用いて http://localhost:[HOST_PORT] を開く
-    * テキスト入力フィールドに先ほどコピーしたinstのURIをペーストした後、addボタンをクリックする
+    * "inst URI"テキスト入力フィールドに先ほどコピーしたinstのURIをペーストした後、addボタンをクリックする
+        * ペーストするURIはjsonのものではなく、instのURIであることに注意する
     * "my insts" 以下に追加したinstのUIへのリンクが表われるので、クリックしてUIへ遷移することでinstを使用することができる
