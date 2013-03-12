@@ -73,13 +73,14 @@ var fusion = (function () {
     var applyMetadata = function (elem, context, desc) {
         Object.keys(desc).forEach(function (key) {
             if (specials.indexOf(key) >= 0) return;
+            var attr = context.attr(desc[key]);
             if (shorthandAttrs[key]) {
-                return elem[shorthandAttrs[key]] = context.attr(desc[key]);
+                return elem[shorthandAttrs[key]] = attr;
+            } else if (htmlAttrs.indexOf(key) >= 0) {
+                return elem[key] = attr;
+            } else {
+                return elem.setAttribute(key, attr);
             }
-            if (htmlAttrs.indexOf(key) >= 0) {
-                return elem[key] = context.attr(key);
-            }
-            elem.setAttribute(key, context.attr(key));
         });
         Array.prototype.forEach.call(elem.childNodes, function (child) {
             applyTree(child, context);
