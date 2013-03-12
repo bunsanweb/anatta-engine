@@ -142,7 +142,7 @@ FieldManager.prototype.resolve = function (request) {
     Object.keys(fields).map(function (id) {
         return fields[id];
     }).sort(function (a, b) {
-        return a.prefix < b.prefix;
+        return a.prefix > b.prefix ? -1 : 1; //reversed dict order for resolve
     }).some(function (elem) {
         var prefix = elem.prefix;
         if (request.href.substring(0, prefix.length) === prefix) {

@@ -1,6 +1,6 @@
 {
     "name": "anatta-engine",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "private": true,
     "scripts": {
         "test": "node ./node_modules/.bin/mocha"
