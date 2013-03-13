@@ -24,7 +24,8 @@ var anyQuery = function (link) {return true;};
 var emptyQuery = function (link) {return false;};
 
 var toQuery = function (selector) {
-    if (selector && (selector instanceof Object)) return jsonToQuery(selector);
+    if (selector === null || selector === undefined) return emptyQuery;
+    if (typeof selector === "object") return jsonToQuery(selector);
     if (typeof selector === "function") return selector;
     if (selector === "*") return anyQuery;
     return emptyQuery;
