@@ -76,7 +76,7 @@ Metadata.prototype.find = function (query) {
 };
 Metadata.prototype.first = function (query) {
     var r = this.find(query);
-    if (r.length < 1) return NilLink(this.engine);
+    if (r.length < 1) return nilLink(this.engine);
     return r[0];
 };
 
@@ -124,12 +124,25 @@ var NilEntity = function NilEntity(engine, request, response) {
 };
 NilEntity.prototype = Entity();
 
-var NilLink = function NilLink(engine) {
+var NilLink = function NilLink(engine, none, parent) {
     return Object.create(NilLink.prototype, {
         engine: {value: engine},
+        parent: {value: parent},
     });
 };
 NilLink.prototype = Link();
+
+// nil instance
+var nilEntity = function (engine) {
+    // TBD: nil url
+    var nilRequest = engine.space.request("GET", "");
+    var nilResponse = engine.space.response("200", {
+        "content-type": "application/octet-stream"});
+    return NilEntity(engine, nilRequest, nilResponse);
+};
+var nilLink = function (engine) {
+    return NilLink(engine, null, nilEntity(engine));
+};
 
 // Metadata factory
 var Porter = function Porter() {

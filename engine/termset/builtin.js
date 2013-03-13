@@ -27,6 +27,14 @@ ResourceBinder.prototype.entityAttr = function (entity, key) {
     if (key === "body") return entity.response.text();
     return "";
 };
+ResourceBinder.prototype.linkAttr = function (link, key) {
+    if (key === "href") return "";
+    if (key === "content-type") {
+        return "application/octet-stream";
+    }
+    if (key === "body") return "";
+    return "";
+};
 
 
 var JsonBinder = function JsonBinder() {

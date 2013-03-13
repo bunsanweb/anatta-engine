@@ -21,7 +21,7 @@ var Entity = function AtomEntity(engine, request, response) {
 };
 Entity.prototype = core.Entity();
 Entity.prototype.select = function (selector) {
-    return this.atom.querySelectorAll(selector);
+    return selector ? this.atom.querySelectorAll(selector) : [this.atom];
 };
 
 var Link = function AtomLink(engine, atom, parent) {

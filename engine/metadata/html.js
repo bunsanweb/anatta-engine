@@ -22,7 +22,7 @@ var Entity = function HtmlEntity(engine, request, response) {
 };
 Entity.prototype = core.Entity();
 Entity.prototype.select = function (selector) {
-    return this.html.querySelectorAll(selector);
+    return selector ? this.html.querySelectorAll(selector) : [this.html];
 };
 
 var Link = function HtmlLink(engine, html, parent) {
@@ -38,4 +38,3 @@ Link.prototype.select = Entity.prototype.select;
 
 exports.Link = Link;
 exports.Entity = Entity;
-
