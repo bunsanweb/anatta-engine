@@ -1,5 +1,6 @@
 "use strict";
 
+var url = require("url");
 var q = require("q");
 
 var space = {
@@ -7,12 +8,12 @@ var space = {
 };
 var conftree = require("../conftree");
 var memory = require("./memory");
-var dir = require("./dir");
 
 var OrbField = function OrbField(opts) {
+    var orb = systemOrb();
     return Object.create(OrbField.prototype, {
         opts: {value: conftree.create(opts, {})},
-        orb: {value: memory.Orb(), writable: true},
+        orb: {value: orb, writable: true},
     });
 };
 OrbField.prototype.access = function (request) {
@@ -39,6 +40,23 @@ var accessPut = function (request) {
             "location": request.href,
         })];
     });
+};
+
+var systemOrb = function () {
+    var orbUri = url.parse(process.env.ORB_URI || "memory:", true, true);
+    switch (orbUri.protocol) {
+    case "memory:":
+        return memory.Orb();
+    case "file:":
+    case "dir:":
+        return require("./dir").Orb(orbUri.pathname);
+    case "mongodb:":
+        var collection = orbUri.hash ? orbUri.hash.substring(1) : undefined;
+        var href = url.format(
+            Object.create(orbUri, {hash: {value: undefined}}));
+        return require("./mongodb").Orb(href, collection);
+    }
+    return memory.Orb();
 };
 
 exports.Entry = memory.Entry;
