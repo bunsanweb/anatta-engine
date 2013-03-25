@@ -40,7 +40,7 @@ var readEntry = function (filename) {
     var filepath = path.join(this.dir, filename);
     var d = q.defer();
     fs.readFile(filepath, "utf8", function (err, json) {
-        if (err) d.resolve(null);
+        if (err) return d.resolve(null);
         var entry = memory.Entry.fromJson(json);
         d.resolve(entry);
     });
