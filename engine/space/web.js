@@ -11,7 +11,7 @@ var conftree = require("../conftree");
 
 var WebField = function WebField(opts) {
     return Object.create(WebField.prototype, {
-        opts: {value: conftree.create(opts, {})},
+        opts: {value: conftree.create(opts, {rejectUnauthorized: false})},
     });
 };
 WebField.prototype.access = function (request) {
@@ -19,6 +19,7 @@ WebField.prototype.access = function (request) {
     var opts = url.parse(request.href);
     opts.method = request.method;
     opts.headers = request.headers;
+    opts.rejectUnauthorized = this.opts.rejectUnauthorized;
     var req = protocols[opts.protocol].request(opts, function (res) {
         var chunks = [];
         res.on("data", chunks.push.bind(chunks));
