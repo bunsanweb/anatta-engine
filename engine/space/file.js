@@ -5,6 +5,7 @@ var fs = require("fs");
 var path = require("path");
 var conftree = require("../conftree");
 var core = require("./core");
+var mime = require("./mime");
 
 var FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
@@ -73,7 +74,7 @@ var getContent = function (request, pathname, stat) {
         return [request, notModified()];
     }
     var d = q.defer();
-    var type = contentType(pathname);
+    var type = mime.contentType(pathname);
     fs.readFile(pathname, function (err, data) {
         if (err) return d.resolve(core.FieldUtil.error(request, "", "404"));
         var response = core.Response("200", {
@@ -105,24 +106,6 @@ var parseCacheControl = function (cachecontrol) {
         cc[kv[0].trim().toLowerCase()] = kv[1] ? kv[1].trim() : true;
     });
     return cc;
-};
-
-
-var mimeTypes = {
-    "js": "application/javascript",
-    "json": "application/json",
-    "html": "text/html",
-    "xml": "application/xml",
-    "atom": "application/atom+xml",
-    "css": "text/css",
-    "png": "image/png",
-};
-
-var contentType = function (pathname, charset) {
-    var ext = path.extname(pathname).substring(1);
-    var mimeType = mimeTypes[ext] || "application/octet-stream";
-    if (mimeType.indexOf("text/") !== 0) return mimeType;
-    return mimeType + "; charset=" + (charset || "UTF-8");
 };
 
 exports.FileField = FileField;
