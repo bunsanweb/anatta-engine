@@ -9,7 +9,10 @@ var clientCacheValid = function (request, timestamp) {
     var since = request.headers["if-modified-since"];
     if (cc["no-cache"] || cc["no-store"] || !since) return false;
     var sinceDate = new Date(since);
-    if (timestamp <= sinceDate) return true;
+    // drop msec from timestamp
+    var ts = new Date(timestamp.getTime());
+    ts.setMilliseconds(0);
+    if (ts <= sinceDate) return true;
     return false;
 };
 var parseCacheControl = function (cachecontrol) {

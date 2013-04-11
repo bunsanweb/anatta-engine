@@ -5,6 +5,7 @@ var q = require("q");
 
 var space = {
     core: require("../space/core"),
+    cachecontrol: require("../space/cachecontrol"),
 };
 var conftree = require("../conftree");
 var memory = require("./memory");
@@ -12,7 +13,7 @@ var memory = require("./memory");
 var OrbField = function OrbField(opts) {
     var orb = systemOrb();
     return Object.create(OrbField.prototype, {
-        opts: {value: conftree.create(opts, {})},
+        opts: {value: conftree.create(opts, {cache: false})},
         orb: {value: orb, writable: true},
     });
 };
@@ -24,8 +25,14 @@ OrbField.prototype.access = function (request) {
 };
 
 var accessGet = function (request) {
+    var self = this;
     return this.orb.get(request.location.pathname).then(function (entry) {
         if (!entry) return [request, space.core.Response("404", {})];
+        if (self.opts.cache &&
+            space.cachecontrol.clientCacheValid(request, entry.timestamp)) {
+            // TBD: add ETag compare
+            return [request, space.cachecontrol.NotModified];
+        }
         return [request, space.core.Response("200", {
             "content-type": entry.type,
             "last-modified": entry.timestamp.toUTCString(),
