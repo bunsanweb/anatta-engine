@@ -6,6 +6,7 @@ var path = require("path");
 var conftree = require("../conftree");
 var core = require("./core");
 var mime = require("./mime");
+var cachecontrol = require("./cachecontrol");
 
 var FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
@@ -70,8 +71,9 @@ var getIndex = function (request, pathname, stat) {
 
 var getContent = function (request, pathname, stat) {
     var self = this;
-    if (self.opts.cache && clientCacheValid(request, stat)) {
-        return [request, notModified()];
+    if (self.opts.cache &&
+        cachecontrol.clientCacheValid(request, stat.mtime)) {
+        return [request, cachecontrol.NotModified];
     }
     var d = q.defer();
     var type = mime.contentType(pathname);
@@ -87,6 +89,7 @@ var getContent = function (request, pathname, stat) {
     return d.promise;
 };
 
+/*
 var notModified = function () {
     return core.Response("304", {}, "");
 };
@@ -107,5 +110,6 @@ var parseCacheControl = function (cachecontrol) {
     });
     return cc;
 };
+*/
 
 exports.FileField = FileField;
