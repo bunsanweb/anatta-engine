@@ -8,7 +8,10 @@ var core = require("./core");
 
 var FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
-        opts: {value: conftree.create(opts, {root: "", prefix: ""})},
+        opts: {value: conftree.create(opts, {
+            root: "", prefix: "",
+            cache: false,
+        })},
     });
 };
 FileField.prototype.access = function (request) {
@@ -19,7 +22,7 @@ FileField.prototype.access = function (request) {
         var prefix = RegExp("^" + this.opts.prefix);
         var relPath = request.location.pathname.replace(prefix, "");
         var pathname = path.resolve(this.opts.root, relPath);
-        return getPath(request, pathname);
+        return getPath.call(this, request, pathname);
     } catch (ex) {
         if (ex.name === "AssertionError") throw ex;
         return core.FieldUtils.error(request, ex, "404");
@@ -27,14 +30,15 @@ FileField.prototype.access = function (request) {
 };
 
 var getPath = function (request, pathname) {
+    var self = this;
     var d = q.defer();
     fs.stat(pathname, function (err, stat) {
         if (err) {
             return d.resolve(core.FieldUtils.error(request, err, "404"));
         } else if (stat.isDirectory()) {
-            return d.resolve(getIndex(request, pathname, stat));
+            return d.resolve(getIndex.call(self, request, pathname, stat));
         } else if (stat.isFile()) {
-            return d.resolve(getContent(request, pathname, stat));
+            return d.resolve(getContent.call(self, request, pathname, stat));
         }
         return d.reject(err);
     });
@@ -42,21 +46,32 @@ var getPath = function (request, pathname) {
 };
 
 var getIndex = function (request, pathname, stat) {
+    var self = this;
     var d = q.defer();
     fs.readdir(pathname, function (err, names) {
         if (err) return d.resolve(core.FieldUtil.error(request, "", "404"));
         for (var i = 0; i < names.length; i++) {
-            if (names[i].match(/^index\./)) {
-                var indexPath = path.resolve(pathname, names[i]);
-                return d.resolve(getContent(request, indexPath, stat));
-            }
+            if (!names[i].match(/^index\./)) continue;
+            var indexPath = path.resolve(pathname, names[i]);
+            return fs.stat(indexPath, function (err, stat) {
+                if (err || !stat.isFile()) {
+                    var reqres = core.FieldUtils.error(request, err, "404");
+                    return d.resolve(reqres);
+                }
+                return d.resolve(
+                    getContent.call(self, request, indexPath, stat));
+            });
         }
-        return d.resolve(core.FieldUtil.error(request, "", "404"));
+        return d.resolve(core.FieldUtils.error(request, "", "404"));
     });
     return d.promise;
 };
 
 var getContent = function (request, pathname, stat) {
+    var self = this;
+    if (self.opts.cache && clientCacheValid(request, stat)) {
+        return [request, notModified()];
+    }
     var d = q.defer();
     var type = contentType(pathname);
     fs.readFile(pathname, function (err, data) {
@@ -70,6 +85,28 @@ var getContent = function (request, pathname, stat) {
     });
     return d.promise;
 };
+
+var notModified = function () {
+    return core.Response("304", {}, "");
+};
+var clientCacheValid = function (request, stat) {
+    var cc = parseCacheControl(request.headers["cacne-control"]);
+    var since = request.headers["if-modified-since"];
+    if (cc["no-cache"] || cc["no-store"] || !since) return false;
+    var sinceDate = new Date(since);
+    if (stat.mtime <= sinceDate) return true;
+    return false;
+};
+var parseCacheControl = function (cachecontrol) {
+    if (!cachecontrol) return {};
+    var cc = {};
+    cachecontrol.split(/;/).forEach(function (elem) {
+        var kv = elem.split(/=/);
+        cc[kv[0].trim().toLowerCase()] = kv[1] ? kv[1].trim() : true;
+    });
+    return cc;
+};
+
 
 var mimeTypes = {
     "js": "application/javascript",
