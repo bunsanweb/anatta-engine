@@ -46,6 +46,18 @@ var bindApi = function (agent) {
     window.clearTimeout = clearTimeout;
     window.setInterval = setInterval
     window.clearInterval = clearInterval;
+    // Typed Array
+    window.ArrayBuffer = ArrayBuffer;
+    window.DataView = DataView;
+    window.Int8Array = Int8Array;
+    window.Int16Array = Int16Array;
+    window.Int32Array = Int32Array;
+    window.Uint8Array = Uint8Array;
+    window.Uint8ClampedArray = Uint8ClampedArray;
+    window.Uint16Array = Uint16Array;
+    window.Uint32Array = Uint32Array;
+    window.Float32Array = Float32Array;
+    window.Float64Array = Float64Array;
 };
 
 var loaded = function (agent) {
