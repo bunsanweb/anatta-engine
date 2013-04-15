@@ -92,7 +92,7 @@ var fusion = (function () {
         html: "innerHTML",
         "class": "className",
     };
-    var htmlAttrs = ["id", "title", "href", "src"];
+    var htmlAttrs = ["id", "title", "lang", "rel"];
 
     var pickDesc = function (elem) {
         // data-fusion="key1:value1,key2:value2" => {key1:value1, key2:value2}
@@ -101,7 +101,7 @@ var fusion = (function () {
         return src.split(/\s*,\s*/).reduce(function (desc, kvstr) {
             var kv = kvstr.split(/\s*:\s*/);
             if (!kv[0]) return desc;
-            desc[kv[0].toLowerCase()] = kv[1].toLowerCase();
+            desc[kv[0].toLowerCase()] = kv[1];
             return desc;
         }, {});
     };
