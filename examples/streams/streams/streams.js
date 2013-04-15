@@ -1,0 +1,216 @@
+var Streams = function () {
+    "use strict";
+    
+    var orbUri = "orb:/";
+    var selector = {
+        entries: "[rel=entry]",
+    };
+    var entriesMax = 20;
+    var waitRefresh = 500;
+    var createDocument = function (title) {
+        return document.implementation.createHTMLDocument(title);
+    };
+    
+    var onGet = function (ev) {
+        var pathname = ev.detail.request.location.pathname;
+        var id = pathname.match(/\/([^\/]+)$/);
+        if (id) return respondActivity(ev, id[1]);
+        return getIndexDoc().then(function (index) {
+            var view = renderMessage(ev.detail.request, index);
+            return respondMessage(ev, view);
+        }).fail(function (err) {
+            console.log(err.stack);
+        });
+    };
+    
+    var respondActivity = function (ev, id) {
+        var activityUri = anatta.builtin.url.resolve(orbUri, id);
+        var link = anatta.engine.link({href: activityUri});
+        return link.get().then(function (entity) {
+            var res = entity.response;
+            return ev.detail.respond(res.status, res.headers, res.body);
+        });
+    };
+    
+    var getIndexDoc = function () {
+        var indexUri = orbUri;
+        var link = anatta.engine.link({href: indexUri});
+        return link.get().then(function (entity) {
+            if (entity.response.status == "200") return {
+                doc: entity.html,
+                date: new Date(entity.response.headers["last-modified"]),
+            };
+            return {
+                doc: emptyIndex(),
+                date: new Date(0),
+            };
+        });
+    };
+    var emptyIndex = function () {
+        return createDocument("activity index");
+    };
+    var respondMessage = function (ev, view) {
+        ev.detail.respond("200", {
+            "content-type": "text/html;charset=utf-8",
+            "last-modified": view.date.toUTCString(),
+        }, "<!doctype html>" + view.doc.outerHTML);
+    };
+    
+    var renderMessage = function (req, index) {
+        if (req.location.query.backward) return renderBackward(req, index);
+        if (req.location.query.refresh) return renderRefresh(req, index);
+        return renderHead(req, index);
+    };
+    var renderHead = function (req, index) {
+        var count = req.location.query.count || entriesMax;
+        var all = index.doc.querySelectorAll(selector.entries);
+        var entries = Array.prototype.slice.call(all, 0, count);
+        return render(req, index, entries);
+    };
+    var renderRefresh = function (req, index) {
+        // from head to refresh id;
+        var count = req.location.query.count || entriesMax;
+        var id = req.location.query.refresh;
+        var all = index.doc.querySelectorAll(selector.entries);
+        var last = count;
+        for (var i = 0; i < all.length; i++) {
+            if (i >= count) break;
+            if (all[i].id === id) {
+                last = i;
+                break;
+            }
+        }
+        var entries = Array.prototype.slice.call(all, 0, last);
+        return render(req, index, entries);
+    };
+    var renderBackward = function (req, index) {
+        // from backward id (to until id)
+        var count = req.location.query.count || entriesMax;
+        var id = req.location.query.backward;
+        var until = req.location.query.until;
+        var entries = [];
+        var cursor = index.doc.querySelector("#" + id);
+        if (cursor) {
+            for (var entry = cursor.nextSibling, size = 0;
+                 entry && size < count;
+                 entry = entry.nextSibling, size++) {
+                if (entry.id === until) break;
+                entries.push(entry);
+            }
+        }
+        return render(req, index, entries);
+    };
+    var render = function (req, index, entries) {
+        var loc = req.location;
+        var pathname = loc.pathname;
+        var doc = createDocument("activity stream");
+        var meta = createMeta(doc, "wait", waitRefresh);
+        doc.head.appendChild(meta);
+        var refresh = createLink(doc, "refresh", pathname);
+        doc.head.appendChild(refresh);
+        var backward = createLink(doc, "backward", pathname);
+        doc.head.appendChild(backward);
+        if (entries.length == 0) return {doc: doc, date: index.date};
+        
+        var queries = linkQuery(req, entries);
+        refresh.setAttribute("href", queryHref(req, queries.refresh));
+        backward.setAttribute("href", queryHref(req, queries.backward));
+        
+        var main = doc.createElement("main");
+        doc.body.appendChild(main);
+        entries.forEach(function (entry) {
+            main.appendChild(doc.importNode(entry, true));
+        });
+        
+        return {doc: doc, date: index.date};
+    };
+    
+    // Spec of message links
+    // req: "/"
+    // - refresh: "/?refresh=first.id"
+    // - backward: "/?backward=last.id&refresh=first.id"
+    //
+    // req: "/?refresh=rid"
+    // - refresh: "/?refresh=first.id"
+    // - backward: "/?backward=last.id&until=rid&refresh=first.id"
+    //
+    // req: "/?backward=bid&refresh=rid"
+    // - refresh: "/?refresh=rid"
+    // - backward: "/?backward=last.id&refresh=rid"
+    //
+    // req: "/?backward=bid&until=uid&refresh=rid"
+    // - refresh: "/?refresh=rid"
+    // - backward: "/?backward=last.id&until=uid&refresh=rid"
+    var linkQuery = function (req, entries) {
+        var first = entries[0];
+        var last = entries[entries.length - 1];
+        var query = req.location.query;
+        var count = query.count || entriesMax;
+        if (query.backward && query.until && query.refresh) return {
+            refresh: {
+                count: count,
+                refresh: query.refresh,
+            },
+            backward: {
+                backward: last.id,
+                count: count,
+                refresh: query.refresh,
+                until: query.until,
+            },
+        };
+        if (query.backward && query.refresh) return {
+            refresh: {
+                count: count,
+                refresh: query.refresh,
+            },
+            backward: {
+                backward: last.id,
+                count: count,
+                refresh: query.refresh,
+            },
+        };
+        if (query.refresh) return {
+            refresh: {
+                count: count,
+                refresh: first.id,
+            },
+            backward: {
+                backward: last.id,
+                count: count,
+                refresh: first.id,
+                until: query.refresh,
+            },
+        };
+        return {
+            refresh: {
+                count: count,
+                refresh: first.id,
+            },
+            backward: {
+                backward: last.id,
+                count: count,
+                refresh: first.id,
+            },
+        };
+    };
+    var createMeta = function (doc, name, content) {
+        var meta = doc.createElement("meta");
+        meta.name = name;
+        meta.content = content;
+        return meta;
+    };
+    var createLink = function (doc, rel, href) {
+        var link = doc.createElement("link");
+        link.rel = rel;
+        link.setAttribute("href", href);
+        return link;
+    };
+    var queryHref = function (req, query) {
+        return anatta.builtin.url.format(
+            {pathname: req.location.pathname, query: query});
+    };
+    
+    return {
+        get: onGet,
+    };
+};

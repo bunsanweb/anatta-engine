@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>streams agent</title>
+<script src="/shared/contrib/fusion.js"></script>
+<script src="streams.js"></script>
+<script src="orbstream.js"></script>
+<script src="script.js"></script>
+</head>
+<body>
+
+<article id="entryTemplate" rel="entry" data-fusion="id: id">
+  <h1>
+    <span rel="action" data-fusion="text: action">tweet</span> by
+    <a rel="actor" href="http://twitter.com/taro"
+       data-fusion="href: actorHref, text: actorName">@taro</a>
+  </h1>
+  <div>
+    <a rel="target" href="http://nodejs.org/"
+       data-fusion="href: targetHref, text: targetName"
+       >http://nodejs.org/</a>
+    : <span rel="tag"
+            data-fusion="text: tag">nodejs javascript programming</span>
+    at <a rel="origin" href="act-00" data-fusion="href: id">
+      <span rel="date" data-fusion="text: date"
+            >Wed, 27 Mar 2013 06:41:33 GMT</span>
+    </a>
+  </div>
+</article>
+
+<article id="activityTemplate" rel="activity" data-fusion="id: id">
+  <h1>
+    <span rel="action" data-fusion="text: action">tweet</span> by
+    <a rel="actor" href="http://twitter.com/taro"
+       data-fusion="href: actorHref, text: actorName">@taro</a>
+  </h1>
+  <footer>
+    <a rel="target" href="http://nodejs.org/"
+       data-fusion="href: targetHref, text: targetName"
+       >http://nodejs.org/</a>
+    : <span rel="tag"
+               data-fusion="text: tag">nodejs javascript programming</span>
+    at <span rel="date"
+             data-fusion="text: date">Wed, 27 Mar 2013 06:41:33 GMT</span>
+  </footer>
+  <div rel="content" data-fusion="text: content">...</div>
+</article>
+
+</body>
+</html>
