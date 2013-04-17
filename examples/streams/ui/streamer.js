@@ -1,6 +1,58 @@
 var Streamer = (function () {
     "use strict";
     
+    // Streamer that provides single layer view of chain streamer
+    var Linear = function Linear(opts) {
+        var opts = merge(opts, {});
+        var chain = Chain(opts);
+        var self = Object.create(Chain.prototype, {
+            opts: {value: opts},
+            chain: {value: chain},
+            layers: {value: []},
+            handlers: {value: {
+                update: function (currentEntries, oldEntries) {},
+            }},
+        });
+        // chain event handling
+        chain.on("arrive", linear.arrive.bind(self));
+        return self;
+    };
+    Linear.prototype.on = function (name, handler) {
+        this.handlers[name] = handler;
+    };
+    Linear.prototype.action = function (name) {
+        return this[name].bind(this);
+    };
+    Linear.prototype.load = function () {
+        return this.chain.load();
+    };
+    var linear = {
+        arrive: function (layerIndex, entries, full) {
+            var old = linear.asList.call(this);
+            this.laysers[layerIndex] = full;
+            var current = linear.asList.call(this);
+            // TBD: more detailed event
+            this.handlers.update.call(this, current, old);
+        },
+        asList: function () {
+            if (this.layers.length === 0) return [];
+            var ret = this.layers[this.layers.length - 1];
+            for (var index = this.layers.length - 2; index >= 0; index--) {
+                var cur = this.layers[index];
+                var head = cur.length;
+                for (var i = 0; i < cur.length; i++) {
+                    if (ret.some(function (e) {
+                        return e.id === cur[i].id;
+                    })) continue;
+                    head = i;
+                    break;
+                }
+                ret = ret.concat(cur.slice(head));
+            }
+            return ret;
+        },
+    };
+    
     // Streamer that chained Fragment streamers
     var Chain = function Chain(opts) {
         var opts = merge(opts, {});
