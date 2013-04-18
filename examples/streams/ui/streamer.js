@@ -5,12 +5,13 @@ var Streamer = (function () {
     var Linear = function Linear(opts) {
         var opts = merge(opts, {});
         var chain = Chain(opts);
-        var self = Object.create(Chain.prototype, {
+        var self = Object.create(Linear.prototype, {
             opts: {value: opts},
             chain: {value: chain},
             layers: {value: []},
+            entries: {value: [], writable: true},
             handlers: {value: {
-                update: function (currentEntries, oldEntries) {},
+                update: function (updateEntries, positionEntry) {},
             }},
         });
         // chain event handling
@@ -26,13 +27,43 @@ var Streamer = (function () {
     Linear.prototype.load = function () {
         return this.chain.load();
     };
+    Linear.prototype.refresh = function () {
+        return this.chain.refresh();
+    };
+    Linear.prototype.backward = function () {
+        return this.chain.backward();
+    };
     var linear = {
         arrive: function (layerIndex, entries, full) {
-            var old = linear.asList.call(this);
-            this.laysers[layerIndex] = full;
-            var current = linear.asList.call(this);
-            // TBD: more detailed event
-            this.handlers.update.call(this, current, old);
+            var isRefresh = !this.layers[layerIndex];
+            this.layers[layerIndex] = full;
+            var old = this.entries;
+            this.entries = linear.asList.call(this);
+            // find pos that is the first overwrapped element in old entries
+            // for each entries as entry:
+            //     when !pos: col.appendChild(entry);
+            //     when pos.id !== entry.id: col.insertBefore(entry, pos);
+            //     when pos.id === entry.id: col.replaceChild(entry, pos);
+            //     pos = entry.nextSibling;
+            var pos = null;
+            if (isRefresh) {
+                if (old.length > 0) {
+                    for (var i = 0; i < entries.length; i++) {
+                        if (entries[i].id === old[0].id) {
+                            pos = old[0];
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (var i = 0; i < this.entries.length; i++) {
+                    if (this.entries[i].id === entries[0].id) {
+                        pos = old[i] || null;
+                        break;
+                    }
+                }
+            }
+            this.handlers.update.call(this, entries, pos);
         },
         asList: function () {
             if (this.layers.length === 0) return [];
@@ -73,8 +104,8 @@ var Streamer = (function () {
     };
     Chain.prototype.load = function () {
         var first = Fragment(this.opts);
-        chain.bindChain.call(this, first);
         this.fragments.push(first);
+        chain.bindChain.call(this, first);
         first.load();
     };
     Chain.prototype.refresh = function () {
@@ -87,16 +118,16 @@ var Streamer = (function () {
         bindChain: function (fragment) {
             var self = this;
             var refreshedOnce = false;
+            var index = self.fragments.indexOf(fragment);
             fragment.on("arrive", function (entries) {
-                var index = self.fragments.indexOf(fragment);
                 self.handlers.arrive.call(
                     self, index, entries, fragment.entries);
             });
             fragment.on("refresh", function (fragment) {
                 if (refreshedOnce) return;
                 refreshedOnce = true;
-                chain.bindChain.call(self, fragment);
                 self.fragments.push(fragment);
+                chain.bindChain.call(self, fragment);
                 fragment.load();
             });
         },
@@ -296,5 +327,6 @@ var Streamer = (function () {
         Basic: Basic,
         Fragment: Fragment,
         Chain: Chain,
+        Linear: Linear,
     };
 })();
