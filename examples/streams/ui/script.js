@@ -26,4 +26,6 @@ window.addEventListener("load", function (ev) {
     post.onSuccess = function (ev) {
         streamer.refresh();
     };
+    
+    //setInterval(streamer.refresh.bind(streamer), 500);
 }, false);

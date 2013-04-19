@@ -211,7 +211,7 @@ var Streamer = (function () {
             link: {value: {refresh: opts.uri, backward: opts.uri}},
             wait: {value: 500, writable: true},
             last: {value: new Date(0), writable: true},
-            lane: {value: Q.resolve(""), writable: true},
+            lane: {value: platform.q.resolve(""), writable: true},
             handlers: {value: {
                 load: function (date, entries) {},
                 refresh: function (date, newEntries, oldEntries) {},
@@ -241,31 +241,31 @@ var Streamer = (function () {
         }.bind(this));
     };
     var basic = {
-        onLoad: function (req) {
-            var msg = basic.accept.call(this, req);
+        onLoad: function (reqres) {
+            var msg = basic.accept.call(this, reqres);
             this.handlers.load.call(this, this.last, msg.entries);
         },
-        onRefresh: function (req) {
-            var msg = basic.accept.call(this, req);
+        onRefresh: function (reqres) {
+            var msg = basic.accept.call(this, reqres);
             this.handlers.refresh.call(this, this.last, msg.entries);
         },
-        onBackward: function (req) {
-            var msg = basic.accept.call(this, req);
+        onBackward: function (reqres) {
+            var msg = basic.accept.call(this, reqres);
             this.handlers.backward.call(this, this.last, msg.entries);
         },
-        accept: function (req) {
-            var modified = req.getResponseHeader("last-modified");
+        accept: function (reqres) {
+            var modified = platform.responseHeader(reqres, "last-modified");
             var date = modified ? new Date(modified) : new Date();
             this.last = date;
-            var msg = parseMessage.call(this, req);
+            var msg = parseMessage.call(this, reqres);
             if (msg.refresh) this.link.refresh = msg.refresh.href;
             if (msg.backward) this.link.backward = msg.backward.href;
             return msg;
         },
     };
     
-    var parseMessage = function (req) {
-        var doc = createHtml(req);
+    var parseMessage = function (reqres) {
+        var doc = platform.createHtml(reqres);
         return {
             entries: Array.prototype.slice.call(
                 doc.querySelectorAll(this.opts.selectors.entries)),
@@ -274,31 +274,8 @@ var Streamer = (function () {
         };
     };
     
-    var createHtml = function (req) {
-        var doc = document.implementation.createHTMLDocument("");
-        doc.documentElement.innerHTML = req.responseText;
-        var link = document.createElement("link");
-        link.href = req.href;
-        var base = doc.createElement("base");
-        base.href = link.href;
-        doc.head.appendChild(base);
-        return doc;
-    };
-    
     var get = function (uri) {
-        var d = Q.defer();
-        var req = new XMLHttpRequest();
-        req.href = uri;
-        req.addEventListener("load", function () {
-            d.resolve(req);
-        }, false);
-        req.addEventListener("error", function () {
-            d.reject(new Error(req.status));
-        }, false);
-        req.open("GET", uri, true);
-        req.setRequestHeader("cache-control", "no-cache");
-        req.send();
-        return d.promise;
+        return platform.get(uri);
     };
     
     var merge = function merge(base, support) {
@@ -323,6 +300,76 @@ var Streamer = (function () {
         });
         return cloned;
     };
+    
+    // platforms
+    var platforms = {
+        browser: {
+            get q() {
+                return Q;
+            },
+            responseHeader: function (reqres, key) {
+                return reqres.getResponseHeader(key);
+            },
+            createHtml: function (reqres) {
+                var doc = document.implementation.createHTMLDocument("");
+                doc.documentElement.innerHTML = reqres.responseText;
+                var link = document.createElement("link");
+                link.href = reqres.href;
+                var base = doc.createElement("base");
+                base.href = link.href;
+                doc.head.appendChild(base);
+                return doc;
+            },
+            get: function (uri) {
+                var d = Q.defer();
+                var req = new XMLHttpRequest();
+                req.href = uri;
+                req.addEventListener("load", function () {
+                    d.resolve(req);
+                }, false);
+                req.addEventListener("error", function () {
+                    d.reject(new Error(req.status));
+                }, false);
+                req.open("GET", uri, true);
+                req.setRequestHeader("cache-control", "no-cache");
+                req.send();
+                return d.promise;
+            },
+        },
+        agent: {
+            get q() {
+                return anatta.q;
+            },
+            responseHeader: function (reqres, key) {
+                return res.headers[key];
+            },
+            createHtml: function (reqres) {
+                var req = reqres[0], res = reqres[1];
+                var doc = document.implementation.createHTMLDocument("");
+                doc.innerHTML = res.text();
+                doc._URL = req.href;
+                return doc;
+            },
+            get: function (uri) {
+                var space = anatta.engine.space;
+                var req = space.request("GET", uri, {
+                    "cache-control": "no-cache",
+                });
+                return space.access(req).spread(function (req, res) {
+                    if (res.status[0] !== "2") throw new Error(res.statusText);
+                    return [req, res];
+                });
+            },
+        },
+    };
+    
+    var platform = (function () {
+        if (typeof window === "object" && typeof window.anatta === "object" &&
+            window.anatta.engine) {
+            return platforms.agent;
+        }
+        return platforms.browser;
+    })();
     
     return {
         Basic: Basic,
