@@ -1,13 +1,6 @@
 var OrbStream = function (opts) {
     "use strict";
     
-    var orbUri = "orb:/";
-    var entryTemplate = document.querySelector("#entryTemplate");
-    var activityTemplate = document.querySelector("#activityTemplate");
-    var createDocument = function (title) {
-        return document.implementation.createHTMLDocument(title);
-    };
-    
     var taskLane = anatta.q.resolve({});
     var onPost = function (ev) {
         var data = anatta.form.decode(ev.detail.request);
@@ -17,24 +10,29 @@ var OrbStream = function (opts) {
             return storeActivity(activity, info);
         }).then(getIndex).then(function (index) {
             return updateIndex(index, info);
-        }).fail(console.log);
-        // async no-wait
-        return ev.detail.respond("201", {}, "");
+        }).then(function () {
+            var loc = anatta.builtin.url.resolve(
+                ev.detail.request.origin().href, info.id);
+            return ev.detail.respond("303", {location: loc});
+        }, function (err) {
+            console.log(err.stack);
+            return ev.detail.respond("500", {}, "");
+        });
     };
     
     var updateIndex = function (index, info) {
         var rellink = info.id;
         var doc = index.html;
-        var entry = fusion(info, entryTemplate, doc);
+        var entry = fusion(info, opts.entryTemplate, doc);
         // insert arrived activity to head of index
         doc.body.insertBefore(entry, doc.body.firstChild);
-        var indexUri = orbUri;
+        var indexUri = opts.href;
         var link = anatta.engine.link({href: indexUri});
         return putDoc(link, doc);
     };
     
     var getIndex = function () {
-        var indexUri = orbUri;
+        var indexUri = opts.href;
         var link = anatta.engine.link({href: indexUri});
         return link.get().then(function (entity) {
             if (entity.response.status == "200") return entity;
@@ -43,7 +41,7 @@ var OrbStream = function (opts) {
     };
     
     var emptyIndex = function () {
-        return createDocument("activity index");
+        return opts.createDocument("activity index");
     };
     
     var putDoc = function (link, doc) {
@@ -57,14 +55,14 @@ var OrbStream = function (opts) {
     };
     
     var storeActivity = function (activity, info) {
-        var storeUri = anatta.builtin.url.resolve(orbUri, info.id);
+        var storeUri = anatta.builtin.url.resolve(opts.href, info.id);
         return putDoc(anatta.engine.link({href: storeUri}), activity);
     };
     
     var makeActivity = function (info) {
-        var doc = createDocument("activity");
-        var article = fusion(info, activityTemplate, doc);
-        console.log(article.outerHTML);
+        var doc = opts.createDocument("activity");
+        var article = fusion(info, opts.activityTemplate, doc);
+        //console.log(article.outerHTML);
         doc.body.appendChild(article);
         return doc;
     };

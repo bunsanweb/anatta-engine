@@ -11,7 +11,7 @@ var Streamer = (function () {
             layers: {value: []},
             entries: {value: [], writable: true},
             handlers: {value: {
-                update: function (updateEntries, positionEntry) {},
+                update: function (updateEntries, positionEntry, isBackward) {},
             }},
         });
         // chain event handling
@@ -35,7 +35,7 @@ var Streamer = (function () {
     };
     var linear = {
         arrive: function (layerIndex, entries, full) {
-            var isRefresh = !this.layers[layerIndex];
+            var isBackward = !!this.layers[layerIndex];
             this.layers[layerIndex] = full;
             var old = this.entries;
             this.entries = linear.asList.call(this);
@@ -46,24 +46,15 @@ var Streamer = (function () {
             //     when pos.id === entry.id: col.replaceChild(entry, pos);
             //     pos = entry.nextSibling;
             var pos = null;
-            if (isRefresh) {
-                if (old.length > 0) {
-                    for (var i = 0; i < entries.length; i++) {
-                        if (entries[i].id === old[0].id) {
-                            pos = old[0];
-                            break;
-                        }
-                    }
-                }
+            if (isBackward) {
+                var index = indexOf(this.entries, function (e) {
+                    return e.id === entries[0].id;
+                });
+                pos = index >= 0 ? old[index] : null;
             } else {
-                for (var i = 0; i < this.entries.length; i++) {
-                    if (this.entries[i].id === entries[0].id) {
-                        pos = old[i] || null;
-                        break;
-                    }
-                }
+                pos = old.length > 0 ?  old[0] : null;
             }
-            this.handlers.update.call(this, entries, pos);
+            this.handlers.update.call(this, entries, pos, isBackward);
         },
         asList: function () {
             if (this.layers.length === 0) return [];
@@ -166,7 +157,7 @@ var Streamer = (function () {
     };
     Fragment.prototype.refresh = function () {
         var uri = this.basic.link.refresh;
-        var opts = merge(this.opts, {uri: uri});
+        var opts = merge({uri: uri}, this.opts);
         this.handlers.refresh.call(this, Fragment(opts));
     };
     var fragment = {
@@ -299,6 +290,12 @@ var Streamer = (function () {
             cloned[key] = clone(obj[key]);
         });
         return cloned;
+    };
+    var indexOf = function (array, cond) {
+        for (var i = 0; i < array.length; i++) {
+            if (cond(array[i])) return i;
+        }
+        return -1;
     };
     
     // platforms
