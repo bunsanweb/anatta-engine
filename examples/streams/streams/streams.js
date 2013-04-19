@@ -110,7 +110,6 @@ var Streams = function () {
         doc.head.appendChild(refresh);
         var backward = createLink(doc, "backward", pathname);
         doc.head.appendChild(backward);
-        if (entries.length == 0) return {doc: doc, date: index.date};
         
         var queries = linkQuery(req, entries);
         refresh.setAttribute("href", queryHref(req, queries.refresh));
@@ -122,77 +121,92 @@ var Streams = function () {
             main.appendChild(doc.importNode(entry, true));
         });
         
+        // for debug
+        var div = doc.createElement("div");
+        var refrA = doc.createElement("a");
+        refrA.setAttribute("href", refresh.getAttribute("href"));
+        refrA.textContent = "refresh";
+        var backA = doc.createElement("a");
+        backA.setAttribute("href", backward.getAttribute("href"));
+        backA.textContent = "backward";
+        div.appendChild(refrA);
+        div.appendChild(doc.createTextNode("|"));
+        div.appendChild(backA);
+        doc.body.appendChild(div);
+        
         return {doc: doc, date: index.date};
     };
     
     // Spec of message links
-    // req: "/"
-    // - refresh: "/?refresh=first.id"
-    // - backward: "/?backward=last.id&refresh=first.id"
-    //
-    // req: "/?refresh=rid"
-    // - refresh: "/?refresh=first.id"
-    // - backward: "/?backward=last.id&until=rid&refresh=first.id"
-    //
-    // req: "/?backward=bid&refresh=rid"
-    // - refresh: "/?refresh=rid"
-    // - backward: "/?backward=last.id&refresh=rid"
-    //
-    // req: "/?backward=bid&until=uid&refresh=rid"
-    // - refresh: "/?refresh=rid"
-    // - backward: "/?backward=last.id&until=uid&refresh=rid"
     var linkQuery = function (req, entries) {
-        var first = entries[0];
-        var last = entries[entries.length - 1];
         var query = req.location.query;
-        var count = query.count || entriesMax;
-        if (query.backward && query.until && query.refresh) return {
-            refresh: {
-                count: count,
-                refresh: query.refresh,
-            },
-            backward: {
-                backward: last.id,
-                count: count,
-                refresh: query.refresh,
-                until: query.until,
-            },
-        };
-        if (query.backward && query.refresh) return {
-            refresh: {
-                count: count,
-                refresh: query.refresh,
-            },
-            backward: {
-                backward: last.id,
-                count: count,
-                refresh: query.refresh,
-            },
-        };
-        if (query.refresh) return {
-            refresh: {
-                count: count,
-                refresh: first.id,
-            },
-            backward: {
-                backward: last.id,
-                count: count,
-                refresh: first.id,
-                until: query.refresh,
-            },
-        };
-        return {
-            refresh: {
-                count: count,
-                refresh: first.id,
-            },
-            backward: {
-                backward: last.id,
-                count: count,
-                refresh: first.id,
-            },
-        };
+        var c = query.count || entriesMax;
+        var bid = query.backward;
+        var uid = query.until;
+        var rid = query.refresh;
+        if (entries.length) {
+            var fid = entries[0].id;
+            var lid = entries[entries.length - 1].id;
+            // req: "/?backward=bid&until=uid&refresh=rid"
+            // - refresh: "/?refresh=rid"
+            // - backward: "/?backward=last.id&until=uid&refresh=rid"
+            if (bid && rid && uid) return {
+                refresh: {count: c, refresh: rid},
+                backward: {count: c, backward: lid, refresh: rid, until: uid},
+            };
+            // req: "/?backward=bid&refresh=rid"
+            // - refresh: "/?refresh=rid"
+            // - backward: "/?backward=last.id&refresh=rid"
+            if (bid && rid) return {
+                refresh: {count: c, refresh: rid},
+                backward: {count: c, backward: lid, refresh: rid},
+            };
+            // req: "/?refresh=rid"
+            // - refresh: "/?refresh=first.id"
+            // - backward: "/?backward=last.id&until=rid&refresh=first.id"
+            if (rid) return {
+                refresh: {count: c, refresh: fid},
+                backward: {count: c, backward: lid, refresh: fid, until: rid},
+            };
+            // req: "/"
+            // - refresh: "/?refresh=first.id"
+            // - backward: "/?backward=last.id&refresh=first.id"
+            return {
+                refresh: {count: c, refresh: fid},
+                backward: {count: c, backward: lid, refresh: fid},
+            };
+        } else {// when empty message
+            // req: "/?backward=bid&until=uid&refresh=rid"
+            // - refresh: "/?refresh=rid"
+            // - backward: "/?backward=bid&until=uid&refresh=rid"
+            if (bid && rid && uid) return {
+                refresh: {count: c, refresh: rid},
+                backward: {count: c, backward: bid, refresh: rid, until: uid},
+            };
+            // req: "/?backward=bid&refresh=rid"
+            // - refresh: "/?refresh=rid"
+            // - backward: "/?backward=bid&refresh=rid"
+            if (bid && rid) return {
+                refresh: {count: c, refresh: rid},
+                backward: {count: c, backward: bid, refresh: rid},
+            };
+            // req: "/?refresh=rid"
+            // - refresh: "/?refresh=rid"
+            // - backward: "/?backward=rid&until=rid&refresh=rid"
+            if (rid) return {
+                refresh: {count: c, refresh: rid},
+                backward: {count: c, backward: rid, refresh: rid, until: rid},
+            };
+            // req: "/"
+            // - refresh: "/"
+            // - backward: "/"
+            return {
+                refresh: {count: c},
+                backward: {count: c},
+            };
+        }
     };
+    
     var createMeta = function (doc, name, content) {
         var meta = doc.createElement("meta");
         meta.name = name;
