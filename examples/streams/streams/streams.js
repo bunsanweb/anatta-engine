@@ -53,6 +53,7 @@ var Streams = function () {
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8",
             "last-modified": view.date.toUTCString(),
+            "cach-control": "no-cache",
         }, "<!doctype html>" + view.doc.outerHTML);
     };
     

@@ -296,6 +296,7 @@ var Streamer = (function () {
             d.reject(new Error(req.status));
         }, false);
         req.open("GET", uri, true);
+        req.setRequestHeader("cache-control", "no-cache");
         req.send();
         return d.promise;
     };
