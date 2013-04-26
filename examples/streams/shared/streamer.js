@@ -1,4 +1,7 @@
-var Streamer = (function () {
+(function (root, factory) {
+    if (typeof exports === "object") module.exports = factory;
+    else root.Streamer = factory(root);
+})(this, function (window) {
     "use strict";
     
     // Streamer that provides single layer view of chain streamer
@@ -302,12 +305,13 @@ var Streamer = (function () {
     var platforms = {
         browser: {
             get q() {
-                return Q;
+                return window.Q;
             },
             responseHeader: function (reqres, key) {
                 return reqres.getResponseHeader(key);
             },
             createHtml: function (reqres) {
+                var document = window.document;
                 var doc = document.implementation.createHTMLDocument("");
                 doc.documentElement.innerHTML = reqres.responseText;
                 var link = document.createElement("link");
@@ -319,7 +323,7 @@ var Streamer = (function () {
             },
             get: function (uri) {
                 var d = Q.defer();
-                var req = new XMLHttpRequest();
+                var req = new window.XMLHttpRequest();
                 req.href = uri;
                 req.addEventListener("load", function () {
                     d.resolve(req);
@@ -335,12 +339,13 @@ var Streamer = (function () {
         },
         agent: {
             get q() {
-                return anatta.q;
+                return window.anatta.q;
             },
             responseHeader: function (reqres, key) {
                 return res.headers[key];
             },
             createHtml: function (reqres) {
+                var document = window.document;
                 var req = reqres[0], res = reqres[1];
                 var doc = document.implementation.createHTMLDocument("");
                 doc.innerHTML = res.text();
@@ -348,7 +353,7 @@ var Streamer = (function () {
                 return doc;
             },
             get: function (uri) {
-                var space = anatta.engine.space;
+                var space = window.anatta.engine.space;
                 var req = space.request("GET", uri, {
                     "cache-control": "no-cache",
                 });
@@ -374,4 +379,4 @@ var Streamer = (function () {
         Chain: Chain,
         Linear: Linear,
     };
-})();
+});
