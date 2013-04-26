@@ -1,14 +1,22 @@
 window.addEventListener("agent-load", function (ev) {
     "use strict";
     
-    var streams = Streams();
+    var orbUri = "orb:/";
+    var createDocument = function (title) {
+        return document.implementation.createHTMLDocument(title);
+    };
+    var streams = Streams({
+        href: orbUri,
+        selector: {entries: "[rel=entry]",},
+        entriesMax: 20,
+        waitRefresh: 500,
+        createDocument: createDocument,
+    });
     var orb = OrbStream({
-        href: "orb:/",
+        href: orbUri,
         entryTemplate: document.querySelector("#entryTemplate"),
         activityTemplate: document.querySelector("#activityTemplate"),
-        createDocument: function (title) {
-            return document.implementation.createHTMLDocument(title);
-        },
+        createDocument: createDocument,
     });
     
     window.addEventListener("agent-access", function (ev) {
