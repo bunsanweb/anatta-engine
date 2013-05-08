@@ -1,6 +1,6 @@
 (function (root, factory) {
     if (typeof exports === "object") module.exports = factory;
-    else root.Streamer = factory(root);
+    else root.StreamerChannels = factory(root);
 })(this, function (window) {
     "use strict";
     
@@ -160,7 +160,7 @@
     };
     Fragment.prototype.refresh = function () {
         var uri = this.basic.link.refresh;
-        var opts = merge({uri: uri}, this.opts);
+        var opts = merge({href: uri}, this.opts);
         this.handlers.refresh.call(this, Fragment(opts));
     };
     var fragment = {
@@ -182,7 +182,7 @@
     
     // Basic Streamer: managed on arrivals (not ordered)
     // [init]
-    // streamer = Streamer.Basic({uri: "/streams/", ...});
+    // streamer = Streamer.Basic({href: "/streams/", ...});
     // streamer.load();
     // [event]
     // streamer.on("load", function (date, entries) {})
@@ -202,7 +202,7 @@
         });
         return Object.create(Basic.prototype, {
             opts: {value: opts},
-            link: {value: {refresh: opts.uri, backward: opts.uri}},
+            link: {value: {refresh: opts.href, backward: opts.href}},
             wait: {value: 500, writable: true},
             last: {value: new Date(0), writable: true},
             lane: {value: platform.q.resolve(""), writable: true},
@@ -221,7 +221,7 @@
     };
     Basic.prototype.load = function () {
         this.lane = this.lane.then(function () {
-            return get(this.opts.uri).then(basic.onLoad.bind(this));
+            return get(this.opts.href).then(basic.onLoad.bind(this));
         }.bind(this));
     };
     Basic.prototype.refresh = function () {

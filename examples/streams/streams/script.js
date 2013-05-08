@@ -5,14 +5,14 @@ window.addEventListener("agent-load", function (ev) {
     var createDocument = function (title) {
         return document.implementation.createHTMLDocument(title);
     };
-    var streams = Streams({
+    var source = StreamerSource({
         href: orbUri,
         selector: {entries: "[rel=entry]",},
         entriesMax: 20,
         waitRefresh: 500,
         createDocument: createDocument,
     });
-    var orb = OrbStream({
+    var post = StreamerPost({
         href: orbUri,
         entryTemplate: document.querySelector("#entryTemplate"),
         activityTemplate: document.querySelector("#activityTemplate"),
@@ -24,8 +24,8 @@ window.addEventListener("agent-load", function (ev) {
         ev.detail.accept();
         //console.log([ev.detail.request.method, ev.detail.request.href,]);
         switch (ev.detail.request.method) {
-        case "GET": return streams.get(ev);
-        case "POST": return orb.post(ev);
+        case "GET": return source.get(ev);
+        case "POST": return post.post(ev);
         }
         ev.detail.respond("405", {allow: "GET, POST"}, "Allow GET or POST");
     }, false);

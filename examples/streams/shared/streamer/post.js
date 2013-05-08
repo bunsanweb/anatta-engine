@@ -1,6 +1,6 @@
 (function (root, factory) {
     if (typeof exports === "object") module.exports = factory;
-    else root.OrbStream = factory(root);
+    else root.StreamerPost = factory(root);
 })(this, function (window) {
     "use strict";
     

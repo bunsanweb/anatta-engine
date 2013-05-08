@@ -13,6 +13,8 @@ var engine = anatta.engine.builder.engine({
         "src:": {field: "file", root: "./streams/", prefix: "/"},
         "src:/shared/": {field: "file", root: anatta.shared(),
                          prefix: "/shared/"},
+        "src:/streamer/": {field: "file", root: "./shared/streamer/",
+                           prefix: "/streamer/"},
         "orb:": {field: "orb", cache: false},
         "root:/": {field: "file", root: "./ui/", prefix: "/"},
         "root:/shared": {field: "file", root: "./shared/", prefix: "/shared/"},

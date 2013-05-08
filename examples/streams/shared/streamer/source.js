@@ -1,9 +1,9 @@
 (function (root, factory) {
     if (typeof exports === "object") module.exports = factory;
-    else root.Streams = factory(root);
+    else root.StreamerSource = factory(root);
 })(this, function (window) {
     "use strict";
-    
+
     var anatta = window.anatta;
     return function (opts) {
         opts.selector = opts.selector || {};

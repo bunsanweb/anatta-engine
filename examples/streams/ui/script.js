@@ -1,7 +1,7 @@
 window.addEventListener("load", function (ev) {
     var main = document.querySelector("main");
     var streamUri = "/streams/";
-    var streamer = Streamer.Linear({uri: streamUri});
+    var streamer = StreamerChannels.Linear({href: streamUri});
     streamer.on("update", function (entries, position) {
         var next = position ? main.querySelector("#" + position.id) : null;
         entries.forEach(function (entry) {
