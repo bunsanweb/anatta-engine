@@ -18,3 +18,4 @@ test/orb-dir-test.js
 test/orb-mongodb-test.js
 test/galaxy-core-test.js
 test/builder-test.js
+test/shared-tap-test.js
