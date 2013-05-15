@@ -28,7 +28,7 @@ Key.prototype.encode = function (info) {
     var encoding = info.encoding || "base64";
     var rawPass = crypto.randomBytes(info.size || 64);
     var encoder = crypto.createCipher(info.cipher, rawPass);
-    encoder.update(info.data);
+    encoder.update(Buffer(info.data));
     var data = encoder.final(encoding);
     var pass = "";
     if (ursa.isPrivateKey(this.key)) {
