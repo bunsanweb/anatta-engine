@@ -37,8 +37,12 @@ Entry.fromObject = function (data) {
     return Entry(data.pathname, data.type, value, date);
 };
 Entry.fromJson = function (json) {
-    var data = JSON.parse(json);
-    return Entry.fromObject(data);
+    try {
+        var data = JSON.parse(json);
+        return Entry.fromObject(data);
+    } catch (ex) {
+        return null;
+    }
 };
 Entry.exists = function (entry) {
     return entry && entry.value !== null;
