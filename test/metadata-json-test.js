@@ -4,6 +4,7 @@ var assert = require("assert");
 
 suite("[Metadata for JSON format]");
 test("Get JSON resource", function (done) {
+    this.timeout(5000); // WORKAROUND: too late to finish only first time
     var anatta = require("../anatta");
     var engine = anatta.engine.core.Engine();
     engine.space.manager.bind("data", "data:", anatta.space.data.DataField());
