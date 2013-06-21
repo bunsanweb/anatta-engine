@@ -20,3 +20,4 @@ test/galaxy-core-test.js
 test/builder-test.js
 test/shared-tap-test.js
 test/shared-fusion-test.js
+test/shared-streamer-test.js
