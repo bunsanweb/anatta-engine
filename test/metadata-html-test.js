@@ -18,7 +18,7 @@ test("Get HTML resource", function (done) {
     link.get().then(function (entity) {
         assert.equal(entity.attr("href"), uri);
         var entries = entity.all();
-        assert.equal(entries[0].attr("href"), "http://taro.com/");
+        assert.equal(entries[0].href(), "http://taro.com/");
     }).then(done, done);
 });
 test("Get HTML resource includes relative href", function (done) {
@@ -36,6 +36,6 @@ test("Get HTML resource includes relative href", function (done) {
     link.get().then(function (entity) {
         assert.equal(entity.attr("href"), uri);
         var entries = entity.all();
-        assert.equal(entries[0].attr("href"), "file:assets/relhref/taro/");
+        assert.equal(entries[0].href(), "file:assets/relhref/taro/");
     }).then(done, done);
 });

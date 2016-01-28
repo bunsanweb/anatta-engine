@@ -12,7 +12,7 @@ test("Get Atom resource", function (done) {
     engine.porter.map["application/json"] = anatta.metadata.json;
     engine.porter.map["application/atom+xml"] = anatta.metadata.atom;
     
-    var uri = 'file:./assets/feed.atom';
+    var uri = 'file:assets/feed.atom';
     var link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(function (entity) {
