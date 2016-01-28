@@ -1,7 +1,7 @@
 "use strict";
 
 const crypto = require("crypto");
-const forge = require("forge");
+const forge = require("node-forge");
 
 // forge utilities
 const isPublicKey = (forgeKey) =>
