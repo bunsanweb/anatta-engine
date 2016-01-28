@@ -1,39 +1,28 @@
 "use strict";
 
-var jsdom = require("jsdom");
-var features = jsdom.defaultDocumentFeatures = {
-    FetchExternalResources: [],
-    ProcessExternalResources: [],
-    MutationEvents: false,
-    QuerySelector: true,
-};
-var browser = jsdom.browserAugmentation(jsdom.dom.level3.html, {
-    features: features,
-});
+const jsdom = require("jsdom");
 
 // compat function for "document.implementation.createHTMLDocument"
-var createHTMLDocument = exports.createHTMLDocument = function (title) {
-    var html = jsdom.jsdom(
-        "<!doctype html><html><head></head><body></body></html>",
-        jsdom.dom.level3.html, {features: features, url: "./"});
+exports.createHTMLDocument = function (title) {
+    var html = jsdom.jsdom("<!doctype html>", {
+        features: {
+            FetchExternalResource: false,
+            ProcessExternalResources: false,
+        }});
     if (typeof title === "string") {
-        var titleNode = html.createElement("title");
-        titleNode.textContent = title;
-        html.head.appendChild(titleNode);
-    }
-    if (!html.implementation.createHTMLDocument) {
-        html.implementation.createHTMLDocument = createHTMLDocument;
+        html.title = title;
     }
     return html;
 };
 
 // compat function for "document.implementation.createDocument"
-var createDocument = exports.createDocument = function () {
-    var xml = jsdom.jsdom(
-        "", jsdom.dom.level3.core, {features: features, url: "./"});
-    if (!xml.implementation.createDocument) {
-        xml.implementation.createDocument = createDocument;
-    }
+exports.createDocument = function () {
+    var xml = jsdom.jsdom("", {
+        parsingMode: "xml",
+        features: {
+            FetchExternalResource: false,
+            ProcessExternalResources: false,
+        }});
     return xml;
 };
 
@@ -42,5 +31,5 @@ var XMLSerializer = exports.XMLSerializer = function () {
     return Object.create(XMLSerializer.prototype);
 };
 XMLSerializer.prototype.serializeToString = function (node) {
-    return node.outerHTML;
+    return jsdom.serializeDocument(node);
 };
