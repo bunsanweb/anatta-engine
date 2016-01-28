@@ -66,16 +66,16 @@ var Orb = function Orb(init) {
     });
 };
 Orb.prototype.entryList = function () {
-    return q.resolve(this.entries);
+    return q(this.entries);
 };
 Orb.prototype.get = function (pathname) {
     var entry = this.entries[pathname];
-    return q.resolve(entry || null);
+    return q(entry || null);
 };
 Orb.prototype.put = function (pathname, data) {
     var entry = Entry.fromValue(pathname, data);
     this.entries[pathname] = entry;
-    return q.resolve(entry);
+    return q(entry);
 };
 
 exports.Entry = Entry;

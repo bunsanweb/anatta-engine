@@ -16,7 +16,7 @@ var dsPattern = new RegExp(
         "(;base64)?,(.*)$");
 DataField.prototype.access = function (request) {
     if (request.method !== "GET") {
-        return q.resolve([request, core.Response("405", {allow: "GET"})]);
+        return q([request, core.Response("405", {allow: "GET"})]);
     }
     var data = dsPattern.exec(request.href);
     if (!data) {
@@ -27,7 +27,7 @@ DataField.prototype.access = function (request) {
         "content-type": data[1] ? data[1] : "text/plain;charset=utf-8",
         "content-length": body.length.toString(),
     }, body);
-    return q.resolve([request, response]);
+    return q([request, response]);
 };
 
 exports.DataField = DataField;

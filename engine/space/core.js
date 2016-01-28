@@ -85,7 +85,7 @@ Space.prototype.access = function (request) {
                 request.headers, request.body, request);
             return self.access(redirect);
         } else {
-            return q.resolve([request, response]);
+            return q([request, response]);
         }
     };
     var field = this.manager.resolve(request);
@@ -101,7 +101,7 @@ var FieldUtils = {
             "content-type": "text/plain;charset=utf-8",
             "content-length": body.length.toString(),
         }, body);
-        return q.resolve([request, response]);
+        return q([request, response]);
     },
 };
 

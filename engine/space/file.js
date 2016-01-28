@@ -18,7 +18,7 @@ var FileField = function FileField(opts) {
 };
 FileField.prototype.access = function (request) {
     if (request.method !== "GET") {
-        return q.resolve([request, core.Response("405", {allow: "GET"})]);
+        return q([request, core.Response("405", {allow: "GET"})]);
     }
     try {
         var prefix = RegExp("^" + this.opts.prefix);

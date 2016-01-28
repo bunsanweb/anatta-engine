@@ -20,8 +20,7 @@ var OrbField = function OrbField(opts) {
 OrbField.prototype.access = function (request) {
     if (request.method === "GET") return accessGet.call(this, request);
     if (request.method === "PUT") return accessPut.call(this, request);
-    return q.resolve(
-        [request, space.core.Response("405", {allow: "GET, PUT"})]);
+    return q([request, space.core.Response("405", {allow: "GET, PUT"})]);
 };
 
 var accessGet = function (request) {
