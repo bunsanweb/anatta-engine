@@ -31,7 +31,7 @@ test("Create Orb field with dir.Orb , do put then get", function (done) {
             assert.equal(response.headers["content-length"], body.length);
             assert.equal(response.text(), body);
         });
-    }).fin(function () {
+    }).finally(function () {
         cleanupDir(dir);
     }).then(done, done);
 });

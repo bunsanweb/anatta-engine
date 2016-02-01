@@ -95,7 +95,7 @@ var tap = (function () {
     
     var runSuites = function (suites) {
         var index = 0;
-        var cur = q.resolve(empty());
+        var cur = q(empty());
         Object.keys(suites).forEach(function (name) {
             var suite = suites[name];
             Object.keys(suite.tests).forEach(function (desc) {

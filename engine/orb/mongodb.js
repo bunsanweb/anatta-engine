@@ -20,10 +20,10 @@ Orb.prototype.entryList = function () {
                 result[doc.pathname] = memory.Entry.fromObject(doc);
                 return result;
             }, {});
-        }).fin(function () {
+        }).finally(function () {
             db.close();
         });
-    }).fail(function (err) {
+    }).catch(function (err) {
         return {};
     });
 };
@@ -34,10 +34,10 @@ Orb.prototype.get = function (pathname) {
             return async(collection, "findOne")({pathname: pathname});
         }).then(function (doc) {
             return memory.Entry.fromObject(doc);
-        }).fin(function () {
+        }).finally(function () {
             db.close();
         });
-    }).fail(function (err) {
+    }).catch(function (err) {
         return null;
     });
 };
@@ -51,10 +51,10 @@ Orb.prototype.put = function (pathname, data) {
             return async(collection, "update")(query, doc, {upsert: true});
         }).then(function (doc) {
             return entry;
-        }).fin(function () {
+        }).finally(function () {
             db.close();
         });
-    }).fail(function (err) {
+    }).catch(function (err) {
         return null;
     });
 };

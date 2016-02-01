@@ -6,7 +6,7 @@
     
     var anatta = window.anatta;
     return function (opts) {
-        var taskLane = anatta.q.resolve({});
+        var taskLane = anatta.q({});
         var onPost = function (ev) {
             var data = anatta.form.decode(ev.detail.request);
             var info = formToInfo(data);

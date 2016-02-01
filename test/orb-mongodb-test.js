@@ -35,7 +35,7 @@ test("Create Orb field with mongodb.Orb, do put then get", function (done) {
             assert.equal(response.headers["content-length"], body.length);
             assert.equal(response.text(), body);
         });
-    }).fin(function () {
+    }).finally(function () {
         return cleanupDatabase(uri);
     }).then(done, done);
 });
