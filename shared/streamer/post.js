@@ -55,7 +55,7 @@
                     "content-type": "text/html;charset=utf-8",
                     "last-modified": new Date().toUTCString(),
                 },
-                body: "<!doctype html>" + doc.outerHTML,
+                body: "<!doctype html>" + doc.documentElement.outerHTML,
             });
         };
         
@@ -83,7 +83,7 @@
             var dv = new DataView(new ArrayBuffer(8));
             dv.setFloat64(0, Math.random(), false);
             for (var i = 0; i < dv.buffer.byteLength; i++) {
-                base += dv.buffer[i].toString(16);
+                base += dv.getUint8(i).toString(16);
             }
             return (prefix || "id-") + base;
         };

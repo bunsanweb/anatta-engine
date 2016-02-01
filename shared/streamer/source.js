@@ -18,7 +18,7 @@
             return getIndexDoc().then(function (index) {
                 var view = renderMessage(ev.detail.request, index);
                 return respondMessage(ev, view);
-            }).fail(function (err) {
+            }).catch(function (err) {
                 console.log(err.stack);
             });
         };
@@ -54,7 +54,7 @@
                 "content-type": "text/html;charset=utf-8",
                 "last-modified": view.date.toUTCString(),
                 "cache-control": "no-cache",
-            }, "<!doctype html>" + view.doc.outerHTML);
+            }, "<!doctype html>" + view.doc.documentElement.outerHTML);
         };
         
         var renderMessage = function (req, index) {
