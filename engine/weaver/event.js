@@ -1,40 +1,41 @@
 "use strict";
 
-var jsdom = require("jsdom");
+const jsdom = require("jsdom");
+const factory = jsdom.jsdom();
+const Event = factory.createEvent("Event").constructor;
 
-
-var bindEventTarget = function (target) {
-    var listeners = {};
+const bindEventTarget = function (target) {
+    const listeners = {};
     
-    var addEventListener = function (name, listener, capture) {
+    const addEventListener = function (name, listener, capture) {
         if (!listener) return;
         name = name.toLowerCase();
         capture = !!capture;
         if (!listeners[name]) listeners[name] = emptyHandlers();
-        var list = listeners[name][capture];
-        for (var i = 0; i < list.length; i++) {
+        const list = listeners[name][capture];
+        for (let i = 0; i < list.length; i++) {
             if (list[i] === listener) return;
         }
         list.push(listener);
     };
-    var removeEventListener = function (name, listener, capture) {
+    const removeEventListener = function (name, listener, capture) {
         if (!listener) return;
         name = name.toLowerCase();
         capture = !!capture;
         if (!listeners[name]) return;
-        var list = listeners[name][capture];
-        for (var i = list.length - 1; i >= 0; i--) {
+        const list = listeners[name][capture];
+        for (let i = list.length - 1; i >= 0; i--) {
             if (list[i] === listener) {
                 list.splice(i, 1);
                 return;
             }
         }
     };
-    var dispatchEvent = function (event) {
+    const dispatchEvent = function (event) {
         // returns false if cancelled (preventDefault() called)
         // returns true, then caller may spawn default operation
-        if (!(event instanceof jsdom.dom.level3.events.Event)) {
-            var ev = createEvent("Event");
+        if (!(event instanceof Event)) {
+            const ev = createEvent("Event");
             ev.initEvent(event.type, !!event.bubbles, !!event.cancelable);
             if (event.detail) ev.detail = event.detail;
             event = ev;
@@ -42,13 +43,13 @@ var bindEventTarget = function (target) {
         // see inside jsdom Event at lib/jsdom/level2/events.js
         event._target = event._currentTarget = target;
         if (!listeners[event.type]) return true;
-        var list = listeners[event.type][event.bubbles];
+        const list = listeners[event.type][event.bubbles];
         if (event.bubbles) {
-            for (var i = 0; i < list.length; i++) {
+            for (let i = 0; i < list.length; i++) {
                 if (callHandler(list[i], target, event)) break;
             }
         } else {
-            for (var i = list.length - 1; i >= 0; i--) {
+            for (let i = list.length - 1; i >= 0; i--) {
                 if (callHandler(list[i], target, event)) break;
             }
         }
@@ -61,16 +62,16 @@ var bindEventTarget = function (target) {
     return target;
 };
 
-var emptyHandlers = function () {
-    var h = {};
+const emptyHandlers = function () {
+    const h = {};
     h[true] = [];
     h[false] = [];
     return h;
 };
 
-var callHandler = function  (handler, target, event) {
+const callHandler = function  (handler, target, event) {
     try {
-        var ret = handler.call(target, event);
+        const ret = handler.call(target, event);
         if (ret === false) {
             event.preventDefault();
             event.stopPropagation();
@@ -84,8 +85,8 @@ var callHandler = function  (handler, target, event) {
 
 
 
-var createEvent = function (eventName) {
-    return new jsdom.dom.level3.events[eventName];
+const createEvent = function (eventName) {
+    return factory.createEvent(eventName);
 };
 
 exports.bindEventTarget = bindEventTarget;

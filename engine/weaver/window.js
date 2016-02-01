@@ -1,23 +1,23 @@
 "use strict";
 
-var url = require("url");
-var vm = require("vm");
-var q = require("q");
-var jsdom = require("../metadata/jsdom");
-var space = {
+const url = require("url");
+const vm = require("vm");
+const q = require("q");
+const jsdom = require("../metadata/jsdom");
+const space = {
     core: require("../space/core"),
 };
-var weaver = {
+const weaver = {
     event: require("./event"),
 };
 
 
-var Window = function Window() {
+const Window = function Window() {
     return vm.createContext(Object.create(Window.prototype, {}));
 };
 
-var bindApi = function (agent) {
-    var window = agent.window;
+const bindApi = function (agent) {
+    const window = agent.window;
     weaver.event.bindEventTarget(window);
     Object.defineProperty(window, "location", {get: function () {
         return url.parse(agent.entity.request.href, false, true);
@@ -60,15 +60,15 @@ var bindApi = function (agent) {
     window.Float64Array = Float64Array;
 };
 
-var loaded = function (agent) {
+const loaded = function (agent) {
     agent.window.dispatchEvent({type: "agent-load"});
     return agent;
 };
 
-var access = function (agent, request) {
+const access = function (agent, request) {
     // request to agent-xxx event
-    var d = q.defer();
-    var event = weaver.event.createEvent("Event");
+    const d = q.defer();
+    const event = weaver.event.createEvent("Event");
     event.initEvent("agent-access", false, true);
     event.detail = {
         request: request,
@@ -77,16 +77,16 @@ var access = function (agent, request) {
             event.stopPropagation();
         },
         respond: function (status, headers, body) {
-            var response = space.core.Response(status, headers, body);
+            const response = space.core.Response(status, headers, body);
             d.resolve([request, response]);
         },
-    }
+    };
     if (agent.window.dispatchEvent(event)) {
         //TBD: do default
         if (request.method === "GET") {
             event.detail.respond("200", {
                 "content-type": "text/html;charset=utf-8"
-            }, agent.window.document.outerHTML);
+            }, agent.window.document.documentElement.outerHTML);
         } else {
             event.detail.respond("405", {"allow": "GET"});
         }
@@ -96,48 +96,48 @@ var access = function (agent, request) {
 
 
 // lifecycle
-var init = function (agent) {
+const init = function (agent) {
     bindApi(agent);
     if (agent.entity.response.contentType().value === "text/html") {
         agent.window.document = agent.entity.html;
     } else {
         agent.window.document = jsdom.createHTMLDocument("");
     }
-    var scriptTags = agent.window.document.querySelectorAll("head script");
+    const scriptTags = agent.window.document.querySelectorAll("head script");
     return loadScripts(agent, scriptTags, 0);
 };
 
-var loadScripts = function loadScripts(agent, scriptTags, index) {
+const loadScripts = function loadScripts(agent, scriptTags, index) {
     // when all scripts executed
     if (index >= scriptTags.length) return loaded(agent);
-    var scriptTag = scriptTags[index];
+    const scriptTag = scriptTags[index];
     if (!scriptTag.src) {
         // when embeded script
-        var code = scriptTag.innerHTML;
-        var uri = agent.entity.request.href;
+        const code = scriptTag.innerHTML;
+        const uri = agent.entity.request.href;
         runScript(agent, code, uri);
         return loadScripts(agent, scriptTags, index + 1);
     }
     // when linked script
     // TBD: use restricted space engine
-    var scriptLink = agent.engine.link(scriptTag, "text/html", agent.entity);
+    const scriptLink = agent.engine.link(scriptTag, "text/html", agent.entity);
     return scriptLink.get().then(function (entity) {
-        var typeAttr = scriptTag.getAttribute("type");
-        var type = typeAttr ? space.core.ContentType(typeAttr) :
-            entity.response.contentType();
+        const typeAttr = scriptTag.getAttribute("type");
+        const type = typeAttr ? space.core.ContentType(typeAttr) :
+                  entity.response.contentType();
         if (type.value === "application/javascript" ||
             type.value === "text/javascript") {
-            var charset = (scriptTag.getAttribute("charset") ||
-                           type.parameter["charset"] || "utf-8");
-            var code = entity.response.body.toString(charset);
-            var uri = entity.request.href;
+            const charset = (scriptTag.getAttribute("charset") ||
+                             type.parameter["charset"] || "utf-8");
+            const code = entity.response.body.toString(charset);
+            const uri = entity.request.href;
             runScript(agent, code, uri);
         }
         return loadScripts(agent, scriptTags, index + 1);
     });
 };
 
-var runScript = function (agent, code, uri) {
+const runScript = function (agent, code, uri) {
     try {
         vm.createScript(code, uri).runInContext(agent.window);
     } catch (err) {
