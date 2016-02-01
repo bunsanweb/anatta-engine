@@ -25,7 +25,7 @@ const privateEncrypt = (forgeKey, buf, encoding) => {
 };
 const publicDecrypt = (forgeKey, str, encoding) => {
     const raw = Buffer(str, encoding).toString("binary");
-    const decrypted = forge.pki.rsa.decrypt(raw, forgekey, true, true);
+    const decrypted = forge.pki.rsa.decrypt(raw, forgeKey, true, true);
     return Buffer(decrypted, "binary");
 };
 
@@ -40,7 +40,7 @@ const hashAndVerify = (forgeKey, alg, buf, signStr, encoding) => {
     return forgeKey.verify(md.digest().bytes(), sign);
 };
 
-const publicKeyFromPrivateKey = (forgeKey) =>
+const publicKeyFromPrivateKey = (forgeKey) => 
           forge.pki.rsa.setPublicKey(forgeKey.n, forgeKey.e);
 const keyToPem = (forgeKey) => isPrivateKey(forgeKey) ?
           forge.pki.privateKeyToPem(forgeKey) :
@@ -150,7 +150,7 @@ Public.prototype.verify = function (info) {
 const generate = function (bits, exp) {
     bits = bits || 1024;
     exp = exp || 17;
-    return new Private(forge.pki.rsa.generateKey(bits, exp));
+    return new Private(forge.pki.rsa.generateKeyPair(bits, exp).privateKey);
 };
 
 const load = function (pem) {
