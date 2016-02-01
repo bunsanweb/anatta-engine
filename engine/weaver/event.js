@@ -53,7 +53,8 @@ const bindEventTarget = function (target) {
                 if (callHandler(list[i], target, event)) break;
             }
         }
-        return !event._preventDefault;
+        const internal = Object.getOwnPropertySymbols(event)[0];
+        return internal._canceledFlag;
     };
     
     target.addEventListener = addEventListener;
