@@ -7,7 +7,7 @@ window.addEventListener("agent-load", function (ev) {
     anatta.engine.glossary.add(anatta.termset.desc.create({
         name: "hackernews",
         "content-type": "text/html",
-        "uri-pattern": "^" + rootUri.href + "*",
+        "uri-pattern": "^" + rootUri.href + "$",
         entity: {
             link: {selector: "a[href^='item?id']", value: "href"},
         }
