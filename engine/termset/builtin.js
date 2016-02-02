@@ -63,14 +63,21 @@ var AtomBinder = function AtomBinder() {
 };
 AtomBinder.prototype = ResourceBinder();
 AtomBinder.prototype.entityLinkAll = function (entity) {
-    var entries = entity.atom.querySelectorAll("feed > entry");
+    const doc = entity.atom.ownerDocument ? entity.atom.ownerDocument :
+              entity.atom;
+    const entries =
+              doc.defaultView.matcher.select("feed > entry", entity.atom);
     return Array.prototype.map.call(entries, function (entry) {
         return entry;
     });
 };
 AtomBinder.prototype.linkAttr = function (link, key) {
     if (key === "href") {
-        var elem = link.atom.querySelector("entry > link[rel='self']");
+        const doc = link.atom.ownerDocument ? link.atom.ownerDocument :
+                  link.atom;
+        const elem =
+                  doc.defaultView.matcher.select("entry > link[rel='self']",
+                                                 link.atom)[0];
         return elem ? elem.getAttribute("href") : "";
     }
     if (key === "content-type") return "application/atom+xml";

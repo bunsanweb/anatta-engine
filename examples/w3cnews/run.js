@@ -7,7 +7,7 @@ var engine = anatta.engine.builder.engine({
     porter: {
         "text/html": "html",
         "application/json": "json",
-        "application/xml": "atom",
+        "application/atom+xml": "atom",
     },
     space: {
         "http:": {field: "web"},
@@ -24,7 +24,7 @@ var termset = anatta.termset.desc.create({
         href: {selector: "link[rel='alternate']", value: "href"},
         title: {selector: "entry > title", value: "textContent"},
         date: {selector: "updated", value: "textContent"},
-        desc: {selector: "entry > content > p", value: "textContent"},
+        desc: {selector: "entry > content", value: "textContent"},
     },
 });
 engine.glossary.add(termset);

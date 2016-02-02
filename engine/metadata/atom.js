@@ -19,7 +19,9 @@ var Entity = function AtomEntity(engine, request, response) {
 };
 Entity.prototype = core.Entity();
 Entity.prototype.select = function (selector) {
-    return selector ? this.atom.querySelectorAll(selector) : [this.atom];
+    if (!selector) return [this.atom];
+    const doc = this.atom.ownerDocument ? this.atom.ownerDocument : this.atom;
+    return doc.defaultView.matcher.select(selector, this.atom);
 };
 
 var Link = function AtomLink(engine, atom, parent) {

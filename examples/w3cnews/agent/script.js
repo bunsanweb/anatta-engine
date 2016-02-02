@@ -10,7 +10,7 @@ window.addEventListener("agent-load", function (ev) {
         item.querySelector(".href").href = entry.attr("href");
         item.querySelector(".title").textContent = entry.attr("title");
         item.querySelector(".date").textContent = entry.attr("date");
-        item.querySelector(".desc").textContent = entry.attr("desc");
+        item.querySelector(".desc").innerHTML = entry.attr("desc");
         return item;
     };
 

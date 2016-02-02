@@ -1,6 +1,12 @@
 "use strict";
 
 const jsdom = require("jsdom");
+const xmldom = require("xmldom");
+const nwmatcher = require("nwmatcher");
+
+const xmlParser = new xmldom.DOMParser();
+const xmlImpl = new xmldom.DOMImplementation();
+const xmlSerializer = new xmldom.XMLSerializer();
 
 // compat function for "document.implementation.createHTMLDocument"
 exports.createHTMLDocument = function (title) {
@@ -17,17 +23,11 @@ exports.createHTMLDocument = function (title) {
 
 // compat function for "document.implementation.createDocument"
 exports.createDocument = function () {
-    const xml = jsdom.jsdom("", {
-        parsingMode: "xml",
-        features: {
-            FetchExternalResource: false,
-            ProcessExternalResources: false,
-        }});
+    const xml = xmlImpl.createDocument();
     return xml;
 };
 
 exports.parseHTML = function (src, uri) {
-    //NOTE: `uri` option absolute url only (e.g. no file:./...)
     const html = jsdom.jsdom(src, {
         parsingMode: "html",
         features: {
@@ -38,14 +38,10 @@ exports.parseHTML = function (src, uri) {
     return html;
 };
 exports.parseXML = function (src, uri) {
-    //NOTE: `uri` option absolute url only (e.g. no file:./...)
-    const xml = jsdom.jsdom(src, {
-        parsingMode: "xml",
-        features: {
-            FetchExternalResource: false,
-            ProcessExternalResources: false,
-        }});
-    xml.defaultView.location.href = uri;
+    const xml = xmlParser.parseFromString(src);
+    xml.defaultView = {document: xml};
+    xml.defaultView.matcher = nwmatcher(xml.defaultView);
+    xml.documentURI = uri;
     return xml;
 };
 
@@ -55,5 +51,10 @@ const XMLSerializer = exports.XMLSerializer = function () {
     return Object.create(XMLSerializer.prototype);
 };
 XMLSerializer.prototype.serializeToString = function (node) {
-    return jsdom.serializeDocument(node);
+    const doc = node.ownerDocument ? node.ownerDocument : node;
+    if (doc.implementation.createHTMLDocument) {
+        return jsdom.serializeDocument(node);
+    } else {
+        return xmlSerializer.serializeToString(node);
+    }
 };
