@@ -17,6 +17,6 @@ window.addEventListener("agent-load", function (ev) {
         doc.body.appendChild(content);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, doc.outerHTML);
+        }, doc.documentElement.outerHTML);
     }, false);
 }, false);
