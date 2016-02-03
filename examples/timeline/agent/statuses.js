@@ -62,7 +62,7 @@ window.addEventListener("agent-load", function (ev) {
                 return toReblog(reblog);
             });
         } else if (form.source) {
-            return anatta.q.resolve(toStatus(data));
+            return anatta.q(toStatus(data));
         }
     };
 
@@ -98,9 +98,10 @@ window.addEventListener("agent-load", function (ev) {
 
     var putStatus = function (uri, item, uriObj) {
         container.insertBefore(item, container.firstChild);
+        var itemDoc = formatMessage([item], uriObj);
         return anatta.engine.link({href: uri}).put({
             headers: {"content-type": "text/html;charset=utf-8"},
-            body: formatMessage([item], uriObj).outerHTML
+            body: itemDoc.documentElement.outerHTML
         });
     };
 
@@ -154,9 +155,10 @@ window.addEventListener("agent-load", function (ev) {
     var replyStatuses = function (ev) {
         var request = ev.detail.request;
         var statuses = findStatuses(request.location.query);
+        var statusesDoc = formatMessage(statuses, request.origin().location);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, formatMessage(statuses, request.origin().location).outerHTML);
+        }, statusesDoc.documentElement.outerHTML);
     };
 
     window.addEventListener("agent-access", function (ev) {
