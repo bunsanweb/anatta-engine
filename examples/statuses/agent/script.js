@@ -53,10 +53,11 @@ window.addEventListener("agent-load", function (ev) {
         var status = createStatus(ev);
         if (status) {
             container.insertBefore(status, container.firstChild);
+            var statusDoc = formatMessage(
+                [status], ev.detail.request.origin().location);
             anatta.engine.link({href: postURI + status.id}).put({
                 headers: {"content-type": "text/html;charset=utf-8"},
-                body: formatMessage(
-                    [status], ev.detail.request.origin().location).outerHTML
+                body: statusDoc.documentElement.outerHTML
             });
         }
         ev.detail.respond("200", {
@@ -92,9 +93,10 @@ window.addEventListener("agent-load", function (ev) {
     var replyStatuses = function (ev) {
         var request = ev.detail.request;
         var statuses = findStatuses(request.location.query);
+        var statusesDoc = formatMessage(statuses, request.origin().location);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, formatMessage(statuses, request.origin().location).outerHTML);
+        }, statusesDoc.documentElement.outerHTML);
     };
 
     window.addEventListener("agent-access", function (ev) {
