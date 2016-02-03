@@ -46,7 +46,8 @@ window.addEventListener("agent-load", function (ev) {
     var respond = function (entity) {
         var res = entity.response;
         var doc = entity.html;
-        var resText = doc ? insertLink(doc).outerHTML : res.body.toString();
+        var resText = doc ? insertLink(doc).documentElement.outerHTML :
+                res.body.toString();
         this.detail.respond(res.status, res.headers, resText);
     };
 

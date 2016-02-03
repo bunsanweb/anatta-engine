@@ -39,7 +39,7 @@ window.addEventListener("agent-load", function (ev) {
         formatMessage().then(function (message) {
             ev.detail.respond("200", {
                 "content-type": "text/html;charset=utf-8",
-            }, message.outerHTML);
+            }, message.documentElement.outerHTML);
         });
     };
 
