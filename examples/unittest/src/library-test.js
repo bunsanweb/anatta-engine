@@ -18,7 +18,7 @@ tap.test("[async ok] library.get", function (done) {
     tap.ok(get);
     get("http://example.org/").then(function (entity) {
         tap.ok(entity);
-        tap.equal(entity.request.href, "http://www.iana.org/domains/example");
+        tap.equal(entity.request.href, "http://example.org/");
     }).then(done, done);
 });
 
@@ -41,7 +41,7 @@ tap.test("[another async ok] library.get", function () {
     tap.ok(get);
     return get("http://example.org/").then(function (entity) {
         tap.ok(entity);
-        tap.equal(entity.request.href, "http://www.iana.org/domains/example");
+        tap.equal(entity.request.href, "http://example.org/");
     })
 });
 

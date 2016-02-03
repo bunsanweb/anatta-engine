@@ -22,7 +22,7 @@ window.addEventListener("agent-load", function (ev) {
 
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8",
-        }, doc.outerHTML);
+        }, doc.documentElement.outerHTML);
     }, false);
 }, false)
 </script>
