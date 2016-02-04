@@ -58,7 +58,7 @@ window.addEventListener("agent-load", function (ev) {
         doc.body.appendChild(doc.importNode(insts, true));
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
-        }, doc.outerHTML);
+        }, doc.documentElement.outerHTML);
     };
 
     window.addEventListener("agent-access", function (ev) {

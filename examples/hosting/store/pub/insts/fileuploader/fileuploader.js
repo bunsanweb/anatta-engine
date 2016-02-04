@@ -2,9 +2,10 @@
 window.addEventListener("agent-load", function (ev) {
     var files = document.querySelector("#files");
     var root = "";
-    var orb = document.querySelector("link[rel='orb']").href;
+    var orb = document.querySelector("link[rel='orb']").getAttribute("href");
 
     var updateFiles = function (file) {
+        console.log(orb);
         var url = orb + "/" + encodeURIComponent(file.filename);
         var a = document.createElement("a");
         a.setAttribute("href", url);

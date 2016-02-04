@@ -30,11 +30,11 @@ exports.createDocument = function () {
 exports.parseHTML = function (src, uri) {
     const html = jsdom.jsdom(src, {
         parsingMode: "html",
+        url: uri,
         features: {
             FetchExternalResource: false,
             ProcessExternalResources: false,
         }});
-    html.defaultView.location.href = uri;
     return html;
 };
 exports.parseXML = function (src, uri) {
