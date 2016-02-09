@@ -1,12 +1,20 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
+const zip = function* () {
+    const its = Array.from(arguments, e => e[Symbol.iterator]());
+    while (true) {
+        const es = its.map(it => it.next());
+        if (es.reduce((r, e) => r || e.done, false)) return;
+        yield es.map(e => e.value);
+    }
+};
 
 suite("[multipart encode5/decode5]");
 test("encode5 and decode5", function () {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var obj = {
+    const obj = {
         "usual1": "value1",
         "usual2": "value2",
         "multi": [
@@ -26,26 +34,24 @@ test("encode5 and decode5", function () {
             },
         ],
     };
-    var msg = anatta.metadata.multipart.encode5(obj);
+    const msg = anatta.metadata.multipart.encode5(obj);
     //console.log(msg.headers["content-type"]);
     //console.log(msg.body.toString());
-    var decoded = anatta.metadata.multipart.decode5(msg);
+    const decoded = anatta.metadata.multipart.decode5(msg);
     //console.log(decoded);
     assert.equal(decoded["usual1"], obj["usual1"]);
     assert.equal(decoded["usual2"], obj["usual2"]);
-    
-    for (var i = 0; i < 2; i++) {
-        assert.equal(decoded["multi"][i].filename, obj["multi"][i].filename);
-        assert.equal(decoded["multi"][i].body.toString(),
-                     obj["multi"][i].body.toString());
-        assert.equal(decoded["multi"][i].headers["content-type"],
-                     obj["multi"][i].headers["content-type"]);
+
+    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+        assert.equal(d.filename, o.filename);
+        assert.equal(d.body.toString(), o.body.toString());
+        assert.equal(d.headers["content-type"], o.headers["content-type"]);
     }
 });
 
 test("encode5/decode5 with non-ascii utf-8 charset value", function () {
-    var anatta = require("../anatta");
-    var obj = {
+    const anatta = require("../anatta");
+    const obj = {
         "usual1": "\u5728",
         "usual2": "value2",
         "multi": [
@@ -65,27 +71,25 @@ test("encode5/decode5 with non-ascii utf-8 charset value", function () {
             },
         ],
     };
-    var msg = anatta.metadata.multipart.encode5(obj);
+    const msg = anatta.metadata.multipart.encode5(obj);
     //console.log(msg.headers["content-type"]);
     //console.log(msg.body.toString());
-    var decoded = anatta.metadata.multipart.decode5(msg);
+    const decoded = anatta.metadata.multipart.decode5(msg);
     //console.log(decoded);
     assert.equal(decoded["usual1"], obj["usual1"]);
     assert.equal(decoded["usual2"], obj["usual2"]);
     
-    for (var i = 0; i < 2; i++) {
-        assert.equal(decoded["multi"][i].filename, obj["multi"][i].filename);
-        assert.equal(decoded["multi"][i].body.toString(),
-                     obj["multi"][i].body.toString());
-        assert.equal(decoded["multi"][i].headers["content-type"],
-                     obj["multi"][i].headers["content-type"]);
+    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+        assert.equal(d.filename, o.filename);
+        assert.equal(d.body.toString(), o.body.toString());
+        assert.equal(d.headers["content-type"], o.headers["content-type"]);
     }
 });
 
 test("encode5/decode5 with non-ascii utf-8 charset key", function () {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var obj = {
+    const obj = {
         "\u5728": "value1",
         "usual2": "value2",
         "\u5708": [
@@ -105,27 +109,25 @@ test("encode5/decode5 with non-ascii utf-8 charset key", function () {
             },
         ],
     };
-    var msg = anatta.metadata.multipart.encode5(obj);
+    const msg = anatta.metadata.multipart.encode5(obj);
     //console.log(msg.headers["content-type"]);
     //console.log(msg.body.toString());
-    var decoded = anatta.metadata.multipart.decode5(msg);
+    const decoded = anatta.metadata.multipart.decode5(msg);
     //console.log(decoded);
     assert.equal(decoded["\u5728"], obj["\u5728"]);
     assert.equal(decoded["usual2"], obj["usual2"]);
     
-    for (var i = 0; i < 2; i++) {
-        assert.equal(decoded["\u5708"][i].filename, obj["\u5708"][i].filename);
-        assert.equal(decoded["\u5708"][i].body.toString(),
-                     obj["\u5708"][i].body.toString());
-        assert.equal(decoded["\u5708"][i].headers["content-type"],
-                     obj["\u5708"][i].headers["content-type"]);
+    for (let [d, o] of zip(decoded["\u5708"], obj["\u5708"])) {
+        assert.equal(d.filename, o.filename);
+        assert.equal(d.body.toString(), o.body.toString());
+        assert.equal(d.headers["content-type"], o.headers["content-type"]);
     }
 });
 
 test("encode and decode with non-ascii filename", function () {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var obj = {
+    const obj = {
         "usual1": "value1",
         "usual2": "value2",
         "single": {
@@ -152,10 +154,10 @@ test("encode and decode with non-ascii filename", function () {
             },
         ],
     };
-    var msg = anatta.metadata.multipart.encode(obj);
+    const msg = anatta.metadata.multipart.encode(obj);
     //console.log(msg.headers["content-type"]);
     //console.log(msg.body.toString());
-    var decoded = anatta.metadata.multipart.decode(msg);
+    const decoded = anatta.metadata.multipart.decode(msg);
     //console.log(decoded);
     assert.equal(decoded["usual1"], obj["usual1"]);
     assert.equal(decoded["usual2"], obj["usual2"]);
@@ -166,11 +168,9 @@ test("encode and decode with non-ascii filename", function () {
     assert.equal(decoded["single"].headers["content-type"],
                  obj["single"].headers["content-type"]);
 
-    for (var i = 0; i < 2; i++) {
-        assert.equal(decoded["multi"][i].filename, obj["multi"][i].filename);
-        assert.equal(decoded["multi"][i].body.toString(),
-                     obj["multi"][i].body.toString());
-        assert.equal(decoded["multi"][i].headers["content-type"],
-                     obj["multi"][i].headers["content-type"]);
+    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+        assert.equal(d.filename, o.filename);
+        assert.equal(d.body.toString(), o.body.toString());
+        assert.equal(d.headers["content-type"], o.headers["content-type"]);
     }
 });
