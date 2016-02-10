@@ -1,20 +1,20 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 
 suite("[Orb Core]");
 test("Create Orb field, do put then get", function (done) {
-    var anatta = require("../anatta");
-    var space = anatta.space.core.Space();
-    var orbField = anatta.orb.core.OrbField();
+    const anatta = require("../anatta");
+    const space = anatta.space.core.Space();
+    const orbField = anatta.orb.core.OrbField();
     space.manager.bind("orb", "orb:", orbField);
     
     // put
-    var body = "<html><body>Hello</body></html>";
-    var put = space.request("PUT", "orb:/foo/bar/buzz.html", {
+    const body = "<html><body>Hello</body></html>";
+    const put = space.request("PUT", "orb:/foo/bar/buzz.html", {
         "content-type": "text/html;charset=utf-8"
     }, Buffer(body));
-    space.access(put).spread(function (request, response) {
+    space.access(put).then(([request, response]) => {
         assert.equal(response.status, "200");
         assert.equal(response.headers["content-type"],
                      put.headers["content-type"]);

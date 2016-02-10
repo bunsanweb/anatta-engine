@@ -1,11 +1,11 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 suite("[shared/streamer]");
 test("post", function (done) {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var engine = anatta.engine.builder.engine({
+    const engine = anatta.engine.builder.engine({
         type: "generic",
         porter: {
             "text/html": "html",
@@ -51,7 +51,7 @@ test("post", function (done) {
         },
     }));
     
-    var formdata = {
+    const formdata = {
         action: "tweet",
         content: "Hello World!",
         tag: "tweet",
@@ -61,15 +61,15 @@ test("post", function (done) {
         targetName: "Taro status",
     };
     
-    var streams = engine.link({href: "root:/streams/"});
-    var msg = anatta.metadata.multipart.encode5(formdata);
-    streams.post(msg).then(function (entity) {
+    const streams = engine.link({href: "root:/streams/"});
+    const msg = anatta.metadata.multipart.encode5(formdata);
+    streams.post(msg).then(entity => {
         assert.equal(entity.response.status, "200");
         return streams.get();
-    }).then(function (index) {
+    }).then(index => {
         //console.log(index.response.text());
         return index.first({rel: "origin"}).get();
-    }).then(function (activity) {
+    }).then(activity => {
         //console.log(activity.response.text());
         assert.equal(activity.attr("content"), formdata.content);
     }).then(done, done);

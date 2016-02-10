@@ -12,7 +12,7 @@ test("Get JSON resource", function (done) {
     
     const body =  '{"name": "taro"}';
     const contentType = "application/json";
-    const uri = 'data:' + contentType + ',' + encodeURI(body);
+    const uri = `data:${contentType},${encodeURI(body)}`;
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {

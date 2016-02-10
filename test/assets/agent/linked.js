@@ -1,9 +1,9 @@
 "use strict";
 
 //console.log("boot");
-window.addEventListener("agent-load", function (ev) {
+window.addEventListener("agent-load", ev => {
   //console.log("load");
-  window.addEventListener("agent-access", function (ev) {
+  window.addEventListener("agent-access", ev => {
     //console.log("access");
     if (ev.detail.request.method !== "GET") return;
     ev.detail.accept();

@@ -1,12 +1,12 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 
 suite("[engine builder]");
 test("build as generic config", function () {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var config = {
+    const config = {
         type: "generic",
         porter: {
             "text/html": "html",
@@ -32,7 +32,7 @@ test("build as generic config", function () {
             "me:/pub/": {field: "galaxy", from: "me:/pub/", to: "file:/pub/"},
         },
     };
-    var engine = anatta.engine.builder.engine(config);
+    const engine = anatta.engine.builder.engine(config);
     
     assert.ok(engine.porter.map["text/html"]);
     assert.ok(engine.porter.map["application/json"]);
@@ -51,9 +51,9 @@ test("build as generic config", function () {
 
 
 test("build as simple config", function () {
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
     
-    var config = {
+    const config = {
         type: "simple",
         porter: {
             "text/html": "html",
@@ -80,7 +80,7 @@ test("build as simple config", function () {
             },
         },
     };
-    var engine = anatta.engine.builder.engine(config);
+    const engine = anatta.engine.builder.engine(config);
     
     assert.ok(engine.porter.map["text/html"]);
     assert.ok(engine.porter.map["application/json"]);

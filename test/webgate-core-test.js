@@ -1,36 +1,36 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 
 suite("[webgate: engine as a web server]");
 test("", function (done) {
-    var anatta = require("../anatta");
-    var engine = anatta.engine.core.Engine();
+    const anatta = require("../anatta");
+    const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
         root: "./test/assets/agent/", prefix: "/",
     }));
-    var webField = anatta.space.web.WebField({});
+    const webField = anatta.space.web.WebField({});
     engine.space.manager.bind("http", "http:", webField);
     engine.space.manager.bind("https", "https:", webField);
 
     engine.porter.map["application/json"] = anatta.metadata.json;
     engine.porter.map["text/html"] = anatta.metadata.html;
     
-    var myAgentField = anatta.weaver.core.AgentField({
+    const myAgentField = anatta.weaver.core.AgentField({
         uri: "file:/linking.html"});
     myAgentField.agent.engine = engine;
     engine.space.manager.bind("myagent", "myagent:", myAgentField);
     
-    var webgate = anatta.webgate.core.WebGate(engine.space, {
+    const webgate = anatta.webgate.core.WebGate(engine.space, {
         from: "/",
         to: "myagent:/",
     });
-    var port = process.env.PORT || "8000";
+    const port = process.env.PORT || "8000";
     webgate.start(port);
     
     
-    var gateUri = engine.link({href: "http://localhost:" + port + "/"});
-    gateUri.get().then(function (entity) {
+    const gateUri = engine.link({href: "http://localhost:" + port + "/"});
+    gateUri.get().then(entity => {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
         assert.equal(entity.response.text(), "Hello from Linked Script!");
         webgate.stop();
@@ -38,67 +38,61 @@ test("", function (done) {
 });
 
 test("http request.origin().uri is absolute URI", function (done) {
-    var anatta = require("../anatta");
-    var q = require("q");
+    const anatta = require("../anatta");
 
-    var engine = anatta.engine.core.Engine();
+    const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("http", "http:", anatta.space.web.WebField());
     engine.porter.map["application/json"] = anatta.metadata.json;
 
-    var port = process.env.PORT || "8000";
-    var originalUri = "http://localhost:" + port + "/";
-    var AssertField = function AssertField () {
-        return Object.create({
-            access: function (request) {
-                assert.equal(request.origin().href, originalUri);
-                var d = q.defer();
-                var response = anatta.space.core.Response("200", {
-                    "content-type": "text/plain"}, "");
-                d.resolve([request, response]);
-                return d.promise;
-            }
-        });
+    const port = process.env.PORT || "8000";
+    const originalUri = `http://localhost:${port}/`;
+    const AssertField = class {
+        access(request) {
+            assert.equal(request.origin().href, originalUri);
+            return new Promise(f => f([
+                request,
+                anatta.space.core.Response(
+                    "200", {"content-type": "text/plain"}, ""),
+            ]));
+        };
     };
     
-    engine.space.manager.bind("inner-uri", "inner-uri:", AssertField());
-    var webgate = anatta.webgate.core.WebGate(engine.space, {
+    engine.space.manager.bind("inner-uri", "inner-uri:", new AssertField());
+    const webgate = anatta.webgate.core.WebGate(engine.space, {
         from: "/",
         to: "inner-uri:/",
     });
     webgate.start(port);
     
-    engine.link({href: originalUri}).get().then(function (entity) {
+    engine.link({href: originalUri}).get().then(entity => {
         webgate.stop();
     }).then(done, done);
 });
 
 test("https request.origin().uri is absolute URI", function (done) {
-    var anatta = require("../anatta");
-    var fs = require("fs");
-    var q = require("q");
+    const anatta = require("../anatta");
+    const fs = require("fs");
 
-    var engine = anatta.engine.core.Engine();
-    var webField = anatta.space.web.WebField();
+    const engine = anatta.engine.core.Engine();
+    const webField = anatta.space.web.WebField();
     engine.space.manager.bind("https", "https:", anatta.space.web.WebField());
     engine.porter.map["application/json"] = anatta.metadata.json;
 
-    var port = process.env.PORT || "8000";
-    var originalUri = "https://localhost:" + port + "/";
-    var AssertField = function AssertField () {
-        return Object.create({
-            access: function (request) {
-                assert.equal(request.origin().href, originalUri);
-                var d = q.defer();
-                var response = anatta.space.core.Response("200", {
-                    "content-type": "text/plain"}, "");
-                d.resolve([request, response]);
-                return d.promise;
-            }
-        });
+    const port = process.env.PORT || "8000";
+    const originalUri = `https://localhost:${port}/`;
+    const AssertField = class {
+        access(request) {
+            assert.equal(request.origin().href, originalUri);
+            return new Promise(f => f([
+                request,
+                anatta.space.core.Response("200", {
+                    "content-type": "text/plain"}, ""),
+            ]));
+        };
     };
     
-    engine.space.manager.bind("inner-uri", "inner-uri:", AssertField());
-    var webgate = anatta.webgate.core.WebGate(engine.space, {
+    engine.space.manager.bind("inner-uri", "inner-uri:", new AssertField());
+    const webgate = anatta.webgate.core.WebGate(engine.space, {
         from: "/",
         to: "inner-uri:/",
     });
@@ -107,7 +101,7 @@ test("https request.origin().uri is absolute URI", function (done) {
         cert: fs.readFileSync("./test/assets/https/certificate.pem")
     });
     
-    engine.link({href: originalUri}).get().then(function (entity) {
+    engine.link({href: originalUri}).get().then(entity => {
         webgate.stop();
     }).then(done, done);
 });

@@ -1,25 +1,25 @@
-window.addEventListener("agent-load", function (ev) {
+window.addEventListener("agent-load", ev => {
     "use strict";
     
-    var orbUri = "orb:/";
-    var createDocument = function (title) {
+    const orbUri = "orb:/";
+    const createDocument = (title) => {
         return document.implementation.createHTMLDocument(title);
     };
-    var source = StreamerSource({
+    const source = StreamerSource({
         href: orbUri,
         selector: {entries: "[rel=entry]",},
         entriesMax: 20,
         waitRefresh: 500,
         createDocument: createDocument,
     });
-    var post = StreamerPost({
+    const post = StreamerPost({
         href: orbUri,
         entryTemplate: document.querySelector("#entryTemplate"),
         activityTemplate: document.querySelector("#activityTemplate"),
         createDocument: createDocument,
     });
     
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         //console.log("access");
         ev.detail.accept();
         //console.log([ev.detail.request.method, ev.detail.request.href,]);

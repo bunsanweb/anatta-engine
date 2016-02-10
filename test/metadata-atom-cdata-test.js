@@ -1,11 +1,11 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 
 suite("[Metadata for Atom format]");
 test("Get Atom resource", function (done) {
-    var anatta = require("../anatta");
-    var engine = anatta.engine.core.Engine();
+    const anatta = require("../anatta");
+    const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
         root: "./test/", "prefix": "",
     }));
@@ -19,12 +19,13 @@ test("Get Atom resource", function (done) {
         },
     }));
     
-    var uri = 'file:assets/cdata.atom';
-    var link = engine.link({href: uri});
+    const uri = 'file:assets/cdata.atom';
+    const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
-    link.get().then(function (entity) {
+    link.get().then(entity => {
         assert.equal(entity.attr("href"), uri);
-        var entries = entity.all();
+        const entries = entity.all();
         assert.equal(entries[0].attr("title"), "Hello");
+        assert.equal(entries[0].attr("summary"), "World");
     }).then(done, done);
 });

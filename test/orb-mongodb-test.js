@@ -1,55 +1,50 @@
 "use strict";
 
-var assert = require("assert");
+const assert = require("assert");
 
+//NOTE: mongodb server required. e.g.
+//    mkdir tmpdb ; mongod --dbpath ./tempdb/ ; npm test ; rm -rf tmpdb
 suite("[Orb MongoDB]");
 test("Create Orb field with mongodb.Orb, do put then get", function (done) {
     this.timeout(10000);
-    var anatta = require("../anatta");
+    const anatta = require("../anatta");
+    const dbname = `anatta-engine-orb-mongodb-test-${process.pid}`;
+    const uri = `mongodb://127.0.0.1:27017/${dbname}`;
     
-    var dbname = "anatta-engine-orb-mongodb-test-" + process.pid;
-    var uri = "mongodb://127.0.0.1:27017/" + dbname;
-    
-    var space = anatta.space.core.Space();
-    var orbField = anatta.orb.core.OrbField();
+    const space = anatta.space.core.Space();
+    const orbField = anatta.orb.core.OrbField();
     orbField.orb = anatta.orb.mongodb.Orb(uri);
     space.manager.bind("orb", "orb:", orbField);
     
     // put
-    var body = "<html><body>Hello</body></html>";
-    var put = space.request("PUT", "orb:/foo/bar/buzz.html", {
+    const body = "<html><body>Hello</body></html>";
+    const put = space.request("PUT", "orb:/foo/bar/buzz.html", {
         "content-type": "text/html;charset=utf-8"
     }, Buffer(body));
-    space.access(put).spread(function (request, response) {
+    space.access(put).then(([request, response]) => {
         assert.equal(response.status, "200");
         assert.equal(response.headers["content-type"],
                      put.headers["content-type"]);
         assert.equal(response.headers["content-length"], body.length);
         assert.equal(response.text(), body);
-    }).then(function () {
-        var get = space.request("GET", "orb:/foo/bar/buzz.html");
-        return space.access(get).spread(function (request, response) {
-            assert.equal(response.status, "200");
-            assert.equal(response.headers["content-type"],
-                         put.headers["content-type"]);
-            assert.equal(response.headers["content-length"], body.length);
-            assert.equal(response.text(), body);
-        });
-    }).finally(function () {
-        return cleanupDatabase(uri);
-    }).then(done, done);
+    }).then(() => {
+        const get = space.request("GET", "orb:/foo/bar/buzz.html");
+        return space.access(get);
+    }).then(([request, response]) => {
+        assert.equal(response.status, "200");
+        assert.equal(response.headers["content-type"],
+                     put.headers["content-type"]);
+        assert.equal(response.headers["content-length"], body.length);
+        assert.equal(response.text(), body);
+    }).then(() => cleanupDatabase(uri), () => cleanupDatabase(uri)).then(
+        done, done);
 });
 
-var cleanupDatabase = function (uri) {
-    var q = require("q");
-    var mongodb = require("mongodb");
-    var d = q.defer();
-    mongodb.connect(uri, function (err, db) {
-        if (err) return d.reject(err);
-        db.dropDatabase(function (err, result) {
-            if (err) return d.reject(err);
-            return d.resolve();
-        });
-    });
-    return d.promise;
-};
+const cleanupDatabase = (uri) => new Promise((f, r) => {
+    const mongodb = require("mongodb");
+    mongodb.connect(
+        uri, (err, db) => err ? r(err) :
+            db.dropDatabase((err, result) => err ? r(err) : f(undefined)));
+    //NOTE: success with undefined for the last `done` callback arguments
+});
+
