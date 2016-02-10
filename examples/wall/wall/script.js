@@ -1,9 +1,9 @@
 "use strict";
-window.addEventListener("agent-load", function (ev) {
-    window.addEventListener("agent-access", function (ev) {
+window.addEventListener("agent-load", ev => {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         if (ev.detail.request.method == "PUT") {
-            var source = window.anatta.form.decode(ev.detail.request).source;
+            const source = window.anatta.form.decode(ev.detail.request).source;
             document.querySelector("#text").textContent = source;
             document.querySelector("#date").textContent = new Date();
         }

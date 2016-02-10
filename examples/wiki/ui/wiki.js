@@ -1,12 +1,12 @@
 "use strict";
-window.addEventListener("load", function (ev) {
-    var title = document.getElementById("title");
-    var heading = document.getElementById("heading");
-    var content = document.getElementById("content");
-    var source = document.getElementById("source");
-    var update = document.getElementById("update");
+window.addEventListener("load", ev => {
+    const title = document.getElementById("title");
+    const heading = document.getElementById("heading");
+    const content = document.getElementById("content");
+    const source = document.getElementById("source");
+    const update = document.getElementById("update");
     
-    var init = function () {
+    const init = () => {
         window.addEventListener("hashchange", doLoad, false);
         update.addEventListener("click", doUpdate, false);
         if (!window.location.hash) {
@@ -16,30 +16,30 @@ window.addEventListener("load", function (ev) {
         }
     };
     
-    var doLoad = function (ev) {
-        var name = location.hash.substring(1);
-        var url = "/orb/" + name;
-        var req = new XMLHttpRequest();
-        var renderer = doRender.bind(req);
+    const doLoad = (ev) => {
+        const name = location.hash.substring(1);
+        const url = `/orb/${name}`;
+        const req = new XMLHttpRequest();
+        const renderer = doRender.bind(req);
         req.addEventListener("load", renderer, false);
         req.addEventListener("error", renderer, false);
         req.open("GET", url, true);
         req.send();
     };
-    var doRender = function (ev) {
+    const doRender = function (ev) {
         var plain = this.status === 200 ? this.responseText : "";
         title.textContent = heading.textContent = name;
         content.innerHTML = plain.replace(wikiName, linker);
         source.value = plain;
     };
-    var wikiName = /\[\[([^\]]+)\]\]/g;
-    var linker = function (match, name) {
-        return "<a href='#" + name + "'>" + name + "</a>";
+    const wikiName = /\[\[([^\]]+)\]\]/g;
+    const linker = (match, name) => {
+        return `<a href='#${name}'>${name}</a>`;
     };
     
-    var doUpdate = function (ev) {
+    const doUpdate = (ev) => {
         var name = location.hash.substring(1);
-        var url = "/orb/" + name;
+        var url = `/orb/${name}`;
         var req = new XMLHttpRequest();
         req.addEventListener("load", doLoad, false);
         req.open("PUT", url, true);
