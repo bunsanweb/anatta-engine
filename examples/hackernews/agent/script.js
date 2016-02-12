@@ -1,9 +1,12 @@
 "use strict";
-window.addEventListener("agent-load", function (ev) {
-    var rootUri = document.getElementById("rootUri");
-    var root = anatta.engine.link(rootUri, "text/html", anatta.entity);
-    var containerTemplate = document.querySelector(".container");
-    var contentTemplate = document.querySelector(".content");
+window.addEventListener("agent-load", ev => {
+    const containerTemplate = document.querySelector(".container");
+    const contentTemplate = document.querySelector(".content");
+    
+    const rootUri = document.getElementById("rootUri");
+    const root = anatta.engine.link(rootUri, "text/html", anatta.entity);
+
+    //NOTE: customize termset in the agent
     anatta.engine.glossary.add(anatta.termset.desc.create({
         name: "hackernews",
         "content-type": "text/html",
@@ -24,59 +27,59 @@ window.addEventListener("agent-load", function (ev) {
         }
     }));
 
-    var linkToContent = function (entity) {
-        var content = contentTemplate.cloneNode(true);
-        var uri = entity.request.href;
+    const linkToContent = (entity) => {
+        const contentType = entity.response.headers["content-type"];
+        const uri = entity.request.href;
+        const titleText = contentType.startsWith("text/html") ?
+                  entity.html.title || uri : uri;
+        //console.log(titleText);
+        const content = contentTemplate.cloneNode(true);
         content.querySelector(".href").href = uri;
         content.querySelector(".href").textContent = uri;
-        var contentType = entity.response.headers["content-type"];
-        if (contentType.indexOf("text/html") == 0) {
-            var titleText = entity.html.title || uri;
-            content.querySelector(".title").textContent = titleText;
-        } else {
-            content.querySelector(".title").textContent = uri;
-        }
+        content.querySelector(".title").textContent = titleText;
         return content;
     };
 
-    var itemToContainer = function (item) {
-        var container = containerTemplate.cloneNode(true);
+    const itemToContainer = (item) => {
+        const container = containerTemplate.cloneNode(true);
         container.querySelector(".src").href = item.src;
         container.querySelector(".src").textContent = item.title;
         container.querySelector(".href").href = item.href;
         container.querySelector(".href").textContent = item.href;
 
-        var contents = container.querySelector(".contents");
-        return anatta.q.all(item.links.map(function (link) {
-            return link.get().then(linkToContent);
-        })).then(function (linkContents) {
+        //console.log(item.links.map(l => l.href()));
+        const contents = container.querySelector(".contents");
+        return Promise.all(
+            item.links.map(link => link.get().then(linkToContent))
+        ).then(linkContents => {
+            //console.log(linkContents);
             linkContents.forEach(contents.appendChild, contents);
             return container;
-        });
+        }).catch(err => console.log(`${err} ${err.stack}`));
     };
 
-    var getMore = function (item) {
+    const getMore = function getMore(item) {
         if (!item.more) return item;
-        var link = anatta.engine.link({href: item.more});
-        return link.get().then(function (moreItem) {
-            return {href: item.href, title: item.title, src: item.src,
-                    links: item.links.concat(moreItem.all()),
-                    more: moreItem.attr("more")}
-        }).then(getMore);
+        const link = anatta.engine.link({href: item.more});
+        return link.get().then(moreItem => ({
+            href: item.href, title: item.title, src: item.src,
+            links: item.links.concat(moreItem.all()),
+            more: moreItem.attr("more")
+        })).then(getMore);
     };
-
-    window.addEventListener("agent-access", function (ev) {
+    
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
-        root.get().then(function (rootEntity) {
-            return rootEntity.all()[0].get();
-        }).then(function (itemEntity) {
-            return {href: itemEntity.href(), title: itemEntity.attr("title"),
-                    src: itemEntity.attr("src"),
-                    links: itemEntity.all(), more: itemEntity.attr("more")};
-        }).then(getMore).then(itemToContainer).then(function (container) {
-            ev.detail.respond(200, {
+        root.get().then(
+            rootEntity => rootEntity.all()[0].get()
+        ).then(itemEntity => ({
+            href: itemEntity.href(), title: itemEntity.attr("title"),
+            src: itemEntity.attr("src"),
+            links: itemEntity.all(), more: itemEntity.attr("more")
+        })).then(getMore).then(itemToContainer).then(
+            container => ev.detail.respond(200, {
                 "content-type": "text/html;charset=utf-8"
-            }, container.innerHTML);
-        });
+            }, container.innerHTML)
+        );
     }, false);
 }, false);

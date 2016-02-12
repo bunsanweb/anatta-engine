@@ -1,12 +1,12 @@
 "use strict";
-window.addEventListener("load", function (ev) {
-    var doRender = function (ev) {
+window.addEventListener("load", ev => {
+    const doRender = function (ev) {
         document.querySelector("#container").innerHTML = this.responseText;
     };
-    var doLoad = function (ev) {
-        var url = "/agent/";
-        var req = new XMLHttpRequest();
-        var render = doRender.bind(req);
+    const doLoad = function (ev) {
+        const url = "/agent/";
+        const req = new XMLHttpRequest();
+        const render = doRender.bind(req);
         req.addEventListener("load", render, false);
         req.open("GET", url, true);
         req.send();

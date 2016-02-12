@@ -3,6 +3,7 @@
 var http = require("http");
 var url = require("url");
 var q = require("q");
+var iconv = require("iconv");
 var conftree = require("../conftree");
 
 var Request = function Request(method, uri, headers, body, from) {
@@ -61,7 +62,12 @@ Response.prototype.contentType = function () {
 Response.prototype.text = function (charset) {
     var type = this.contentType();
     charset = charset || type.parameter.charset || "binary";
-    return this.body.toString(charset);
+    try {
+        return this.body.toString(charset);
+    } catch (ex) {
+        var converter = new iconv.Iconv(charset, "utf-8");
+        return converter.convert(this.body).toString();
+    }
 };
 
 var Space = function Space(opts) {
