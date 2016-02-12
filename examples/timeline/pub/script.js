@@ -1,42 +1,41 @@
 "use strict";
 
-window.addEventListener("load", function (ev) {
-    var followings = document.getElementById("followings");
-    var timeline = document.getElementById("timeline");
-    var follow = document.getElementById("follow");
-    var follower = document.getElementById("follower");
-    var post = document.getElementById("post");
-    var source = document.getElementById("source");
-    var backward = document.getElementById("backward");
-    var timelineUri = "/timeline/";
-    var statusesUri = "/statuses/";
-    var waits = {continued: 500, interval: 5000};
+window.addEventListener("load", ev => {
+    const followings = document.getElementById("followings");
+    const timeline = document.getElementById("timeline");
+    const follow = document.getElementById("follow");
+    const follower = document.getElementById("follower");
+    const post = document.getElementById("post");
+    const source = document.getElementById("source");
+    const backward = document.getElementById("backward");
+    const timelineUri = "/timeline/";
+    const statusesUri = "/statuses/";
+    const waits = {continued: 500, interval: 5000};
 
-    var Request = function (method, uri, callback) {
-        var req = new XMLHttpRequest();
+    const Request = (method, uri, callback) => {
+        const req = new XMLHttpRequest();
         req.addEventListener("load", callback, false);
         req.open(method, uri, true);
         return req;
     };
 
-    var Data = function (obj) {
-        var data = new FormData();
-        Object.keys(obj).forEach(function (key) {
-            data.append(key, obj[key]);
-        });
+    const Data = (obj) => {
+        const data = new FormData();
+        Object.keys(obj).forEach(key => data.append(key, obj[key]));
         return data;
     };
-
-    var setReblogEvent = function (entry) {
-        var from = entry.querySelector(".from");
-        var reblog = entry.querySelector(".reblog");
+    
+    const setReblogEvent = (entry) => {
+        const from = entry.querySelector(".from");
+        const reblog = entry.querySelector(".reblog");
         if (from.querySelector(".href").href != document.baseURI) {
-            reblog.addEventListener("click", function () {
-                var req = Request("POST", statusesUri,
-                    streamer.get("refresh"));
-                var uri = reblog.parentNode.querySelector(".id > .href").href;
-                var author = entry.querySelector(".author > .href");
-                var via = author ? author.href : "";
+            reblog.addEventListener("click", () => {
+                const req = Request("POST", statusesUri,
+                                    () => streamer.refresh());
+                const uri =
+                          reblog.parentNode.querySelector(".id > .href").href;
+                const author = entry.querySelector(".author > .href");
+                const via = author ? author.href : "";
                 req.send(Data({
                     author: document.baseURI,
                     href: uri, selector: "article", via: via
@@ -48,41 +47,38 @@ window.addEventListener("load", function (ev) {
         }
     };
 
-    var streamer = Streamer(timelineUri, function (entry) {
-        return timeline.ownerDocument.importNode(entry, true);
-    });
-    streamer.on("clear", function () {
+    const streamer = Streamer(
+        timelineUri, entry => timeline.ownerDocument.importNode(entry, true));
+    streamer.on("clear", () => {
         followings.innerHTML ="";
         timeline.innerHTML = "";
     });
-    streamer.on("insertFollowing", function (following) {
-        followings.appendChild(following);
-    });
-    streamer.on("insert", function (entry, id) {
-        var elem = timeline.querySelector("#" + id);
+    streamer.on("insertFollowing",
+                following => followings.appendChild(following));
+    streamer.on("insert", (entry, id) => {
+        const elem = timeline.querySelector(`#${id}`);
         timeline.insertBefore(entry, elem);
         setReblogEvent(entry);
     });
-    streamer.on("refresh", function (updated) {
-        return setTimeout(streamer.get("refresh"),
-            updated ? waits.continued : waits.interval);
-    });
+    streamer.on("refresh", updated => setTimeout(
+        () => streamer.refresh(),
+        updated ? waits.continued : waits.interval));
 
-    follow.addEventListener("click", function () {
-        var req = Request("POST", timelineUri, streamer.get("load"));
+    follow.addEventListener("click", () => {
+        const req = Request("POST", timelineUri, () => streamer.load());
         req.send(Data({follower: follower.value}));
         follower.value = "";
     }, false);
     follower.value = "";
 
-    post.addEventListener("click", function () {
-        var req = Request("POST", statusesUri, streamer.get("refresh"));
+    post.addEventListener("click", () => {
+        const req = Request("POST", statusesUri, () => streamer.refresh());
         req.send(Data({source: source.value}));
         source.value = "";
     }, false);
     source.value = "";
-    backward.addEventListener("click", streamer.get("backward"), false);
+    backward.addEventListener("click", () => streamer.backward(), false);
 
-    var req = Request("POST", timelineUri, streamer.get("load"));
+    const req = Request("POST", timelineUri, () => streamer.load());
     req.send(Data({follower: document.baseURI}));
 });

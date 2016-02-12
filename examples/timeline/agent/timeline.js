@@ -1,86 +1,85 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var followings = document.querySelector("#followings");
-    var followingTemplate = document.querySelector(".following");
-    var fromTemplate = document.querySelector(".from");
-    var reblogButtonTemplate = document.querySelector(".reblog");
-    var container = document.querySelector("#statuses");
-    var statusesPath = "/statuses/";
-    var streamers = {};
-    var url = anatta.builtin.url;
-    var waits = {continued: 500, interval: 5000};
-    var NUM = 5;
+window.addEventListener("agent-load", ev => {
+    const followings = document.querySelector("#followings");
+    const followingTemplate = document.querySelector(".following");
+    const fromTemplate = document.querySelector(".from");
+    const reblogButtonTemplate = document.querySelector(".reblog");
+    const container = document.querySelector("#statuses");
+    const statusesPath = "/statuses/";
+    const streamers = {};
+    const url = anatta.builtin.url;
+    const waits = {continued: 500, interval: 5000};
+    const NUM = 5;
 
-    var createLink = function (uriObj, rel, elem) {
-        var uri = uriObj.protocol + "//" + uriObj.host + "/";
-        uri = url.resolve(uri, uriObj.pathname);
-        var id = elem ? elem.id : uriObj.query.id;
-        uri = url.resolve(uri, id ? "?on=" + rel + "&id=" + id : "");
-
-        var link = document.createElement("link");
+    const createLink = (uriObj, rel, elem) => {
+        const base = `${uriObj.protocol}//${uriObj.host}/`;
+        const pathuri = url.resolve(base, uriObj.pathname);
+        const id = elem ? elem.id : uriObj.query.id;
+        const uri = url.resolve(pathuri, id ? `?on=${rel}&id=${id}` : "");
+        
+        const link = document.createElement("link");
         link.rel = rel;
         link.href = uri;
-
         return link;
     };
 
-    var formatMessage = function (statuses, uriObj) {
-        var doc = document.implementation.createHTMLDocument("statuses");
+    const formatMessage = (statuses, uriObj) => {
+        const doc = document.implementation.createHTMLDocument("statuses");
         doc.body.appendChild(doc.importNode(followings, true));
-        var div = doc.createElement("div");
-        statuses.forEach(function (status) {
-            div.appendChild(doc.importNode(status, true));
-        });
+        const div = doc.createElement("div");
+        statuses.forEach(
+            status => div.appendChild(doc.importNode(status, true)));
         doc.body.appendChild(div);
-
-        var refresh = createLink(uriObj, "refresh", div.firstChild);
+        
+        const refresh = createLink(uriObj, "refresh", div.firstChild);
         doc.head.appendChild(doc.importNode(refresh, true));
 
-        var backward = createLink(uriObj, "backward", div.lastChild);
+        const backward = createLink(uriObj, "backward", div.lastChild);
         doc.head.appendChild(doc.importNode(backward, true));
 
         return doc;
     };
 
-    var statusSlice = function (pivot, max, getBack) {
-        var sibling = getBack ? "nextSibling" : "previousSibling";
-        var append = getBack ? "push" : "unshift";
-        var slice = [];
-        for (var i = 0; pivot && i < max; i++) {
-            slice[append](pivot);
-            pivot = pivot[sibling];
+    const statusSlice = (pivot, max, getBack) => {
+        const sibling = getBack ? "nextSibling" : "previousSibling";
+        const slice = [];
+        const append = getBack ? v => slice.push(v) : v => slice.unshift(v);
+        for (let p = pivot, i = 0; p && i < max; p = p[sibling], i++) {
+            append(p);
         }
         return slice;
     };
 
-    var findStatuses = function (query) {
-        var pivot = query.id ? container.querySelector("#" + query.id) : null;
+    const findStatuses = (query) => {
+        const pivot =
+                  query.id ? container.querySelector(`#${query.id}`) : null;
         switch (query.on) {
-            case "refresh":
-                var slice = statusSlice(pivot, NUM+1, false);
-                return slice.slice(0, slice.length-1);
-            case "backward":
-                var slice = statusSlice(pivot, NUM+1, true);
-                return slice.slice(1);
-            default:
-                return statusSlice(container.firstChild, NUM, true);
+        case "refresh":
+            const updated = statusSlice(pivot, NUM + 1, false);
+            return updated.slice(0, -1);
+        case "backward":
+            const past = statusSlice(pivot, NUM + 1, true);
+            return past.slice(1);
+        default:
+            return statusSlice(container.firstChild, NUM, true);
         }
     };
 
-    var replyStatuses = function (ev) {
-        var request = ev.detail.request;
-        var statuses = findStatuses(request.location.query);
-        var statusesDoc = formatMessage(statuses, request.origin().location);
+    const replyStatuses = (ev) => {
+        const request = ev.detail.request;
+        const statuses = findStatuses(request.location.query);
+        const statusesDoc = formatMessage(statuses, request.origin().location);
+        //console.log(statusesDoc.documentElement.outerHTML);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
         }, statusesDoc.documentElement.outerHTML);
     };
 
-    var formatStatus = function (uri, entry) {
-        var parsed = url.parse(uri);
-        var href = parsed.protocol + "//" + parsed.host + "/";
-        var from = fromTemplate.cloneNode(true);
+    const formatStatus = function (uri, entry) {
+        const parsed = url.parse(uri);
+        const href = `${parsed.protocol}//${parsed.host}/`;
+        const from = fromTemplate.cloneNode(true);
         from.querySelector(".href").href = href;
         from.querySelector(".href").textContent = href;
         entry.appendChild(from);
@@ -88,47 +87,45 @@ window.addEventListener("agent-load", function (ev) {
         return entry;
     };
 
-    var insertStatus = function (status) {
-        var elem = container.firstChild;
-        while (elem && elem.id > status.id) {
-            elem = elem.nextSibling;
-        }
+    const insertStatus = (status) => {
+        let elem = container.firstChild;
+        while (elem && elem.id > status.id) elem = elem.nextSibling;
         container.insertBefore(status, elem);
     };
 
-    var setStreamer = function (followerUri) {
-        var uri = url.resolve(followerUri, statusesPath);
-        var streamer = Streamer(uri, function (entry) {
-            return container.ownerDocument.importNode(entry, true);
-        });
-        streamer.on("insert", function (entry) {
-            var status = formatStatus(this.uri, entry);
+    const setStreamer = (followerUri) => {
+        const uri = url.resolve(followerUri, statusesPath);
+        const streamer = Streamer(
+            uri, entry => container.ownerDocument.importNode(entry, true));
+        streamer.on("insert", entry => {
+            const status = formatStatus(streamer.uri, entry);
             insertStatus(status);
         });
-        streamer.on("refresh", function (updated) {
-            return setTimeout(streamer.get("refresh"),
+        streamer.on("refresh", updated => {
+            return setTimeout(
+                () => streamer.refresh(),
                 updated ? waits.continued : waits.interval);
         });
         streamers[followerUri] = streamer;
     };
 
-    var setFollowing = function (followerUri) {
-        var following = followingTemplate.cloneNode(true);
+    const setFollowing = (followerUri) => {
+        const following = followingTemplate.cloneNode(true);
         following.querySelector(".href").href = followerUri;
         following.querySelector(".href").textContent = followerUri;
-        var doc = followings.ownerDocument;
+        const doc = followings.ownerDocument;
         followings.appendChild(doc.importNode(following, true));
     };
 
-    var refreshContainer = function () {
+    const refreshContainer = () => {
         container.innerHTML = "";
-        Object.keys(streamers).forEach(function (key) {
-            streamers[key].get("load")();
+        Object.keys(streamers).forEach((uri) => {
+            streamers[uri].load();
         });
     };
 
-    var postFollower = function (ev) {
-        var followerUri = anatta.form.decode(ev.detail.request).follower;
+    const postFollower = function (ev) {
+        const followerUri = anatta.form.decode(ev.detail.request).follower;
         if (followerUri && !streamers[followerUri]) {
             setStreamer(followerUri);
             setFollowing(followerUri);
@@ -139,7 +136,7 @@ window.addEventListener("agent-load", function (ev) {
         }, "");
     };
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
             case "GET": return replyStatuses(ev);
