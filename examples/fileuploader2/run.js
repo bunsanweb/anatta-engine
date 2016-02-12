@@ -1,8 +1,8 @@
 "use strict";
 
-var anatta = require("../../anatta");
+const anatta = require("../../anatta");
 
-var engine = anatta.engine.builder.engine({
+const engine = anatta.engine.builder.engine({
     type: "generic",
     porter: {
         "text/html": "html",
@@ -16,6 +16,6 @@ var engine = anatta.engine.builder.engine({
         "private:/orb": {field: "orb"},
     }
 });
-var gate = anatta.webgate.core.WebGate(
+const gate = anatta.webgate.core.WebGate(
     engine.space, {from: "/", to: "root:/"});
 gate.start(process.env.PORT || "8000");

@@ -1,29 +1,26 @@
 "use strict";
-window.addEventListener("load", function (ev) {
-    var url = "/files/";
-    var upload = document.getElementById("upload");
-    var fileInput = function () {
-        return document.getElementById("fileinput");
-    };
+window.addEventListener("load", ev => {
+    const url = "/files/";
+    const upload = document.getElementById("upload");
+    const fileInput = () => document.getElementById("fileinput");
 
-    var doRender = function (ev) {
+    const doRender = function (ev) {
         document.getElementById("files").outerHTML = this.responseText;
         fileInput().outerHTML = fileInput().outerHTML; // clear selection
     };
 
-    var doLoad = function (ev) {
-        var req = new XMLHttpRequest();
+    const doLoad = function (ev) {
+        const req = new XMLHttpRequest();
         req.addEventListener("load", doRender.bind(req), false);
         req.open("GET", url, true);
         req.send();
     };
 
-    var doUpload = function (ev) {
-        var data = new FormData();
-        Array.prototype.forEach.call(fileInput().files, function (file) {
-            data.append("file", file);
-        });
-        var req = new XMLHttpRequest();
+    const doUpload = function (ev) {
+        const data = new FormData();
+        Array.from(fileInput().files).forEach(
+            file => data.append("file", file));
+        const req = new XMLHttpRequest();
         req.addEventListener("load", doLoad, false);
         req.open("POST", url, true);
         req.send(data);

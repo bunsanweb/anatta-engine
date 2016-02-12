@@ -1,39 +1,34 @@
 "use strict";
 
-window.addEventListener("load", function (ev) {
-    var timeline = document.getElementById("timeline");
-    var post = document.getElementById("post");
-    var source = document.getElementById("source");
-    var backward = document.getElementById("backward");
-    var streamUri = "/stream/";
-    var waits = {continued: 500, interval: 5000};
+window.addEventListener("load", ev => {
+    const timeline = document.getElementById("timeline");
+    const post = document.getElementById("post");
+    const source = document.getElementById("source");
+    const backward = document.getElementById("backward");
+    const streamUri = "/stream/";
+    const waits = {continued: 500, interval: 5000};
 
-    var streamer = Streamer(streamUri, function (entry) {
-        return document.importNode(entry, true);
-    });
-    streamer.on("clear", function () {
-        timeline.innerHTML = "";
-    });
-    streamer.on("insert", function (entry, id) {
-        var elem = timeline.querySelector("#" + id);
+    const streamer = Streamer(
+        streamUri, entry => document.importNode(entry, true));
+    streamer.on("clear", () => timeline.innerHTML = "");
+    streamer.on("insert", (entry, id) => {
+        const elem = timeline.querySelector(`#${id}`);
         timeline.insertBefore(entry, elem);
     });
-    streamer.on("refresh", function (updated) {
-        return setTimeout(streamer.get("refresh"),
-            updated ? waits.continued : waits.interval);
-    });
-
-    post.addEventListener("click", function () {
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", streamer.get("refresh"), false);
+    streamer.on("refresh", updated => setTimeout(
+        () => streamer.refresh(), updated ? waits.continued : waits.interval));
+    
+    post.addEventListener("click", () => {
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", () => streamer.refresh(), false);
         req.open("POST", streamUri, true);
-        var data = new FormData();
+        const data = new FormData();
         data.append("source", source.value);
         req.send(data);
         source.value = "";
     }, false);
     source.value = "";
-    backward.addEventListener("click", streamer.get("backward"), false);
+    backward.addEventListener("click", () => streamer.backward(), false);
 
-    streamer.get("load")();
+    streamer.load();
 });
