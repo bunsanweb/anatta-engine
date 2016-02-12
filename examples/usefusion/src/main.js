@@ -1,6 +1,8 @@
-window.addEventListener("agent-load", function (ev) {
-    var template = document.querySelector(".items");
-    var data = {
+"use strict";
+
+window.addEventListener("agent-load", ev => {
+    const template = document.querySelector(".items");
+    const data = {
         title: "My News",
         href: "http://example.org/",
         links: [
@@ -10,10 +12,10 @@ window.addEventListener("agent-load", function (ev) {
         ],
     };
     
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
-        var doc = document.implementation.createHTMLDocument("fusioned");
-        var content = window.fusion(data, template, doc);
+        const doc = document.implementation.createHTMLDocument("fusioned");
+        const content = window.fusion(data, template, doc);
         doc.body.appendChild(content);
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"

@@ -1,11 +1,7 @@
 "use strict";
 
 // sync function for testing
-var join = function (base, href) {
-    return anatta.builtin.url.resolve(base, href);
-};
+const join = (base, href) => anatta.builtin.url.resolve(base, href);
 
 // async function for testing
-var get = function (uri) {
-    return anatta.engine.link({href: uri}).get();
-};
+const get = (uri) => anatta.engine.link({href: uri}).get();

@@ -1,8 +1,8 @@
 "use strict";
 
-var anatta = require("../../anatta");
+const anatta = require("../../anatta");
 
-var engine = anatta.engine.builder.engine({
+const engine = anatta.engine.builder.engine({
     type: "generic",
     porter: {
         "application/json": "json",
@@ -18,6 +18,6 @@ var engine = anatta.engine.builder.engine({
     },
 });
 
-engine.link({href: "module:/unittest/"}).get().then(function (entity) {
-    console.log(entity.attr("body"));
-});
+engine.link({href: "module:/unittest/"}).get().then(
+    entity => console.log(entity.attr("body")));
+
