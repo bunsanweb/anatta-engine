@@ -64,6 +64,7 @@ window.addEventListener("agent-load", ev => {
         } else if (form.source) {
             return Promise.resolve(toStatus(data));
         }
+        return Promise.resolve(null);
     };
 
     const createLink = (uriObj, rel, elem) => {

@@ -97,15 +97,11 @@ window.addEventListener("agent-load", ev => {
         const uri = url.resolve(followerUri, statusesPath);
         const streamer = Streamer(
             uri, entry => container.ownerDocument.importNode(entry, true));
-        streamer.on("insert", entry => {
-            const status = formatStatus(streamer.uri, entry);
-            insertStatus(status);
-        });
-        streamer.on("refresh", updated => {
-            return setTimeout(
-                () => streamer.refresh(),
-                updated ? waits.continued : waits.interval);
-        });
+        streamer.on("insert", entry =>
+                    insertStatus(formatStatus(streamer.uri, entry)));
+        streamer.on("refresh", updated => setTimeout(
+            () => streamer.refresh(),
+            updated ? waits.continued : waits.interval));
         streamers[followerUri] = streamer;
     };
 
