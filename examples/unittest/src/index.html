@@ -8,15 +8,15 @@
 "use strict";
 
 console.log("read");
-window.addEventListener("agent-load", function (ev) {
-    var template = document.getElementById("link");
-    window.addEventListener("agent-access", function (ev) {
+window.addEventListener("agent-load", (ev) => {
+    const template = document.getElementById("link");
+    window.addEventListener("agent-access", (ev) => {
         if (ev.detail.request.method !== "GET") return;
         ev.detail.accept();
 
-        var doc = document.implementation.createHTMLDocument(
+        const doc = document.implementation.createHTMLDocument(
             "unittest example");
-        var content = doc.importNode(template, true);
+        const content = doc.importNode(template, true);
         content.href = "/unittest/";
         doc.body.appendChild(content);
 

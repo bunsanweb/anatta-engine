@@ -1,6 +1,6 @@
 "use strict";
 
-var fusion = (function () {
+const fusion = (function () {
     // Generic library for mapping entity and links to DOM Element tree
     // e.g. fusion(entity, templateTree[, doc]) => Element
     //
@@ -32,23 +32,23 @@ var fusion = (function () {
       }
     */
     
-    var fuse = function (context, template, doc) {
+    const fuse = (context, template, doc) => {
         if (typeof context.attr !== "function" && 
             typeof context.find !== "function") {
             context = JsonEntity(context);
         }
         return doFuse(context, template, doc);
     };
-    var doFuse = function (context, template, doc) {
+    const doFuse = (context, template, doc) => {
         doc = doc || template.ownerDocument;
-        var result = doc.importNode(template, true);
+        const result = doc.importNode(template, true);
         applyTree(result, context);
         return result;
     };
-    var applyTree = function (elem, context) {
+    const applyTree = (elem, context) => {
         if (elem.nodeType !== 1) return;
-        var desc = pickDesc(elem);
-        var parent = elem.parentNode;
+        const desc = pickDesc(elem);
+        const parent = elem.parentNode;
         if (desc.when && !context.attr(desc.when)) {
             parent.removeChild(elem);
             return;
@@ -58,10 +58,10 @@ var fusion = (function () {
             return;
         }
         if (desc.links) {
-            var links = context.find(desc.links); //NOTE: "*" only allow
-            var last = elem.nextSibling;
-            links.forEach(function (link) {
-                var cloned = elem.cloneNode(true);
+            const links = context.find(desc.links); //NOTE: "*" only allow
+            const last = elem.nextSibling;
+            links.forEach(link => {
+                const cloned = elem.cloneNode(true);
                 parent.insertBefore(cloned, last);
                 applyMetadata(cloned, link, desc);
             });
@@ -70,10 +70,10 @@ var fusion = (function () {
             applyMetadata(elem, context, desc);
         }
     };
-    var applyMetadata = function (elem, context, desc) {
-        Object.keys(desc).forEach(function (key) {
-            if (specials.indexOf(key) >= 0) return;
-            var attr = context.attr(desc[key]);
+    const applyMetadata = (elem, context, desc) => {
+        Object.keys(desc).forEach(key => {
+            if (specials.indexOf(key) >= 0) return null;
+            const attr = context.attr(desc[key]);
             if (shorthandAttrs[key]) {
                 return elem[shorthandAttrs[key]] = attr;
             } else if (htmlAttrs.indexOf(key) >= 0) {
@@ -82,24 +82,23 @@ var fusion = (function () {
                 return elem.setAttribute(key, attr);
             }
         });
-        Array.prototype.forEach.call(elem.childNodes, function (child) {
-            applyTree(child, context);
-        });
+        Array.from(elem.childNodes).forEach(
+            child => applyTree(child, context));
     };
-    var specials = ["links", "when", "unless"];
-    var shorthandAttrs = {
+    const specials = ["links", "when", "unless"];
+    const shorthandAttrs = {
         text: "textContent",
         html: "innerHTML",
-        "class": "className",
+        "class": "className"
     };
-    var htmlAttrs = ["id", "title", "lang", "rel"];
+    const htmlAttrs = ["id", "title", "lang", "rel"];
 
-    var pickDesc = function (elem) {
+    const pickDesc = (elem) => {
         // data-fusion="key1:value1,key2:value2" => {key1:value1, key2:value2}
-        var src = elem.getAttribute("data-fusion") || "";
+        const src = elem.getAttribute("data-fusion") || "";
         elem.removeAttribute("data-fusion");
-        return src.split(/\s*,\s*/).reduce(function (desc, kvstr) {
-            var kv = kvstr.split(/\s*:\s*/);
+        return src.split(/\s*,\s*/).reduce((desc, kvstr) => {
+            const kv = kvstr.split(/\s*:\s*/);
             if (!kv[0]) return desc;
             desc[kv[0].toLowerCase()] = kv[1];
             return desc;
@@ -107,26 +106,26 @@ var fusion = (function () {
     };
     
     // wrap as Metadata for JSONable object
-    var JsonEntity = function JsonEntity(json) {
+    const JsonEntity = function JsonEntity(json) {
         return Object.create(JsonEntity.prototype, {
-            json: {value: json},
+            json: {value: json}
         });
     };
     JsonEntity.prototype.attr = function (key) {
-        var value = this.json[key];
+        const value = this.json[key];
         return value ? value.toString() : "";
     };
     JsonEntity.prototype.find = function (query) {
         if (query !== "*") return [];
         return (this.json.links || []).map(JsonLink);
     };
-    var JsonLink = function JsonLink(json) {
+    const JsonLink = function JsonLink(json) {
         return Object.create(JsonLink.prototype, {
-            json: {value: json},
+            json: {value: json}
         });
     };
     JsonLink.prototype.attr = function (key) {
-        var value = this.json[key];
+        const value = this.json[key];
         return value ? value.toString() : "";
     };
     JsonLink.prototype.find = function (query) {
