@@ -41,7 +41,7 @@ window.addEventListener("agent-load", ev => {
             inst.src = form.instUri;
             return Promise.all([
                 inst.id, anatta.inst.activate(anatta.engine, inst)]);
-        }).then(a => getUI(a[0], a[1])).then(() => ev.detail.respond("200", {
+        }).then(a => getUI(...a)).then(() => ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
         }, ""), err => ev.detail.respond("400", {
             "content-type": "text/html;charset=utf-8"
