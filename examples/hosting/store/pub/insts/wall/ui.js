@@ -1,30 +1,30 @@
 "use strict";
-window.addEventListener("load", function (ev) {
-    var source = document.querySelector("#source");
-    var agent = document.querySelector("link[rel='agent']").href;
+window.addEventListener("load", ev => {
+    const source = document.querySelector("#source");
+    const agent = document.querySelector("link[rel='agent']").href;
 
-    var doRender = function (ev) {
-        var plain = this.status == 200 ? this.responseText : "";
+    const doRender = (ev) => {
+        const plain = ev.target.status == 200 ? ev.target.responseText : "";
         document.querySelector("#content").innerHTML = plain;
         source.value = document.getElementById("text").textContent;
     };
-
-    var doLoad = function (ev) {
-        var req = new XMLHttpRequest();
-        var render = doRender.bind(req);
-        req.addEventListener("load", render, false);
+    
+    const doLoad = (ev) => {
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", doRender, false);
         req.open("GET", agent, true);
         req.send();
     };
 
-    var doUpdate = function (ev) {
-        var req = new XMLHttpRequest();
+    const doUpdate = (ev) => {
+        const req = new XMLHttpRequest();
         req.addEventListener("load", doLoad, false);
         req.open("PUT", agent, true);
-        var data = new FormData();
+        const data = new FormData();
         data.append("source", source.value);
         req.send(data);
     };
-    document.querySelector("#update").addEventListener("click", doUpdate, false);
+    document.querySelector("#update").addEventListener(
+        "click", doUpdate, false);
     doLoad();
 }, false);

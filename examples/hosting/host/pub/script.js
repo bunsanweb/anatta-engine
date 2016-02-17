@@ -1,41 +1,39 @@
 "use strict";
 
-window.addEventListener("load", function (ev) {
-    var instUri = document.getElementById("instUri");
-    var insts = document.getElementById("insts");
-    var add = document.getElementById("add");
-    var agent = document.querySelector("link[rel='agent']").href;
+window.addEventListener("load", ev => {
+    const instUri = document.getElementById("instUri");
+    const insts = document.getElementById("insts");
+    const add = document.getElementById("add");
+    const agent = document.querySelector("link[rel='agent']").href;
 
-    var doRender = function (ev) {
-        var doc = document.implementation.createHTMLDocument("");
-        doc.documentElement.innerHTML = this.responseText;
-        var insts_ = doc.getElementById("insts");
-        insts.innerHTML = insts_ ? insts_.innerHTML : "";
-    };
+    const request = (method, uri, data) => new Promise((f, r) => {
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", f, false);
+        req.open(method, uri, true);
+        req.send(data);
+    });
 
-    var doLoad = function (ev) {
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", doRender.bind(req), false);
-        req.open("GET", agent, true);
-        req.send();
-    };
-
-    var Request = function (method) {
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", doLoad, false);
-        req.open(method, agent, true);
-        return req;
-    };
-
-    var Data = function (elem) {
-        var data = new FormData();
+    const formData = function (elem) {
+        const data = new FormData();
         data.append(elem.id, elem.value);
         return data;
     };
 
-    add.addEventListener("click", function () {
-        var req = Request("POST");
-        req.send(Data(instUri));
+    const doRender = (ev) => {
+        const doc = document.implementation.createHTMLDocument("");
+        doc.documentElement.innerHTML = ev.target.responseText;
+        const insts_ = doc.getElementById("insts");
+        insts.innerHTML = insts_ ? insts_.innerHTML : "";
+    };
+
+    const doLoad = (ev) => {
+        const req = request("GET", agent, null);
+        req.then(doRender);
+    };
+
+    add.addEventListener("click", ev => {
+        const req = request("POST", agent, formData(instUri));
+        req.then(doLoad);
         instUri.value = "";
     }, false);
     instUri.value = "";
