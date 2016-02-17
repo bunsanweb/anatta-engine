@@ -1,23 +1,21 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var publicPem = "";
+window.addEventListener("agent-load", ev => {
+    let publicPem = "";
 
-    var getPublicPem = function (ev) {
-        ev.detail.respond("200", {
-            "content-type": "text/plain;charset=utf-8"
-        }, publicPem);
-    };
-
-    var postPublicPem = function (ev) {
-        var publicPem_ = ev.detail.request.body.toString();
+    const getPublicPem = (ev) => ev.detail.respond("200", {
+        "content-type": "text/plain;charset=utf-8"
+    }, publicPem);
+    
+    const postPublicPem = (ev) => {
+        const publicPem_ = ev.detail.request.body.toString();
         if (publicPem_) publicPem = publicPem_;
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
         }, "");
     };
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
             case "GET": return getPublicPem(ev);

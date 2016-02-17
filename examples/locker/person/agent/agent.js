@@ -1,14 +1,14 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var priv = "";
-    var pub = "";
-    var house = "";
-    var keybox = anatta.engine.link(
+window.addEventListener("agent-load", ev => {
+    let priv = "";
+    let pub = "";
+    let house = "";
+    const keybox = anatta.engine.link(
         document.getElementById("keybox"), "text/html", anatta.entity);
-    var load = function () {
+    const load = function () {
         priv = anatta.cipher.generate();
-        var publicPem = priv.getPublicPem();
+        const publicPem = priv.getPublicPem();
         pub = anatta.cipher.load(publicPem);
         keybox.post({
             headers: {"content-type": "text/plain;charset=utf-8"},
@@ -17,25 +17,25 @@ window.addEventListener("agent-load", function (ev) {
     };
     load();
 
-    var auth = function (entity) {
+    const auth = (entity) => {
         if (entity.response.status != "401") return entity;
 
-        var challenge = entity.response.headers["www-authenticate"];
+        const challenge = entity.response.headers["www-authenticate"];
         if (!challenge) return entity;
 
-        var parsed = LockerAuth.parse(challenge);
+        const parsed = LockerAuth.parse(challenge);
         if (parsed.scheme != LockerAuth.scheme) return entity;
 
-        var signed = priv.sign(parsed.param);
+        const signed = priv.sign(parsed.param);
         if (signed.error) return entity;
 
         entity.request.headers.authorization = LockerAuth.format(signed);
         return entity.post(entity.request);
     };
 
-    var insertLink = function (doc) {
+    const insertLink = (doc) => {
         if (doc.head) {
-            var link = doc.createElement("link");
+            const link = doc.createElement("link");
             link.rel = "house";
             link.href = house;
             doc.head.appendChild(link);
@@ -43,37 +43,36 @@ window.addEventListener("agent-load", function (ev) {
         return doc;
     };
 
-    var respond = function (entity) {
-        var res = entity.response;
-        var doc = entity.html;
-        var resText = doc ? insertLink(doc).documentElement.outerHTML :
-                res.body.toString();
-        this.detail.respond(res.status, res.headers, resText);
+    const respond = (ev) => (entity) => {
+        const res = entity.response;
+        const doc = entity.html;
+        const resText = doc ? insertLink(doc).documentElement.outerHTML :
+                  res.body.toString();
+        ev.detail.respond(res.status, res.headers, resText);
     };
 
-    var postToHouse= function (ev) {
-        var status = "400";
-        var responseText = "400 Bad Request, house is not registered";
-        var req = ev.detail.request;
-        var form = anatta.form.decode(req);
+    const postToHouse= (ev) => {
+        const req = ev.detail.request;
+        const form = anatta.form.decode(req);
         if (form) {
             if (form.house) {
                 house = form.house;
-                status = "200";
-                responseText = house + " is registered as house";
+                return ev.detail.respond("200", {
+                    "content-type": "text/plain;charset=utf-8"
+                }, `${house} is registered as house`);
             } else if (house) {
-                var link = anatta.engine.link({href: house});
-                return link.post(req).then(auth).then(respond.bind(ev));
+                const link = anatta.engine.link({href: house});
+                return link.post(req).then(auth).then(respond(ev));
             }
         }
-        ev.detail.respond(status, {
+        return ev.detail.respond("400", {
             "content-type": "text/html;charset=utf-8"
-        }, responseText);
+        }, "400 Bad Request, house is not registered");
     };
 
-    var getFromHouse = function (ev) {
+    const getFromHouse = (ev) => {
         if (house) {
-            anatta.engine.link({href: house}).get().then(respond.bind(ev));
+            anatta.engine.link({href: house}).get().then(respond(ev));
         } else {
             ev.detail.respond("400", {
                 "content-type": "text/html;charset=utf-8"
@@ -81,7 +80,7 @@ window.addEventListener("agent-load", function (ev) {
         }
     };
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
             case "GET": return getFromHouse(ev);

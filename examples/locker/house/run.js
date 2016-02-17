@@ -1,7 +1,7 @@
 "use strict";
 
-var anatta = require("../../../anatta");
-var engine = anatta.engine.builder.engine({
+const anatta = require("../../../anatta");
+const engine = anatta.engine.builder.engine({
     type: "generic",
     porter: {
         "text/html": "html",
@@ -17,23 +17,21 @@ var engine = anatta.engine.builder.engine({
         "private:/message": {field: "agent", uri: "file:/message.html"},
     }
 });
-var gate = anatta.webgate.core.WebGate(
+const gate = anatta.webgate.core.WebGate(
     engine.space, {from: "/", to: "root:/"});
 
-var port = process.argv[2] || process.env.PORT || "8000";
-var adminPubKeyUri = process.argv[3];
-if (!adminPubKeyUri) {
-    process.exit(1);
-} else {
-    engine.link({href: adminPubKeyUri}).get().then(function (entity) {
-        var form = anatta.metadata.multipart.encode({
-            pem: entity.response.body.toString()
-        });
-        engine.link({href: "private:/keybox"}).post(form);
-    });
-}
+const port = process.argv[2] || process.env.PORT || "8000";
+const adminPubKeyUri = process.argv[3];
+if (!adminPubKeyUri) process.exit(1);
 
-var fs = require("fs");
+engine.link({href: adminPubKeyUri}).get().then(entity => {
+    const form = anatta.metadata.multipart.encode({
+        pem: entity.response.body.toString()
+    });
+    engine.link({href: "private:/keybox"}).post(form);
+});
+
+const fs = require("fs");
 gate.start(port, "localhost", {
     key: fs.readFileSync("../../../test/assets/https/privatekey.pem"),
     cert: fs.readFileSync("../../../test/assets/https/certificate.pem")

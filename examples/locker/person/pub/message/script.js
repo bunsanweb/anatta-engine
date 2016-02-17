@@ -1,41 +1,40 @@
 "use strict";
 
-window.addEventListener("load", function (ev) {
-    var text = document.getElementById("text");
-    var refresh = document.getElementById("refresh");
-    var message = document.getElementById("message");
-    var agent = "/agent/";
+window.addEventListener("load", ev => {
+    const text = document.getElementById("text");
+    const refresh = document.getElementById("refresh");
+    const message = document.getElementById("message");
+    const agent = "/agent/";
 
-    var doRender = function (ev) {
-        var doc = document.implementation.createHTMLDocument("");
-        doc.documentElement.innerHTML = this.responseText;
-        var message_ = doc.getElementById("message");
+    const request = (method, uri, data) => new Promise((f, r) => {
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", f, false);
+        req.open(method, uri, true);
+        req.send(data);
+    });
+    
+    const doRender = function (ev) {
+        const doc = document.implementation.createHTMLDocument("");
+        doc.documentElement.innerHTML = ev.target.responseText;
+        const message_ = doc.getElementById("message");
         message.textContent = message_ ? message_.textContent : "";
     };
 
-    var doLoad = function (ev) {
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", doRender.bind(req), false);
-        req.open("GET", agent, true);
-        req.send();
+    const doLoad = function (ev) {
+        const req = request("GET", agent, null);
+        req.then(doRender);
     };
 
-    var Request = function (method) {
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", doLoad, false);
-        req.open(method, agent, true);
-        return req;
-    };
-
-    var Data = function (elem) {
-        var data = new FormData();
+    
+    const formData = function (elem) {
+        const data = new FormData();
         data.append(elem.id, elem.value);
         return data;
     };
 
-    refresh.addEventListener("click", function () {
-        var req = Request("POST");
-        req.send(Data(text));
+    refresh.addEventListener("click", ev => {
+        const req = request("POST", agent, formData(text));
+        req.then(doLoad);
         text.value = "";
     }, false);
     text.value = "";

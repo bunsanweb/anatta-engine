@@ -1,64 +1,59 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var keybox = anatta.engine.link(
+window.addEventListener("agent-load", ev => {
+    const keybox = anatta.engine.link(
         document.getElementById("keybox"), "text/html", anatta.entity);
-    var message = anatta.engine.link(
+    const message = anatta.engine.link(
         document.getElementById("message"), "text/html", anatta.entity);
 
-    var verify = function (authParam) {
-        return keybox.get().then(function (entity) {
-            var pubkeyPems = JSON.parse(entity.response.body.toString());
-            return pubkeyPems.some(function (pem) {
-                var pubkey = anatta.cipher.load(pem);
+    const verify = (authParam) => {
+        return keybox.get().then(entity => {
+            const pubkeyPems = JSON.parse(entity.response.body.toString());
+            return pubkeyPems.some(pem => {
+                const pubkey = anatta.cipher.load(pem);
                 return pubkey.verify(authParam);
             });
         });
     };
 
-    var respond = function (entity) {
-        var res = entity.response;
-        this.detail.respond(res.status, res.headers, res.body.toString());
+    const respond = (ev) => (entity) => {
+        const res = entity.response;
+        ev.detail.respond(res.status, res.headers, res.body.toString());
     };
 
-    var respondChallenge = function (ev) {
-        var status = "401";
-        var headers = {
+    const respondChallenge = (ev) => {
+        const status = "401";
+        const headers = {
             "content-type": "text/html;charset=utf-8",
             "WWW-Authenticate": LockerAuth.wwwAuthenticate
         };
-        var responseText = "HTTP/1.1 401 Unauthorized";
+        const responseText = "HTTP/1.1 401 Unauthorized";
         ev.detail.respond(status, headers, responseText);
     };
 
-    var doPost = function (ev) {
-        var form = anatta.form.decode(ev.detail.request);
+    const doPost = (ev) => {
+        const form = anatta.form.decode(ev.detail.request);
         if (!form || !form.pem || !form.text) {
             ev.detail.respond("400", {
-                "content-type": "text/html;charset=utf-8",
+                "content-type": "text/html;charset=utf-8"
             }, "400 Bad Rquest");
         }
-        var target = "";
-        if (form.pem) target = keybox;
-        if (form.text) target = message;
-        return target.post(ev.detail.request).then(respond.bind(ev));
+        const target = form.pem ? keybox : message;
+        return target.post(ev.detail.request).then(respond(ev));
     };
 
-    var post = function (ev) {
-        var authStr = ev.detail.request.headers.authorization;
+    const post = (ev) => {
+        const authStr = ev.detail.request.headers.authorization;
         if (!authStr) return respondChallenge(ev);
 
-        var parsed = LockerAuth.parse(authStr);
+        const parsed = LockerAuth.parse(authStr);
         if (parsed.scheme != LockerAuth.scheme) return respondChallenge(ev);
 
-        verify(parsed.param).then(function (authOK) {
-            return authOK ? doPost(ev) : respondChallenge(ev);
-        });
+        return verify(parsed.param).then(
+            authOK => authOK ? doPost(ev) : respondChallenge(ev));
     };
 
-    var get = function (ev) {
-        message.get().then(respond.bind(ev));
-    };
+    const get = (ev) => message.get().then(respond(ev));
 
     window.addEventListener("agent-access", function (ev) {
         ev.detail.accept();

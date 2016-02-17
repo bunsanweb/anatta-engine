@@ -1,34 +1,31 @@
 "use strict";
 
-var LockerAuth = (function () {
-    var scheme = "LockerAuth";
-    var challenge = {
+const LockerAuth = (function () {
+    const scheme = "LockerAuth";
+    const challenge = {
         alg: "sha256",
         buf: "this is LockerAuth",
         bufEncoding: "utf8",
         signEncoding: "hex"
     };
 
-    var parse = function (text) {
+    const parse = (text) => {
         if (!text) return {scheme: "", param: ""};
-        var index = text.indexOf(" ");
-        var scheme = text.slice(0, index).trim();
-        var param = {};
-        text.slice(index).split(",").forEach(function (elem) {
-            var elems = elem.split("=");
+        const index = text.indexOf(" ");
+        const scheme = text.slice(0, index).trim();
+        const param = {};
+        text.slice(index).split(",").forEach((elem) => {
+            const elems = elem.split("=");
             param[elems[0].trim()] = elems[1].trim().slice(1, -1);
         }); 
         return {scheme: scheme, param: param};
-    };  
+    }; 
 
-    var format = function (param) {
-        if (!param|| param.error) return "";
-        var str = "";
-        Object.keys(param).forEach(function (key) {
-            str += key + '="' + param[key] + '", ';
-        }); 
-        return scheme + " " + str.slice(0, -2);
-    };  
+    const format = (param) => {
+        if (!param || param.error) return "";
+        const kv = Object.keys(param).map((key) => `${key}="${param[key]}"`);
+        return `${scheme} ${kv.join(", ")}`;
+    };
 
     return {
         scheme: scheme,

@@ -1,32 +1,31 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var pubkeyPems = []
+window.addEventListener("agent-load", ev => {
+    const pubkeyPems = []
 
-    var getPems = function (ev) {
-        ev.detail.respond("200", {
-            "content-type": "application/json",
-        }, JSON.stringify(pubkeyPems));
-    };
+    const getPems = (ev) => ev.detail.respond("200", {
+        "content-type": "application/json",
+    }, JSON.stringify(pubkeyPems));
+    
 
-    var postPem = function (ev) {
-        var status = "400";
-        var responseText = "400 Bad Request";
-        var form = anatta.form.decode(ev.detail.request);
+    const postPem = (ev) => {
+        const form = anatta.form.decode(ev.detail.request);
         if (form && form.pem) {
-            var pem = form.pem.replace(/\r/g, "");
+            const pem = form.pem.replace(/\r/g, "");
             if (anatta.cipher.isPublicKeyPem(pem)) {
                 pubkeyPems.push(pem);
-                status = "200";
-                responseText = "";
+                ev.detail.respond("200", {
+                    "content-type": "text/plain;charset=utf-8"
+                }, "");
+                return;
             }
         }
-        ev.detail.respond(status, {
-            "content-type": "text/html;charset=utf-8"
-        }, responseText);
+        ev.detail.respond("400", {
+            "content-type": "text/plain;charset=utf-8"
+        }, "400 Bad Request");
     };
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
             case "GET": return getPems(ev);

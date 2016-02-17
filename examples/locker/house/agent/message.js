@@ -1,32 +1,29 @@
 "use strict";
 
-window.addEventListener("agent-load", function (ev) {
-    var text = "";
-    var keybox = anatta.engine.link(
+window.addEventListener("agent-load", ev => {
+    let text = "";
+    const keybox = anatta.engine.link(
         document.getElementById("keybox"), "text/html", anatta.entity);
 
-    var formatPem = function (pem) {
-        var elems = pem.split("\n");
-        var str = "";
-        var pad = " ... ";
-        [1, 2, 3, 4].forEach(function (i) {
-            str += pad + elems[i].slice(0, 4) + pad + elems[i].slice(-4);
-        });
-        return str.slice(pad.length);
+    const formatPem = (pem) => {
+        const elems = pem.split("\n");
+        const pad = " ... ";
+        return elems.slice(1, 5).map(
+            e => `${e.slice(0, 4)}${pad}${e.slice(-4)}`).join(pad);
     };
 
-    var formatMessage = function () {
-        var doc = document.implementation.createHTMLDocument("message");
-        var div = doc.createElement("div");
+    const formatMessage = () => {
+        const doc = document.implementation.createHTMLDocument("message");
+        const div = doc.createElement("div");
         div.id = "message";
         div.textContent = text;
         doc.body.appendChild(div);
-        var ul = doc.createElement("ul");
+        const ul = doc.createElement("ul");
         ul.id = "pubkeys";
-        return keybox.get().then(function (entity) {
-            var pubkeyPems = JSON.parse(entity.response.body.toString());
-            pubkeyPems.forEach(function (pem) {
-                var li = doc.createElement("li");
+        return keybox.get().then(entity => {
+            const pubkeyPems = JSON.parse(entity.response.body.toString());
+            pubkeyPems.forEach(pem => {
+                const li = doc.createElement("li");
                 li.textContent = formatPem(pem);
                 ul.appendChild(li);
             });
@@ -35,23 +32,21 @@ window.addEventListener("agent-load", function (ev) {
         });
     };
 
-    var getMessage = function (ev) {
-        formatMessage().then(function (message) {
-            ev.detail.respond("200", {
-                "content-type": "text/html;charset=utf-8",
-            }, message.documentElement.outerHTML);
-        });
+    const getMessage = (ev) => {
+        formatMessage().then(message => ev.detail.respond("200", {
+            "content-type": "text/html;charset=utf-8",
+        }, message.documentElement.outerHTML));
     };
 
-    var postMessage = function (ev) {
-        var form = anatta.form.decode(ev.detail.request);
+    const postMessage = (ev) => {
+        const form = anatta.form.decode(ev.detail.request);
         if (form && form.text) text = form.text;
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
         }, "");
     };
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
             case "GET": return getMessage(ev);
