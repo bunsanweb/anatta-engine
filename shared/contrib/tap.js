@@ -1,6 +1,6 @@
 "use strict";
 
-const tap = (function () {
+window.tap = (function () {
     const suites = {}; 
     
     const newSuite = () => ({

@@ -1,6 +1,6 @@
 "use strict";
 
-const fusion = (function () {
+window.fusion = (function () {
     // Generic library for mapping entity and links to DOM Element tree
     // e.g. fusion(entity, templateTree[, doc]) => Element
     //
