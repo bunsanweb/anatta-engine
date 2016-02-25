@@ -1,10 +1,10 @@
 "use strict";
 
-var querystring = require("querystring");
+const querystring = require("querystring");
 
-var multipart = require("../metadata/multipart");
+const multipart = require("../metadata/multipart");
 
-var decode = function (message) {
+const decode = function (message) {
     if (message.headers["content-type"] === 
         "application/x-www-form-urlencoded") {
         return querystring.parse(message.body.toString());
