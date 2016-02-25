@@ -5,7 +5,7 @@
 // Entity - EntityGlossary -* TermBinder
 // TermSet -* TermBinder
 
-var TermBinder = function TermBinder() {
+const TermBinder = function TermBinder() {
     return Object.create(TermBinder.prototype, {});
 };
 TermBinder.prototype.entityAttr = function (entity, key) {
@@ -18,10 +18,10 @@ TermBinder.prototype.linkAttr = function (link, key) {
     return "";
 };
 
-var TermSet = function TermSet(name) {
+const TermSet = function TermSet(name) {
     return Object.create(TermSet.prototype, {
         name: {value: name, enumerable: true},
-        binders: {value: {}},
+        binders: {value: {}}
     });
 };
 TermSet.prototype.get = function (type) {
@@ -31,61 +31,57 @@ TermSet.prototype.put = function (type, binder) {
     this.binders[type] = binder;
 };
 
-var EngineGlossary = function EngineGlossary() {
+const EngineGlossary = function EngineGlossary() {
     return Object.create(EngineGlossary.prototype, {
-        sets: {value: []},
+        sets: {value: []}
     });
 };
 EngineGlossary.prototype.add = function (termSet) {
     this.sets.unshift(termSet);
 };
 EngineGlossary.prototype.remove = function (termSet) {
-    var index = this.sets.indexOf(termSet);
-    if (index >= 0) this.sets.splice(i, 1);
+    const index = this.sets.indexOf(termSet);
+    if (index >= 0) this.sets.splice(index, 1);
 };
 EngineGlossary.prototype.binderList = function (contentType) {
-    var binders = [];
-    this.sets.forEach(function (termSet) {
-        var binder = termSet.get(contentType);
+    return this.sets.reduce((binders, termSet) => {
+        const binder = termSet.get(contentType);
         if (binder) binders.push(binder);
-    });
-    return binders;
+        return binders;
+    }, []);
 };
 
-var EntityGlossary = function EntityGlossary(contentType, engineGlossary) {
+const EntityGlossary = function EntityGlossary(contentType, engineGlossary) {
     return Object.create(EntityGlossary.prototype, {
         contentType: {value: contentType},
         parent: {value: engineGlossary},
-        binders: {value: []},
+        binders: {value: []}
     });
 };
 EntityGlossary.prototype.add = function (binder) {
     this.binders.unshift(binder);
 };
 EntityGlossary.prototype.binderList = function () {
-    var list = this.parent.binderList(this.contentType).concat(this.binders);
+    const list = this.parent.binderList(this.contentType).concat(this.binders);
     return list.length === 0 ? this.parent.binderList("*") : list;
 };
 EntityGlossary.prototype.entityAttr = function (entity, key) {
-    var binderList = this.binderList();
-    for (var i = 0; i < binderList.length; i++) {
-        var value = binderList[i].entityAttr(entity, key);
+    for (let binder of this.binderList()) {
+        const value = binder.entityAttr(entity, key);
         if (value) return value;
     }
     return "";
 };
 EntityGlossary.prototype.entityLinkAll = function (entity) {
-    var binderList = this.binderList();
-    for (var i = 0; i < binderList.length; i++) {
-        var value = binderList[i].entityLinkAll(entity);
+    for (let binder of this.binderList()) {
+        const value = binder.entityLinkAll(entity);
         if (value.length) return value;
     }
     return [];
 };
 EntityGlossary.prototype.linkAttr = function (link, key) {
-    var binderList = this.binderList();
-    for (var i = 0; i < binderList.length; i++) {
-        var value = binderList[i].linkAttr(link, key);
+    for (let binder of this.binderList()) {
+        const value = binder.linkAttr(link, key);
         if (value) return value;
     }
     return "";

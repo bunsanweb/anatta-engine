@@ -11,11 +11,11 @@
 // - Atom: "entry" elements
 // - HTML: "a" elements with "href"
 
-var core = require("./core");
-var jsdom = require("../metadata/jsdom");
-var xmlSerializer = jsdom.XMLSerializer();
+const core = require("./core");
+const jsdom = require("../metadata/jsdom");
+const xmlSerializer = jsdom.XMLSerializer();
 
-var ResourceBinder = function ResourceBinder() {
+const ResourceBinder = function ResourceBinder() {
     return Object.create(ResourceBinder.prototype, {});
 };
 ResourceBinder.prototype = core.TermBinder();
@@ -37,14 +37,14 @@ ResourceBinder.prototype.linkAttr = function (link, key) {
 };
 
 
-var JsonBinder = function JsonBinder() {
+const JsonBinder = function JsonBinder() {
     return Object.create(JsonBinder.prototype, {});
 };
 JsonBinder.prototype = ResourceBinder();
 JsonBinder.prototype.entityLinkAll = function (entity) {
     if (typeof entity.json !== "object") return [];
-    return Object.keys(entity.json).reduce(function (r, key) {
-        var v = entity.json[key];
+    return Object.keys(entity.json).reduce((r, key) => {
+        const v = entity.json[key];
         if (typeof v !== "object") return r;
         if (typeof v["href"] !== "string") return r;
         r.push(v);
@@ -58,26 +58,23 @@ JsonBinder.prototype.linkAttr = function (link, key) {
     return "";
 };
 
-var AtomBinder = function AtomBinder() {
+const AtomBinder = function AtomBinder() {
     return Object.create(AtomBinder.prototype, {});
 };
 AtomBinder.prototype = ResourceBinder();
 AtomBinder.prototype.entityLinkAll = function (entity) {
     const doc = entity.atom.ownerDocument ? entity.atom.ownerDocument :
               entity.atom;
-    const entries =
-              doc.defaultView.matcher.select("feed > entry", entity.atom);
-    return Array.prototype.map.call(entries, function (entry) {
-        return entry;
-    });
+    const entries = doc.defaultView.matcher.select(
+        "feed > entry", entity.atom);
+    return Array.from(entries);
 };
 AtomBinder.prototype.linkAttr = function (link, key) {
     if (key === "href") {
         const doc = link.atom.ownerDocument ? link.atom.ownerDocument :
                   link.atom;
-        const elem =
-                  doc.defaultView.matcher.select("entry > link[rel='self']",
-                                                 link.atom)[0];
+        const elem = doc.defaultView.matcher.select(
+            "entry > link[rel='self']", link.atom)[0];
         return elem ? elem.getAttribute("href") : "";
     }
     if (key === "content-type") return "application/atom+xml";
@@ -86,24 +83,22 @@ AtomBinder.prototype.linkAttr = function (link, key) {
 };
 
 
-var HtmlBinder = function HtmlBinder() {
+const HtmlBinder = function HtmlBinder() {
     return Object.create(HtmlBinder.prototype, {});
 };
 HtmlBinder.prototype = ResourceBinder();
 HtmlBinder.prototype.entityLinkAll = function (entity) {
-    var entries = entity.html.querySelectorAll("[href], [src]");
-    return Array.prototype.map.call(entries, function (entry) {
-        return entry;
-    });
+    const entries = entity.html.querySelectorAll("[href], [src]");
+    return Array.from(entries);
 };
 HtmlBinder.prototype.linkAttr = function (link, key) {
     if (key === "href") return link.html.href || link.html.src;
-    if (key === "content-type") "text/html;charset=utf-8";
+    if (key === "content-type") return "text/html;charset=utf-8";
     if (key === "body") return xmlSerializer.serializeToString(link.html);
     return "";
 };
 
-var termset = core.TermSet("buitiln");
+const termset = core.TermSet("buitiln");
 termset.put("application/json", JsonBinder());
 termset.put("application/atom+xml", AtomBinder());
 termset.put("text/html", HtmlBinder());

@@ -10,65 +10,68 @@ JSON Desciption TermSet example:
   "entity": {
     "title": {"selector": "head title", "value": "textContent"},
     "author": {"text": "Example.com"},
-    "description": {"selector": "body p", "index": 0, "value": "textContent"}
+    "description": {"selector": "body p", "index": 0, "value": "textContent"},
+    "link": {"selector": "article"}
   },
-  "link"; {}
+  "link"; {
+    "href": {"selector": "a.activity", "value": "textContent"}
+  }
 }
 
 */
 
-var core = require("./core");
+const core = require("./core");
 
-var create = function (json) {
-    var binder = JsonDescBinder(json);
-    var termset = core.TermSet(binder.name);
+const create = (json) => {
+    const binder = JsonDescBinder(json);
+    const termset = core.TermSet(binder.name);
     termset.put(binder.contentType, binder);
     return termset;
 };
 
-var JsonDescBinder = function JsonDescBinder(json) {
+const JsonDescBinder = function JsonDescBinder(json) {
     return Object.create(JsonDescBinder.prototype, {
         desc: {value: json, enumerable: true},
         name: {value: json.name || "", enumerable: true},
         uriPattern: {value: RegExp(json["uri-pattern"]), enumerable: true},
-        contentType: {value: json["content-type"], enumerable: true},
+        contentType: {value: json["content-type"], enumerable: true}
     });
 };
 JsonDescBinder.prototype = core.TermBinder();
 JsonDescBinder.prototype.entityAttr = function (entity, key) {
     if (!entity.request.href.match(this.uriPattern)) return "";
-    var binders = this.desc["entity"] || {};
-    var desc = binders[key];
+    const binders = this.desc["entity"] || {};
+    const desc = binders[key];
     if (!desc) return "";
     if (desc.text) return desc.text.toString();
-    var selector = desc.selector || "";
-    var index = desc.index || 0;
-    var selected = entity.select(selector); // TBD: to impl
+    const selector = desc.selector || "";
+    const index = desc.index || 0;
+    const selected = entity.select(selector);
     if (selected.length <= index) return "";
-    var elem = selected[index];
+    const elem = selected[index];
     return (desc.value ? elem[desc.value] : elem.valueOf().toString()) || "";
 };
 JsonDescBinder.prototype.entityLinkAll = function (entity) {
     if (!entity.request.href.match(this.uriPattern)) return [];
-    var binders = this.desc["entity"] || {};
-    var desc = binders["link"];
+    const binders = this.desc["entity"] || {};
+    const desc = binders["link"];
     if (!desc) return [];
     if (desc.text) return [];
-    var selector = desc.selector || "";
-    return entity.select(selector); // TBD: to impl
+    const selector = desc.selector || "";
+    return entity.select(selector);
 };
 JsonDescBinder.prototype.linkAttr = function (link, key) {
     if (!link.parent) return "";
     if (!link.parent.request.href.match(this.uriPattern)) return "";
-    var binders = this.desc["link"] || {};
-    var desc = binders[key];
+    const binders = this.desc["link"] || {};
+    const desc = binders[key];
     if (!desc) return "";
     if (desc.text) return desc.text.toString();
-    var selector = desc.selector || "";
-    var index = desc.index || 0;
-    var selected = link.select(selector); // TBD: to impl
+    const selector = desc.selector || "";
+    const index = desc.index || 0;
+    const selected = link.select(selector);
     if (selected.length <= index) return "";
-    var elem = selected[index];
+    const elem = selected[index];
     return (desc.value ? elem[desc.value] : elem.valueOf().toString()) || "";
 };
 
