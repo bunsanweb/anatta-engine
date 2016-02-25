@@ -1,39 +1,39 @@
 "use strict";
 
-var protocols = {
+const protocols = {
     http: require("http"),
-    https: require("https"),
+    https: require("https")
 };
-var url = require("url");
-var path = require("path");
-var conftree = require("../conftree");
+const url = require("url");
+const path = require("path");
+const conftree = require("../conftree");
 
-var WebGate = function WebGate(space, opts) {
+const WebGate = function WebGate(space, opts) {
     opts = conftree.create(opts,  {from: "/", to: "me:/"});
     return Object.create(WebGate.prototype, {
         space: {value: space},
         opts: {value: opts},
-        server: {value: null, writable: true},
+        server: {value: null, writable: true}
     });
 };
 
 WebGate.prototype.handler = function (req, res) {
-    var reqProtocol = "http" + (req.connection.encrypted ? "s" : "");
-    var reqUri = reqProtocol + "://" + req.headers.host + req.url;
-    var next = arguments[2] || function (err) {}; // as connect.js middleware
+    const reqProtocol = req.connection.encrypted ? "https" : "http";
+    const reqUri = `${reqProtocol}://${req.headers.host}${req.url}`;
+    const next = arguments[2] || (err => {}); // as connect.js middleware
     if (req.url.search(this.opts.from) !== 0) return next();
-    var reqPath = req.url.substring(this.opts.from.length);
-    var self = this;
-    var chunks = [];
-    req.on("data", function (chunk) {chunks.push(chunk);});
-    req.on("end", function () {
-        var body = Buffer.concat(chunks);
-        var uri = path.join(self.opts.to, reqPath);
-        var gateReq = self.space.request(
+    const reqPath = req.url.substring(this.opts.from.length);
+    const chunks = [];
+    req.on("data", chunk => {chunks.push(chunk);});
+    req.on("end", () => {
+        const body = Buffer.concat(chunks);
+        const uri = path.join(this.opts.to, reqPath);
+        const gateReq = this.space.request(
             req.method, reqUri, req.headers, body);
-        var request = self.space.request(
+        const request = this.space.request(
             req.method, uri, req.headers, body, gateReq);
-        self.space.access(request).spread(function (request, response) {
+        this.space.access(request).then(a => Promise.all(a)).then(reqres  => {
+            const request = reqres[0], response = reqres[1];
             res.writeHead(response.status, response.headers);
             res.end(response.body);
         });
@@ -44,16 +44,17 @@ WebGate.prototype.start = function (port, host, httpsOpts) {
     if (this.server) return false;
     if (httpsOpts) {
         this.server = protocols.https.createServer(
-            httpsOpts, this.handler.bind(this));
+            httpsOpts, (req, res) => this.handler(req, res));
     } else {
-        this.server = protocols.http.createServer(this.handler.bind(this));
+        this.server = protocols.http.createServer(
+            (req, res) => this.handler(req, res));
     }
-    this.server.on("error", function (err) {
+    this.server.on("error", err => {
         console.log(err);
     });
     this.server.listen(port, host);
-    this.server.url = "http" + (httpsOpts ? "s" : "") + "://" +
-        (host || "localhost") + ":" + port + "/";
+    this.server.url = `${httpsOpts ? "https" : "http"}://${
+        host || "localhost"}:${port}/`;
     return true;
 };
 WebGate.prototype.stop = function () {

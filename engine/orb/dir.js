@@ -1,60 +1,51 @@
 "use strict";
 
-var fs = require("fs");
-var path = require("path");
-var q = require("q");
-var memory = require("./memory");
+const fs = require("fs");
+const path = require("path");
+const memory = require("./memory");
 
 var Orb = function Orb(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     return Object.create(Orb.prototype, {
-        dir: {value: dir, enumerable: true},
+        dir: {value: dir, enumerable: true}
     });
 };
 Orb.prototype.entryList = function () {
-    var self = this;
-    var d = q.defer();
-    fs.readdir(this.dir, function (err, filenames) {
-        if (err) return d.resolve({});
-        q.all(filenames.map(readEntry.bind(self))).then(function (entryList) {
-            var entries = {};
-            entryList.forEach(function (entry) {
-                if (entry) entries[entry.pathname] = entry;
+    return new Promise((f, r) => {
+        fs.readdir(this.dir, (err, filenames) => {
+            if (err) return f({});
+            const allEntry = filenames.map(name => readEntry(this, name));
+            return Promise.all(allEntry).then(entryList => {
+                const entries = {};
+                entryList.forEach(entry => {
+                    if (entry) entries[entry.pathname] = entry;
+                });
+                f(entries);
             });
-            d.resolve(entries);
         });
     });
-    return d.promise;
 };
 Orb.prototype.get = function (pathname) {
-    var filename = encodeURIComponent(pathname);
-    return readEntry.call(this, filename);
+    const filename = encodeURIComponent(pathname);
+    return readEntry(this, filename);
 };
 Orb.prototype.put = function (pathname, data) {
-    var filename = encodeURIComponent(pathname);
-    var entry = memory.Entry.fromValue(pathname, data);
-    return writeEntry.call(this, filename, entry);
+    const filename = encodeURIComponent(pathname);
+    const entry = memory.Entry.fromValue(pathname, data);
+    return writeEntry(this, filename, entry);
 };
 
-var readEntry = function (filename) {
-    var filepath = path.join(this.dir, filename);
-    var d = q.defer();
-    fs.readFile(filepath, "utf8", function (err, json) {
-        if (err) return d.resolve(null);
-        var entry = memory.Entry.fromJson(json);
-        d.resolve(entry);
-    });
-    return d.promise;
-};
-var writeEntry = function (filename, entry) {
-    var filepath = path.join(this.dir, filename);
-    var d = q.defer();
-    var json = entry.toJson();
-    fs.writeFile(filepath, json, "utf8", function (err) {
-        if (err) return d.resolve(null);
-        d.resolve(entry);
-    });
-    return d.promise;
-};
+const readEntry = (self, filename) => new Promise((f, r) => {
+    const filepath = path.join(self.dir, filename);
+    fs.readFile(
+        filepath, "utf8",
+        (err, json) => f(err ? null : memory.Entry.fromJson(json)));
+});
+
+const writeEntry = (self, filename, entry) => new Promise((f, r) => {
+    const filepath = path.join(this.dir, filename);
+    const json = entry.toJson();
+    fs.writeFile(filepath, json, "utf8", err => f(err ? null : entry));
+});
 
 exports.Orb = Orb;

@@ -1,31 +1,30 @@
 "use strict";
 
-var url = require("url");
-var q = require("q");
+const url = require("url");
 
-var space = {
+const space = {
     core: require("../space/core"),
-    cachecontrol: require("../space/cachecontrol"),
+    cachecontrol: require("../space/cachecontrol")
 };
-var conftree = require("../conftree");
-var memory = require("./memory");
+const conftree = require("../conftree");
+const memory = require("./memory");
 
-var OrbField = function OrbField(opts) {
-    var orb = systemOrb();
+const OrbField = function OrbField(opts) {
+    const orb = systemOrb();
     return Object.create(OrbField.prototype, {
         opts: {value: conftree.create(opts, {cache: false})},
-        orb: {value: orb, writable: true},
+        orb: {value: orb, writable: true}
     });
 };
 OrbField.prototype.access = function (request) {
-    if (request.method === "GET") return accessGet.call(this, request);
-    if (request.method === "PUT") return accessPut.call(this, request);
-    return q([request, space.core.Response("405", {allow: "GET, PUT"})]);
+    if (request.method === "GET") return accessGet(this, request);
+    if (request.method === "PUT") return accessPut(this, request);
+    return Promise.resolve([
+        request, space.core.Response("405", {allow: "GET, PUT"})]);
 };
 
-var accessGet = function (request) {
-    var self = this;
-    return this.orb.get(request.location.pathname).then(function (entry) {
+const accessGet = (self, request) => {
+    return self.orb.get(request.location.pathname).then(entry => {
         if (!entry) return [request, space.core.Response("404", {})];
         if (self.opts.cache &&
             space.cachecontrol.clientCacheValid(request, entry.timestamp)) {
@@ -34,22 +33,21 @@ var accessGet = function (request) {
         }
         return [request, space.core.Response("200", {
             "content-type": entry.type,
-            "last-modified": entry.timestamp.toUTCString(),
+            "last-modified": entry.timestamp.toUTCString()
         }, entry.value)];
     });
 };
-var accessPut = function (request) {
-    var data = {type: request.headers["content-type"], value: request.body};
-    var pathname = request.location.pathname;
-    return this.orb.put(pathname, data).then(function (entry) {
-        return [request, space.core.Response("200", {
-            "location": request.href,
-        })];
-    });
+const accessPut = (self, request) => {
+    const data = {type: request.headers["content-type"], value: request.body};
+    const pathname = request.location.pathname;
+    return self.orb.put(pathname, data).then(
+        entry => [request, space.core.Response("200", {
+            "location": request.href
+        })]);
 };
 
-var systemOrb = function () {
-    var orbUri = url.parse(process.env.ORB_URI || "memory:", true, true);
+const systemOrb = function () {
+    const orbUri = url.parse(process.env.ORB_URI || "memory:", true, true);
     switch (orbUri.protocol) {
     case "memory:":
         return memory.Orb();
@@ -57,8 +55,8 @@ var systemOrb = function () {
     case "dir:":
         return require("./dir").Orb(orbUri.pathname);
     case "mongodb:":
-        var collection = orbUri.hash ? orbUri.hash.substring(1) : undefined;
-        var href = url.format(
+        const collection = orbUri.hash ? orbUri.hash.substring(1) : undefined;
+        const href = url.format(
             Object.create(orbUri, {hash: {value: undefined}}));
         return require("./mongodb").Orb(href, collection);
     }

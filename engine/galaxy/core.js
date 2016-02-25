@@ -1,17 +1,15 @@
 "use strict";
 
-var q = require("q");
-
-var conftree = require("../conftree");
-var space = {
-    core: require("../space/core"),
+const conftree = require("../conftree");
+const space = {
+    core: require("../space/core")
 };
 
-var GalaxyField = function GalaxyField(opts) {
+const GalaxyField = function GalaxyField(opts) {
     opts = conftree.create(opts, {to: "module:/", from: "/"});
     return Object.create(GalaxyField.prototype, {
         engine: {value: null, writable: true},
-        opts: {value: opts, enumerable: true},
+        opts: {value: opts, enumerable: true}
     });
 };
 GalaxyField.prototype.access = function (request) {
@@ -19,13 +17,13 @@ GalaxyField.prototype.access = function (request) {
         return space.core.FieldUtils.error(
             request, Error("invalid settings"), "404");
     }
-    var uri = this.opts.to + request.href.substring(this.opts.from.length);
-    var req = this.engine.space.request(
+    const uripart = request.href.substring(this.opts.from.length);
+    const uri = `${this.opts.to}${uripart}`;
+
+    const req = this.engine.space.request(
         request.method, uri, request.headers, request.body, request);
-    return this.engine.space.access(req).spread(function (req, res) {
-        // TBD: rewrite response info
-        return [request, res];
-    });
+    return this.engine.space.access(req).then(a => Promise.all(a)).then(
+        reqres => [request, reqres[1]]);
 };
 
 exports.GalaxyField = GalaxyField;

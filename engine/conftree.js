@@ -1,22 +1,23 @@
 "use strict";
 
-var ConfTree = function ConfTree(json, parent, name) {
-    var conf = Object.create(ConfTree.prototype);
-    var descs = Object.keys(json).reduce(function (descs, key) {
-        var desc = Object.getOwnPropertyDescriptor(json, key);
-        var value = desc.value;
-        var called = false;
-        if (Array.isArray(value)) {
-            value = value.concat();
-        } else if (typeof value === "object") {
-            value = ConfTree(value, conf, key);
-        }
+// map a object to the default config json object tree values
+
+// copy-on-write property object tree
+// - at first getter returns the value of the defaults
+// - setter overwrite its getter/setter to a new value
+const ConfTree = function ConfTree(json, parent, name) {
+    const conf = Object.create(ConfTree.prototype);
+    const descs = Object.keys(json).reduce((descs, key) => {
+        const desc = Object.getOwnPropertyDescriptor(json, key);
+        const value = Array.isArray(desc.value) ? desc.value.concat() :
+                  typeof desc.value === "object" ?
+                  ConfTree(desc.value, conf, key) : desc.value;
         desc.enumerable = false;
         delete desc.value;
         delete desc.writable;
         desc.get = function () {
             return value;
-        }
+        };
         desc.set = function (v) {
             Object.defineProperty(this, key, {
                 value: v, enumerable: true, writable: true});
@@ -29,9 +30,10 @@ var ConfTree = function ConfTree(json, parent, name) {
     return conf;
 };
 
-var bind = function bind(custom, conf) {
-    Object.keys(custom).forEach(function (key) {
-        var value = custom[key];
+// bind copy-on-write properties to the custom object
+const bind = function bind(custom, conf) {
+    Object.keys(custom).forEach(key => {
+        const value = custom[key];
         if (typeof value === "object" && !Array.isArray(value) && conf[key]) {
             bind(value, conf[key]);
         } else {
@@ -42,7 +44,7 @@ var bind = function bind(custom, conf) {
 };
 
 
-var create = function create(custom, defaults) {
+const create = function create(custom, defaults) {
     return bind(custom || {},
                 defaults instanceof ConfTree ? defaults : ConfTree(defaults));
 };

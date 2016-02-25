@@ -1,20 +1,20 @@
 "use strict";
 
-var conftree = require("./conftree");
-var space = {
-    core: require("./space/core"),
+const conftree = require("./conftree");
+const space = {
+    core: require("./space/core")
 };
-var metadata = {
-    core: require("./metadata/core"),
+const metadata = {
+    core: require("./metadata/core")
 };
-var termset = {
+const termset = {
     core: require("./termset/core"),
-    builtin: require("./termset/builtin"),
+    builtin: require("./termset/builtin")
 };
 
-var Engine = function Engine(opts) {
+const Engine = function Engine(opts) {
     opts = conftree.create(opts, {space: {}, medatata: {}});
-    var glossary = termset.core.EngineGlossary();
+    const glossary = termset.core.EngineGlossary();
     glossary.add(termset.builtin.termset);
     return Object.create(Engine.prototype, {
         opts: {value: opts, enumerable: true},

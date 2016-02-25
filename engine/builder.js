@@ -1,65 +1,53 @@
 "use strict";
 
-var url = require("url");
+const url = require("url");
 
-var load = function () {
-    return require("../anatta");
-}
+const load = () => require("../anatta");
 
-var engine = function (json) {
-    return builders[json.type](json);
-};
+const engine = (json) => builders[json.type](json);
 
-var builders = {};
+const builders = {};
 
 // build generic configuration
 builders.generic = (function () {
-    var factories = {
-        web: function (anatta, engine, opts) {
-            return anatta.space.web.WebField(opts);
-        },
-        orb: function (anatta, engine, opts) {
-            return anatta.orb.core.OrbField(opts);
-        },
-        file: function (anatta, engine, opts) {
-            return anatta.space.file.FileField(opts);
-        },
-        data: function (anatta, engine, opts) {
-            return anatta.space.data.DataField(opts);
-        },
-        agent: function (anatta, engine, opts) {
-            var field = anatta.weaver.core.AgentField(opts);
+    const factories = {
+        web: (anatta, engine, opts) => anatta.space.web.WebField(opts),
+        orb: (anatta, engine, opts) => anatta.orb.core.OrbField(opts),
+        file: (anatta, engine, opts) => anatta.space.file.FileField(opts),
+        data: (anatta, engine, opts) => anatta.space.data.DataField(opts),
+        agent: (anatta, engine, opts) => {
+            const field = anatta.weaver.core.AgentField(opts);
             field.agent.engine = engine;
             return field;
         },
-        galaxy: function (anatta, engine, opts) {
-            var field = anatta.galaxy.core.GalaxyField(opts);
+        galaxy: (anatta, engine, opts) => {
+            const field = anatta.galaxy.core.GalaxyField(opts);
             if (typeof opts.engine === "object") {
                 field.engine = builder(opts.engine);
             } else if (opts.engine === undefined || opts.engine === "self") {
                 field.engine = engine;
             }
             return field;
-        },
+        }
     };
     
-    var builder = function (json) {
+    const builder = (json) => {
         json = json || {};
-        var anatta = load();
-        var engine = anatta.engine.core.Engine(json.engine);
+        const anatta = load();
+        const engine = anatta.engine.core.Engine(json.engine);
         
-        var porter = json.porter || {};
-        Object.keys(porter).forEach(function (contentType) {
-            var name = porter[contentType];
-            var format = anatta.metadata[name];
+        const porter = json.porter || {};
+        Object.keys(porter).forEach(contentType => {
+            const name = porter[contentType];
+            const format = anatta.metadata[name];
             engine.porter.map[contentType] = format;
         });
         
-        var space = json.space || {};
-        Object.keys(space).forEach(function (prefix) {
-            var desc = space[prefix];
-            var field = factories[desc.field](anatta, engine, desc);
-            var id = desc.field + "|" + prefix;
+        const space = json.space || {};
+        Object.keys(space).forEach(prefix => {
+            const desc = space[prefix];
+            const field = factories[desc.field](anatta, engine, desc);
+            const id = `${desc.field}|${prefix}`;
             engine.space.manager.bind(id, prefix, field);
         });
         
@@ -71,82 +59,83 @@ builders.generic = (function () {
 
 // build from simpler config
 builders.simple = (function () {
-    var factories = {
-        web: function (anatta, engine, opts) {
-            var field = anatta.space.web.WebField();
-            opts.forEach(function (prefix) {
-                var id = "web|" + prefix;
+    const factories = {
+        web: (anatta, engine, opts) => {
+            const field = anatta.space.web.WebField();
+            opts.forEach(prefix => {
+                const id = `web|${prefix}`;
                 engine.space.manager.bind(id, prefix, field);
             });
         },
-        orb: function (anatta, engine, opts) {
-            opts.forEach(function (prefix) {
-                var id = "orb|" + prefix;
-                var field = anatta.orb.core.OrbField();
+        orb: (anatta, engine, opts) => {
+            opts.forEach(prefix => {
+                const id = `orb|${prefix}`;
+                const field = anatta.orb.core.OrbField();
                 engine.space.manager.bind(id, prefix, field);
             });
         },
-        file: function (anatta, engine, opts) {
-            Object.keys(opts).forEach(function (prefix) {
-                var root = opts[prefix];
-                var prefixObj = url.parse(prefix, true, true);
-                var pathPrefix = prefixObj.path;
-                var id = "file|" + prefix;
-                var field = anatta.space.file.FileField({
-                    root: root, prefix: pathPrefix,
+        file: (anatta, engine, opts) => {
+            Object.keys(opts).forEach(prefix => {
+                const root = opts[prefix];
+                const prefixObj = url.parse(prefix, true, true);
+                const pathPrefix = prefixObj.path;
+                const id = `file|${prefix}`;
+                const field = anatta.space.file.FileField({
+                    root: root, prefix: pathPrefix
                 });
                 engine.space.manager.bind(id, prefix, field);
             });
         },
-        data: function (anatta, engine, opts) {
-            opts.forEach(function (prefix) {
-                var id = "data|" + prefix;
-                var field = anatta.space.data.DataField();
+        data: (anatta, engine, opts) => {
+            opts.forEach(prefix => {
+                const id = `data|${prefix}`;
+                const field = anatta.space.data.DataField();
                 engine.space.manager.bind(id, prefix, field);
             });
         },
-        agent: function (anatta, engine, opts) {
-            Object.keys(opts).forEach(function (prefix) {
-                var uri = opts[prefix];
-                var id = "agent|" + prefix;
-                var field = anatta.weaver.core.AgentField({uri: uri});
+        agent: (anatta, engine, opts) => {
+            Object.keys(opts).forEach(prefix => {
+                const uri = opts[prefix];
+                const id = `agent|${prefix}`;
+                const field = anatta.weaver.core.AgentField({uri: uri});
                 field.agent.engine = engine;
                 engine.space.manager.bind(id, prefix, field);
             });
         },
-        galaxy: function (anatta, engine, opts) {
-            Object.keys(opts).forEach(function (prefix) {
-                var subOpts = opts[prefix];
-                var id = "galaxy|" + prefix;
+        galaxy: (anatta, engine, opts) => {
+            Object.keys(opts).forEach(prefix => {
+                const subOpts = opts[prefix];
+                const id = `galaxy|${prefix}`;
                 if (typeof subOpts === "string") {
-                    var field = anatta.galaxy.core.GalaxyField({
+                    const field = anatta.galaxy.core.GalaxyField({
                         from: prefix, to: subOpts});
                     field.engine = engine;
+                    engine.space.manager.bind(id, prefix, field);
                 } else {
-                    var field = anatta.galaxy.core.GalaxyField({
+                    const field = anatta.galaxy.core.GalaxyField({
                         from: prefix, to: subOpts.to});
                     field.engine = builder(subOpts);
+                    engine.space.manager.bind(id, prefix, field);
                 }
-                engine.space.manager.bind(id, prefix, field);
             });
-        },
+        }
     };
     
-    var builder = function (json) {
+    const builder = function (json) {
         json = json || {};
-        var anatta = load();
-        var engine = anatta.engine.core.Engine(json.engine);
+        const anatta = load();
+        const engine = anatta.engine.core.Engine(json.engine);
         
-        var porter = json.porter || {};
-        Object.keys(porter).forEach(function (contentType) {
-            var name = porter[contentType];
-            var format = anatta.metadata[name];
+        const porter = json.porter || {};
+        Object.keys(porter).forEach(contentType => {
+            const name = porter[contentType];
+            const format = anatta.metadata[name];
             engine.porter.map[contentType] = format;
         });
         
-        var space = json.space || {};
-        Object.keys(space).forEach(function (factory) {
-            var opts = space[factory];
+        const space = json.space || {};
+        Object.keys(space).forEach(factory => {
+            const opts = space[factory];
             factories[factory](anatta, engine, opts);
         });
         

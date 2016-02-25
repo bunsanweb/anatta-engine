@@ -1,20 +1,19 @@
 "use strict";
 
-var crypto = require("crypto");
-var q = require("q");
+const crypto = require("crypto");
 
-var conftree = require("../conftree");
+const conftree = require("../conftree");
 
-var Entry = function Entry(pathname, type, value, timestamp) {
+const Entry = function Entry(pathname, type, value, timestamp) {
     value = value || Buffer();
-    var alg = crypto.createHash("sha256");
-    var hash = value.length > 0 ? alg.update(value).digest("base64") : "";
+    const alg = crypto.createHash("sha256");
+    const hash = value.length > 0 ? alg.update(value).digest("base64") : "";
     return Object.create(Entry.prototype, {
         pathname: {value: pathname, enumerable: true},
         type: {value: type, enumerable: true},
-        value: {value: value, enumerable: true}, // Buffer
+        value: {value: value, enumerable: true},
         timestamp: {value: timestamp || new Date(), enumerable: true},
-        hash: {value: hash, enumerable: true},
+        hash: {value: hash, enumerable: true}
     });
 };
 Entry.fromValue = function (pathname, data) {
@@ -25,20 +24,20 @@ Entry.prototype.toObject = function () {
         pathname: this.pathname,
         type: this.type,
         value: this.value.toString("base64"),
-        timestamp: this.timestamp.toUTCString(),
+        timestamp: this.timestamp.toUTCString()
     };
 };
 Entry.prototype.toJson = function () {
     return JSON.stringify(this.toObject());
 };
 Entry.fromObject = function (data) {
-    var value = Buffer(data.value, "base64");
-    var date = new Date(data.timestamp);
+    const value = Buffer(data.value, "base64");
+    const date = new Date(data.timestamp);
     return Entry(data.pathname, data.type, value, date);
 };
 Entry.fromJson = function (json) {
     try {
-        var data = JSON.parse(json);
+        const data = JSON.parse(json);
         return Entry.fromObject(data);
     } catch (ex) {
         return null;
@@ -54,28 +53,28 @@ Entry.equal = function (a, b) {
         a.hash === b.hash && bufferEq(a.value, b.value);
 };
 
-var bufferEq = function (a, b) {
+const bufferEq = (a, b) => {
     if (!a || !b) return !a && !b;
     if (a.length !== b.length) return false;
     return a.toString("binary") === b.toString("binary");
 };
 
-var Orb = function Orb(init) {
+const Orb = function Orb(init) {
     return Object.create(Orb.prototype, {
-        entries: {value: init || {}, writable: true, enumerable: true},
+        entries: {value: init || {}, writable: true, enumerable: true}
     });
 };
 Orb.prototype.entryList = function () {
-    return q(this.entries);
+    return Promise.resolve(this.entries);
 };
 Orb.prototype.get = function (pathname) {
-    var entry = this.entries[pathname];
-    return q(entry || null);
+    const entry = this.entries[pathname];
+    return Promise.resolve(entry || null);
 };
 Orb.prototype.put = function (pathname, data) {
-    var entry = Entry.fromValue(pathname, data);
+    const entry = Entry.fromValue(pathname, data);
     this.entries[pathname] = entry;
-    return q(entry);
+    return Promise.resolve(entry);
 };
 
 exports.Entry = Entry;
