@@ -1,20 +1,20 @@
 "use strict";
 
-var core = require("./core");
-var jsdom = require("./jsdom");
-var termset = {
-    core: require("../termset/core"),
+const core = require("./core");
+const jsdom = require("./jsdom");
+const termset = {
+    core: require("../termset/core")
 };
 
-var Entity = function AtomEntity(engine, request, response) {
-    var atom = jsdom.parseXML(response.text(), request.href);
+const Entity = function AtomEntity(engine, request, response) {
+    const atom = jsdom.parseXML(response.text(), request.href);
     return Object.create(AtomEntity.prototype, {
         engine: {value: engine},
         glossary: {value: termset.core.EntityGlossary(
             "application/atom+xml", engine.glossary)},
         request: {value: request},
         response: {value: response},
-        atom: {value: atom},
+        atom: {value: atom}
     });
 };
 Entity.prototype = core.Entity();
@@ -24,11 +24,11 @@ Entity.prototype.select = function (selector) {
     return doc.defaultView.matcher.select(selector, this.atom);
 };
 
-var Link = function AtomLink(engine, atom, parent) {
+const Link = function AtomLink(engine, atom, parent) {
     return Object.create(AtomLink.prototype, {
         engine: {value: engine},
         atom: {value: atom},
-        parent: {value: parent},
+        parent: {value: parent}
     });
 };
 Link.prototype = core.Link();

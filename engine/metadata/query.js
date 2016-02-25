@@ -1,27 +1,22 @@
 
-var jsonToQuery = function (json) {
-    var names = Object.keys(json);
-    return function (link) {
-        return names.every(function (name) {
-            var attr = link.attr(name);
-            var value = json[name];
-            if (value === false || value == null) return !attr;
-            if (value === true) return !!attr;
-            if (typeof value === "number") return attr == value;
-            if (typeof value === "string") return attr === value;
-            if (Array.isArray(value)) {
-                var attrs = attr.split(/\s+/);
-                return value.every(function (v) {
-                    return attrs.indexOf(v) >= 0;
-                });
-            }
-            return false;
-        });
-    };
+const jsonToQuery = function (json) {
+    return (link) => Object.keys(json).every(name => {
+        const attr = link.attr(name);
+        const value = json[name];
+        if (value === false || value == null) return !attr;
+        if (value === true) return !!attr;
+        if (typeof value === "number") return attr == value;
+        if (typeof value === "string") return attr === value;
+        if (Array.isArray(value)) {
+            const attrs = attr.split(/\s+/);
+            return value.every(v => attrs.indexOf(v) >= 0);
+        }
+        return false;
+    });
 };
 
-var anyQuery = function (link) {return true;};
-var emptyQuery = function (link) {return false;};
+const anyQuery = function (link) {return true;};
+const emptyQuery = function (link) {return false;};
 
 var toQuery = function (selector) {
     if (selector === null || selector === undefined) return emptyQuery;

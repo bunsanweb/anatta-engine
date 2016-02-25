@@ -36,54 +36,53 @@
 //  message = mod.encode(multipartObject)
 
 
-var crypto = require("crypto");
+const crypto = require("crypto");
 
-var normalizeHeaders = function (headers, to) {
-    return Object.keys(headers).reduce(function (o, key) {
+const normalizeHeaders = (headers, to) => {
+    return Object.keys(headers).reduce((o, key) => {
         o[key.toLowerCase()] = headers[key];
         return o;
     }, to || {});
 };
-var updateHeaders = function (headers, updates) {
+const updateHeaders = (headers, updates) => {
     return normalizeHeaders(updates, normalizeHeaders(headers));
 };
 
 // decoder
-var decodeMultipart = function (message) {
-    var contentType = message.headers["content-type"];
+const decodeMultipart = function (message) {
+    const contentType = message.headers["content-type"];
     if (!contentType.match(/^multipart\/form-data/)) return null;
-    var boundary = getBoundary(contentType);
+    const boundary = getBoundary(contentType);
     return parseMultipart(message.body.toString("binary"), boundary);
 };
 
-var decodeMultipart5 = function (message) {
-    var contentType = message.headers["content-type"];
+const decodeMultipart5 = function (message) {
+    const contentType = message.headers["content-type"];
     if (!contentType.match(/^multipart\/form-data/)) return null;
-    var boundary = getBoundary(contentType);
+    const boundary = getBoundary(contentType);
     return parseMultipart5(message.body.toString("binary"), boundary);
 };
 
-var parseMultipart = function (body, boundary) {
+const parseMultipart = (body, boundary) => {
     if (body.substring(body.length - 2) === "\r\n") {
         body = body.substring(0, body.length - 2);
     }
-    var dispositions = splitMultipart(body, boundary).map(function (part) {
-        return parseDisposition(part);
-    }).filter(function (disposition) {return disposition;});
+    const dispositions = splitMultipart(body, boundary).map(
+        part => parseDisposition(part)).filter(disposition => disposition);
     
-    return dispositions.reduce(function (result, disposition) {
-        var type = disposition.headers["content-disposition"];
-        var contentType = disposition.headers["content-type"];
+    return dispositions.reduce((result, disposition) => {
+        const type = disposition.headers["content-disposition"];
+        const contentType = disposition.headers["content-type"];
         if (!type.match(/^form-data/)) return result;
-        
-        var name = Buffer(
-            type.match(/\bname="([^"]+)"/)[1], "binary").toString();
+
+        const rawname = type.match(/\bname="([^"]+)"/)[1];
+        const name = Buffer(rawname, "binary").toString();
         if (!contentType) {
             result[name] = new Buffer(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
             result[name] = parseMixed(disposition);
         } else {
-            var file = parseFile(disposition);
+            const file = parseFile(disposition);
             if (!result[name]) result[name] = file;
             else if (Array.isArray(result[name])) result[name].push(file);
             else result[name] = [result[name], file];
@@ -92,27 +91,26 @@ var parseMultipart = function (body, boundary) {
     }, {});
 };
 
-var parseMultipart5 = function (body, boundary) {
+const parseMultipart5 = (body, boundary) => {
     if (body.substring(body.length - 2) === "\r\n") {
         body = body.substring(0, body.length - 2);
     }
-    var dispositions = splitMultipart(body, boundary).map(function (part) {
-        return parseDisposition(part);
-    }).filter(function (disposition) {return disposition;});
+    const dispositions = splitMultipart(body, boundary).map(
+        part => parseDisposition(part)).filter(disposition => disposition);
     
-    return dispositions.reduce(function (result, disposition) {
-        var type = disposition.headers["content-disposition"];
-        var contentType = disposition.headers["content-type"];
+    return dispositions.reduce((result, disposition) => {
+        const type = disposition.headers["content-disposition"];
+        const contentType = disposition.headers["content-type"];
         if (!type.match(/^form-data/)) return result;
-        
-        var name = Buffer(
-            type.match(/\bname="([^"]+)"/)[1], "binary").toString();
+
+        const rawname = type.match(/\bname="([^"]+)"/)[1];
+        const name = Buffer(rawname, "binary").toString();
         if (!contentType) {
             result[name] = new Buffer(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
             result[name] = parseMixed(disposition);
         } else {
-            var file = parseFile(disposition);
+            const file = parseFile(disposition);
             if (!result[name]) result[name] = [file];
             else if (Array.isArray(result[name])) result[name].push(file);
             else result[name] = [result[name], file];
@@ -122,168 +120,156 @@ var parseMultipart5 = function (body, boundary) {
 };
 
 
-var parseFile = function (disposition) {
-    var type = disposition.headers["content-disposition"];
-    var filename = Buffer(
+const parseFile = (disposition) => {
+    const type = disposition.headers["content-disposition"];
+    const filename = Buffer(
         type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
     return {filename: filename,
             body: Buffer(disposition.body, "binary"),
             headers: disposition.headers};
 };
 
-var parseMixed = function (disposition) {
-    var contentType = disposition.headers["content-type"];
-    var boundary = getBoundary(contentType);
-    var dispositions = splitMultipart(disposition.body, boundary).map(
-        function (part) {
-            return parseDisposition(part);
-        }).filter(function (disposition) {return disposition;});
+const parseMixed = (disposition) => {
+    const contentType = disposition.headers["content-type"];
+    const boundary = getBoundary(contentType);
+    const dispositions = splitMultipart(disposition.body, boundary).map(
+        part => parseDisposition(part)).filter(disposition => disposition);
     
-    return dispositions.reduce(function (result, disposition) {
-        var type = disposition.headers["content-disposition"];
+    return dispositions.reduce((result, disposition) => {
+        const type = disposition.headers["content-disposition"];
         if (!type.match(/^file/)) return result;
         result.push(parseFile(disposition));
         return result;
     }, []);
 };
 
-var getBoundary = function (contentType) {
-    var regex = /boundary=(?:"([^"]+)"|([^;]+))+/i;
-    var result = contentType.match(regex);
+const getBoundary = (contentType) => {
+    const regex = /boundary=(?:"([^"]+)"|([^;]+))+/i;
+    const result = contentType.match(regex);
     return result[1] || result[2];
 };
 
-var splitMultipart = function (body, boundary) {
-    var head = "--" + boundary + "\r\n";
-    var tail = "\r\n--" + boundary + "--";
+const splitMultipart = (body, boundary) => {
+    const head = `--${boundary}${"\r\n"}`;
+    const tail = `${"\r\n"}--${boundary}--`;
     // assert(body.substring(0, head.length) === head)
     // assert(body.substring(body.length - tail.length) === tail)
-    var core = body.substring(head.length, body.length - tail.length);
-    var regex = RegExp("\r\n--" + boundary + "\r\n");
+    const core = body.substring(head.length, body.length - tail.length);
+    const regex = RegExp(`${"\r\n"}--${ boundary}${"\r\n"}`);
     return core.split(regex);
 };
 
-var parseDisposition = function (part) {
-    var headerLast = part.indexOf("\r\n\r\n");
+const parseDisposition = (part) => {
+    const headerLast = part.indexOf("\r\n\r\n");
     // when invalid
     if (headerLast < 0) return null;
-    var headerLines = part.substring(0, headerLast).split("\r\n");
-    var headers = headerLines.reduce(function (headers, line) {
-        var keyLast = line.indexOf(": ");
-        var key = line.substring(0, keyLast);
-        var value = line.substring(keyLast + 2);
+    const headerLines = part.substring(0, headerLast).split("\r\n");
+    const headers = headerLines.reduce((headers, line) => {
+        const keyLast = line.indexOf(": ");
+        const key = line.substring(0, keyLast);
+        const value = line.substring(keyLast + 2);
         headers[key.toLowerCase()] = value; //TBD: RFC5987 for non-ascii vals
         return headers;
     }, {});
-    var body = part.substring(headerLast + 4, part.length);
+    const body = part.substring(headerLast + 4, part.length);
     return {headers: headers, body: body};
 };
 
 
 // encoder
-var encodeMultipart = function (obj) {
-    var bodies = Object.keys(obj).map(function (key) {
-        var value = obj[key];
-        var binkey = Buffer(key).toString("binary");
+const encodeMultipart = function (obj) {
+    const bodies = Object.keys(obj).map(key => {
+        const value = obj[key];
+        const binkey = Buffer(key).toString("binary");
         if (typeof value === "string") return encodeKeyValue(binkey, value);
         if (Array.isArray(value)) return encodeFileList(binkey, value);
         return encodeSingleFile(binkey, value);
     });
-    var boundary = makeBoundary(bodies);
-    var sep = "--" + boundary;
-    var body = bodies.reduce(function (buf, body) {
-        return buf + "\r\n" + body + "\r\n" + sep;
-    }, sep) + "--\r\n";
+    const boundary = makeBoundary(bodies);
+    const sep = `--${boundary}`;
+    const body = bodies.reduce(
+        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`,
+        sep) + "--\r\n";
     
-    var headers = {
-        "content-type": "multipart/form-data; boundary=" + boundary,
+    const headers = {
+        "content-type": `multipart/form-data; boundary=${boundary}`
     };
     return {headers: headers, body: Buffer(body, "binary")};
 };
 
-var encodeMultipart5 = function (obj) {
-    var bodies = Object.keys(obj).reduce(function (bodies, key) {
-        var value = obj[key];
-        var binkey = Buffer(key).toString("binary");
+const encodeMultipart5 = function (obj) {
+    const bodies = Object.keys(obj).reduce((bodies, key) => {
+        const value = obj[key];
+        const binkey = Buffer(key).toString("binary");
         if (typeof value === "string") {
             bodies.push(encodeKeyValue(binkey, value));
         } else if (Array.isArray(value)) {
-            value.forEach(function (file) {
-                bodies.push(encodeSingleFile(binkey, file));
-            });
+            value.forEach(file => bodies.push(encodeSingleFile(binkey, file)));
         } else bodies.push(encodeSingleFile(binkey, value));
         return bodies;
     }, []);
-    var boundary = makeBoundary(bodies);
-    var sep = "--" + boundary;
-    var body = bodies.reduce(function (buf, body) {
-        return buf + "\r\n" + body + "\r\n" + sep;
-    }, sep) + "--\r\n";
+    const boundary = makeBoundary(bodies);
+    const sep = `--${boundary}`;
+    const body = bodies.reduce(
+        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`,
+        sep) + "--\r\n";
     
-    var headers = {
-        "content-type": "multipart/form-data; boundary=" + boundary,
+    const headers = {
+        "content-type": `multipart/form-data; boundary=${boundary}`
     };
     return {headers: headers, body: Buffer(body, "binary")};
 };
 
-var encodeMessage = function (headers, body) {
-    var headerPart = Object.keys(headers).reduce(function (part, key) {
-        var line = key + ": " + headers[key]; //TBD: RFC5987 for non-ascii vals
-        return part + line + "\r\n";
-    }, "");
-    return headerPart + "\r\n" + body;
+const encodeMessage = (headers, body) => {
+    //TBD: RFC5987 for non-ascii vals
+    const headerPart = Object.keys(headers).reduce(
+        (part, key) => `${part}${key}: ${headers[key]}${"\r\n"}`, "");
+    return `${headerPart}${"\r\n"}${body}`;
 };
 
-var encodeKeyValue = function (key, value) {
-    var disposition = ["form-data", 'name="' + key + '"'].join("; ");
-    var headers = {
-        "content-disposition": disposition,
+const encodeKeyValue = (key, value) => {
+    const disposition = `form-data; name="${key}"`;
+    const headers = {
+        "content-disposition": disposition
     };
     return encodeMessage(headers, Buffer(value).toString("binary"));
 };
-var encodeSingleFile = function (key, fileData) {
-    var filename = Buffer(fileData.filename).toString("binary");
-    var disposition = ["form-data", 'name="' + key + '"', 
-                       'filename="' + filename + '"'].join("; ");
-    var headers = updateHeaders(fileData.headers, {
-        "content-disposition": disposition,
+const encodeSingleFile = (key, fileData) => {
+    const filename = Buffer(fileData.filename).toString("binary");
+    const disposition = `form-data; name="${key}"; filename="${filename}"`;
+    const headers = updateHeaders(fileData.headers, {
         //"content-transfer-encoding": "binary",
+        "content-disposition": disposition
     });
     return encodeMessage(headers, fileData.body.toString("binary"));
 };
-var encodeFileList = function (key, fileDataList) {
-    var bodies = fileDataList.map(function (fileData) {
-        return encodeFileData(fileData);
-    });
-    var boundary = makeBoundary(bodies);
-    var sep = "--" + boundary;
-    var body = bodies.reduce(function (buf, body) {
-        return buf + "\r\n" + body + "\r\n" + sep;
-    }, sep) + "--";
+const encodeFileList = (key, fileDataList) => {
+    const bodies = fileDataList.map(fileData => encodeFileData(fileData));
+    const boundary = makeBoundary(bodies);
+    const sep = `--${boundary}`;
+    const body = bodies.reduce(
+        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`, sep) + "--";
     
-    var disposition = ["form-data", 'name="' + key + '"'].join("; ");
-    var headers = {
+    const disposition = `form-data; name="${key}"`;
+    const headers = {
         "content-disposition": disposition,
-        "content-type": "multipart/mixed; boundary=" + boundary,
+        "content-type": `multipart/mixed; boundary=${boundary}`
     };
     return encodeMessage(headers, body);
 };
-var encodeFileData = function (fileData) {
-    var filename = Buffer(fileData.filename).toString("binary");
-    var disposition = ["file",
-                       'filename="' + filename + '"'].join("; ");
-    var headers = updateHeaders(fileData.headers, {
+const encodeFileData = (fileData) => {
+    const filename = Buffer(fileData.filename).toString("binary");
+    const disposition = `file; filename="${filename}"`;
+    const headers = updateHeaders(fileData.headers, {
         "content-disposition": disposition,
-        "content-transfer-encoding": "binary",
+        "content-transfer-encoding": "binary"
     });
     return encodeMessage(headers, fileData.body.toString("binary"));
 };
-var makeBoundary = function (bodies) {
+const makeBoundary = (bodies) => {
     while (true) {
-        var candidate = crypto.randomBytes(4).toString("hex");
-        var ok = bodies.every(function (body) {
-            return body.indexOf(candidate) < 0;
-        });
+        const candidate = crypto.randomBytes(4).toString("hex");
+        const ok = bodies.every(body => body.indexOf(candidate) < 0);
         if (ok) return candidate;
     }
 };

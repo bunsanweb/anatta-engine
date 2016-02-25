@@ -1,50 +1,53 @@
 "use strict";
 
-var url = require("url");
-var q = require("q");
-var termset = {
+const url = require("url");
+const termset = {
     core: require("../termset/core"),
 };
-var metadata = {
+const metadata = {
     query: require("./query"),
 };
 
 // Metadata common value interface
-var Metadata = function Metadata() {
+const Metadata = function Metadata() {
     return Object.create(Metadata.prototype, {});
 };
 // methods as REST
 Metadata.prototype.get = function () {
-    var engine = this.engine;
-    var uri = this.href();
-    var request = engine.space.request("GET", uri);
-    return engine.space.access(request).spread(function (req, res) {
+    const engine = this.engine;
+    const uri = this.href();
+    const request = engine.space.request("GET", uri);
+    return engine.space.access(request).then(a => Promise.all(a)).then(a => {
+        const req = a[0], res = a[1];
         return engine.porter.entity(engine, req, res);
     });
 };
 Metadata.prototype.put = function (message) {
-    var engine = this.engine;
-    var uri = this.href();
-    var request = engine.space.request(
+    const engine = this.engine;
+    const uri = this.href();
+    const request = engine.space.request(
         "PUT", uri, message.headers, message.body);
-    return engine.space.access(request).spread(function (req, res) {
+    return engine.space.access(request).then(a => Promise.all(a)).then(a => {
+        const req = a[0], res = a[1];
         return engine.porter.entity(engine, req, res);
     });
 };
 Metadata.prototype.post = function (message) {
-    var engine = this.engine;
-    var uri = this.href();
-    var request = engine.space.request(
+    const engine = this.engine;
+    const uri = this.href();
+    const request = engine.space.request(
         "POST", uri, message.headers, message.body);
-    return engine.space.access(request).spread(function (req, res) {
+    return engine.space.access(request).then(a => Promise.all(a)).then(a => {
+        const req = a[0], res = a[1];
         return engine.porter.entity(engine, req, res);
     });
 };
 Metadata.prototype.delete = function () {
-    var engine = this.engine;
-    var uri = this.href();
-    var request = engine.space.request("DELETE", uri);
-    return engine.space.access(request).spread(function (req, res) {
+    const engine = this.engine;
+    const uri = this.href();
+    const request = engine.space.request("DELETE", uri);
+    return engine.space.access(request).then(a => Promise.all(a)).then(a => {
+        const req = a[0], res = a[1];
         return engine.porter.entity(engine, req, res);
     });
 };
@@ -52,13 +55,10 @@ Metadata.prototype.delete = function () {
 
 // methods as metadata dict
 Metadata.prototype.href = function () {
-    var href = this.attr("href");
+    const href = this.attr("href");
     if (!this.parent) return href;
-    var parentUri = url.parse(this.parent.href());
-    var uri = url.parse(href);
-    if (uri.protocol && parentUri.protocol !== uri.protocol) {
-        return href; // avoid nodejs bug
-    }
+    const parentUri = url.parse(this.parent.href());
+    const uri = url.parse(href);
     return url.resolve(parentUri, uri);
 };
 Metadata.prototype.attr = function (key) {
@@ -68,14 +68,14 @@ Metadata.prototype.attr = function (key) {
 
 // methods as metadata list
 Metadata.prototype.all = function () {
-    // TBD:
+    // return as a list
     return [];
 };
 Metadata.prototype.find = function (query) {
     return this.all().filter(metadata.query.toQuery(query));
 };
 Metadata.prototype.first = function (query) {
-    var r = this.find(query);
+    const r = this.find(query);
     if (r.length < 1) return nilLink(this.engine);
     return r[0];
 };
@@ -87,7 +87,7 @@ Metadata.prototype.select = function (selector) {
 
 
 // base of metadata as Request/Response
-var Entity = function Entity() {
+const Entity = function Entity() {
     return Object.create(Entity.prototype, {});
 };
 Entity.prototype = Metadata();
@@ -95,16 +95,15 @@ Entity.prototype.attr = function (key) {
     return this.glossary.entityAttr(this, key);
 };
 Entity.prototype.all = function () {
-    var contentType = this.attr("content-type");
-    var entries = this.glossary.entityLinkAll(this);
-    return Array.prototype.map.call(entries, function (entry) {
-        return this.engine.porter.link(this.engine, entry, contentType, this);
-    }, this);
+    const contentType = this.attr("content-type");
+    const entries = this.glossary.entityLinkAll(this);
+    return Array.from(entries, entry => this.engine.porter.link(
+        this.engine, entry, contentType, this));
 };
 
 
 // base of metadata as a hyperlink part in document
-var Link = function Link() {
+const Link = function Link() {
     return Object.create(Link.prototype, {});
 };
 Link.prototype = Metadata();
@@ -113,63 +112,63 @@ Link.prototype.attr = function (key) {
 };
 
 // nil Metadata
-var NilEntity = function NilEntity(engine, request, response) {
+const NilEntity = function NilEntity(engine, request, response) {
     return Object.create(NilEntity.prototype, {
         engine: {value: engine},
         glossary: {value: termset.core.EntityGlossary(
             "*", engine.glossary)},
         request: {value: request},
-        response: {value: response},
+        response: {value: response}
     });
 };
 NilEntity.prototype = Entity();
 
-var NilLink = function NilLink(engine, none, parent) {
+const NilLink = function NilLink(engine, none, parent) {
     return Object.create(NilLink.prototype, {
         engine: {value: engine},
-        parent: {value: parent},
+        parent: {value: parent}
     });
 };
 NilLink.prototype = Link();
 
 // nil instance
-var nilEntity = function (engine) {
+const nilEntity = function (engine) {
     // TBD: nil url
-    var nilRequest = engine.space.request("GET", "");
-    var nilResponse = engine.space.response("200", {
+    const nilRequest = engine.space.request("GET", "");
+    const nilResponse = engine.space.response("200", {
         "content-type": "application/octet-stream"});
     return NilEntity(engine, nilRequest, nilResponse);
 };
-var nilLink = function (engine) {
+const nilLink = function (engine) {
     return NilLink(engine, null, nilEntity(engine));
 };
 
 // Metadata factory
-var Porter = function Porter() {
+const Porter = function Porter() {
     return Object.create(Porter.prototype, {
-        map: {value: {}},
+        map: {value: {}}
     });
 };
 Porter.map = {};
 Porter.nil = {Entity: NilEntity, Link: NilLink};
 Porter.prototype.entity = function (engine, request, response) {
-    var contentType = response.contentType();
+    const contentType = response.contentType();
     return this.resolve(contentType.value).Entity(engine, request, response);
 };
 Porter.prototype.link = function (engine, data, contentType, parent) {
     if (!parent) {
         contentType = contentType.valueOf();
-        var body = JSON.stringify(data);
-        var uri = "data:" + contentType + "," + body;
-        var request = engine.space.request("GET", uri);
-        var response = engine.space.response(
+        const body = JSON.stringify(data);
+        const uri = `data:${contentType},${body}`;
+        const request = engine.space.request("GET", uri);
+        const response = engine.space.response(
             "200", {"content-type": contentType}, body);
         parent = this.entity(engine, request, response);
     }
     return this.resolve(contentType).Link(engine, data, parent);
 };
 Porter.prototype.resolve = function (contentType) {
-    var paramStart = contentType.indexOf(";");
+    const paramStart = contentType.indexOf(";");
     if (paramStart >= 0) {
         contentType = contentType.substring(0, paramStart).trim();
     }

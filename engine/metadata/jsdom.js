@@ -9,11 +9,11 @@ const xmlImpl = new xmldom.DOMImplementation();
 const xmlSerializer = new xmldom.XMLSerializer();
 
 // compat function for "document.implementation.createHTMLDocument"
-exports.createHTMLDocument = function (title) {
+exports.createHTMLDocument = (title) => {
     const html = jsdom.jsdom("<!doctype html>", {
         features: {
             FetchExternalResource: false,
-            ProcessExternalResources: false,
+            ProcessExternalResources: false
         }});
     if (typeof title === "string") {
         html.title = title;
@@ -22,22 +22,22 @@ exports.createHTMLDocument = function (title) {
 };
 
 // compat function for "document.implementation.createDocument"
-exports.createDocument = function () {
+exports.createDocument = () => {
     const xml = xmlImpl.createDocument();
     return xml;
 };
 
-exports.parseHTML = function (src, uri) {
+exports.parseHTML = (src, uri) => {
     const html = jsdom.jsdom(src, {
         parsingMode: "html",
         url: uri,
         features: {
             FetchExternalResource: false,
-            ProcessExternalResources: false,
+            ProcessExternalResources: false
         }});
     return html;
 };
-exports.parseXML = function (src, uri) {
+exports.parseXML = (src, uri) => {
     const xml = xmlParser.parseFromString(src);
     xml.defaultView = {document: xml};
     xml.defaultView.matcher = nwmatcher(xml.defaultView);
