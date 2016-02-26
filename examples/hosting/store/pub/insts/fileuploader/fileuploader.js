@@ -5,7 +5,6 @@ window.addEventListener("agent-load", ev => {
     let root = "";
 
     const updateFiles = (file) => {
-        console.log(orb);
         const url = `${orb}/${encodeURIComponent(file.filename)}`;
         const a = document.createElement("a");
         a.setAttribute("href", url);
@@ -30,7 +29,7 @@ window.addEventListener("agent-load", ev => {
         if (ev.detail.request.method == "GET") return render();
         if (ev.detail.request.method == "POST") {
             const formdata = anatta.form.decode(ev.detail.request);
-            return anatta.q.all(formdata.file.map(putOrb)).then(
+            return Promise.all(formdata.file.map(putOrb)).then(
                 () => formdata.file.map(updateFiles)).then(render);
         }
     }, false);

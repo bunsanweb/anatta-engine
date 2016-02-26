@@ -20,15 +20,15 @@ window.addEventListener("load", ev => {
         const name = location.hash.substring(1);
         const url = `/orb/${name}`;
         const req = new XMLHttpRequest();
-        const renderer = doRender.bind(req);
-        req.addEventListener("load", renderer, false);
-        req.addEventListener("error", renderer, false);
+        req.addEventListener("load", doRender, false);
+        req.addEventListener("error", doRender, false);
         req.open("GET", url, true);
         req.send();
     };
-    const doRender = function (ev) {
-        var plain = this.status === 200 ? this.responseText : "";
-        title.textContent = heading.textContent = name;
+    const doRender = (ev) => {
+        const name = location.hash.substring(1);
+        const plain = ev.target.status === 200 ? ev.target.responseText : "";
+        title.textContent = heading.textContent = decodeURIComponent(name);
         content.innerHTML = plain.replace(wikiName, linker);
         source.value = plain;
     };
@@ -38,9 +38,9 @@ window.addEventListener("load", ev => {
     };
     
     const doUpdate = (ev) => {
-        var name = location.hash.substring(1);
-        var url = `/orb/${name}`;
-        var req = new XMLHttpRequest();
+        const name = location.hash.substring(1);
+        const url = `/orb/${name}`;
+        const req = new XMLHttpRequest();
         req.addEventListener("load", doLoad, false);
         req.open("PUT", url, true);
         req.setRequestHeader("content-type", "text/plain;charset=UTF-8");

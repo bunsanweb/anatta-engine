@@ -2,17 +2,16 @@
 window.addEventListener("load", ev => {
     const source = document.querySelector("#source");
     
-    const doRender = function (ev) {
-        var plain = this.status == 200 ? this.responseText : "";
+    const doRender = (ev) => {
+        const plain = ev.target.status == 200 ? ev.target.responseText : "";
         document.querySelector("#content").innerHTML = plain;
         source.value = document.getElementById("text").textContent;
     };
 
     const doLoad = (ev) => {
-        var url = "/wall/";
-        var req = new XMLHttpRequest();
-        var render = doRender.bind(req);
-        req.addEventListener("load", render, false);
+        const url = "/wall/";
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", doRender, false);
         req.open("GET", url, true);
         req.send();
     };

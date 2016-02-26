@@ -6,7 +6,7 @@ window.addEventListener("agent-load", ev => {
     const template = document.querySelector(".newsitem");
     
     const content = (entry) => {
-        var item = template.cloneNode(true);
+        const item = template.cloneNode(true);
         item.querySelector(".href").href = entry.attr("href");
         item.querySelector(".title").textContent = entry.attr("title");
         item.querySelector(".date").textContent = entry.attr("date");

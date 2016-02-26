@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const memory = require("./memory");
 
-var Orb = function Orb(dir) {
+const Orb = function Orb(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     return Object.create(Orb.prototype, {
         dir: {value: dir, enumerable: true}

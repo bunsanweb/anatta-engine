@@ -29,9 +29,10 @@ window.addEventListener("load", ev => {
         req.open("GET", url, true);
         req.send();
     };
-    var doRender = (ev) => {
+    const doRender = (ev) => {
+        const name = location.hash.substring(1);
         const plain = ev.target.status === 200 ? ev.target.responseText : "";
-        title.textContent = heading.textContent = name;
+        title.textContent = heading.textContent = decodeURIComponent(name);
         content.innerHTML = plain.replace(wikiName, linker);
         source.value = plain;
     };
