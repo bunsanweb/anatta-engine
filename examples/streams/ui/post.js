@@ -1,22 +1,18 @@
-var Post = function (postTo) {
+const Post = function (postTo) {
     "use strict";
     
-    var input = document.getElementById("input");
-    var post = document.getElementById("post");
+    const input = document.getElementById("input");
+    const post = document.getElementById("post");
     
-    var handlers = {
-        onSuccess: function (ev) {},
-        onFailure: function (ev) {alert("error: " + this.status)},
+    const handlers = {
+        onSuccess: (ev) => {console.log(ev.target.responseText);},
+        onFailure: (ev) => {alert(`error: ${ev.target.status}`);}
     };
-    var onSuccess = function (ev) {
-        handlers.onSuccess.call(this, ev);
-    };
-    var onFailure = function (ev) {
-        handlers.onFailure.call(this, ev);
-    };
+    const onSuccess = (ev) => handlers.onSuccess(ev);
+    const onFailure = (ev) => handlers.onFailure(ev);
     
-    post.addEventListener("click", function (ev) {
-        var data = new FormData();
+    post.addEventListener("click", ev => {
+        const data = new FormData();
         data.append("action", "tweet");
         data.append("content", input.value);
         data.append("tag", "tweet");
@@ -25,9 +21,9 @@ var Post = function (postTo) {
         data.append("targetHref", location.href);
         data.append("targetName", document.title);
         
-        var req = new XMLHttpRequest();
-        req.addEventListener("load", onSuccess.bind(req), false);
-        req.addEventListener("error", onFailure.bind(req), false);
+        const req = new XMLHttpRequest();
+        req.addEventListener("load", onSuccess, false);
+        req.addEventListener("error", onFailure, false);
         req.open("POST", postTo, true);
         req.send(data);
     }, false);

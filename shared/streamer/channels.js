@@ -6,7 +6,7 @@
     
     // Streamer that provides single layer view of chain streamer
     const Linear = function Linear(opts) {
-        const opts = merge(opts, {});
+        opts = merge(opts, {});
         const chain = Chain(opts);
         const self = Object.create(Linear.prototype, {
             opts: {value: opts},
@@ -77,7 +77,7 @@
     
     // Streamer that chained Fragment streamers
     const Chain = function Chain(opts) {
-        const opts = merge(opts, {});
+        opts = merge(opts, {});
         const self = Object.create(Chain.prototype, {
             opts: {value: opts},
             fragments: {value: []},
@@ -126,7 +126,7 @@
     // Streamer that cached but goes only backward
     // when refreshed, pass new Fragment streamer
     const Fragment = function Fragment(opts) {
-        const opts = merge(opts, {});
+        opts = merge(opts, {});
         const basic = Basic(opts);
         const self = Object.create(Fragment.prototype, {
             opts: {value: opts},
@@ -201,7 +201,7 @@
             link: {value: {refresh: opts.href, backward: opts.href}},
             wait: {value: 500, writable: true},
             last: {value: new Date(0), writable: true},
-            lane: {value: platform.q.resolve(""), writable: true},
+            lane: {value: Promise.resolve(""), writable: true},
             handlers: {value: {
                 load: function (date, entries) {},
                 refresh: function (date, newEntries, oldEntries) {},
@@ -287,9 +287,6 @@
     // platforms
     const platforms = {
         browser: {
-            get q() {
-                return window.Q;
-            },
             responseHeader: function (reqres, key) {
                 return reqres.getResponseHeader(key);
             },
@@ -318,9 +315,6 @@
             }
         },
         agent: {
-            get q() {
-                return window.anatta.q;
-            },
             responseHeader: function (reqres, key) {
                 const res = reqres[1];
                 return res.headers[key];

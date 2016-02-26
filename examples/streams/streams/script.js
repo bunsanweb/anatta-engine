@@ -1,32 +1,32 @@
-window.addEventListener("agent-load", function (ev) {
+window.addEventListener("agent-load", ev => {
     "use strict";
     
-    var orbUri = "orb:/";
-    var createDocument = function (title) {
-        return document.implementation.createHTMLDocument(title);
-    };
-    var source = StreamerSource({
+    const orbUri = "orb:/";
+    const createDocument = (title) =>
+              document.implementation.createHTMLDocument(title);
+    const source = StreamerSource({
         href: orbUri,
-        selector: {entries: "[rel=entry]",},
+        selector: {entries: "[rel=entry]"},
         entriesMax: 20,
         waitRefresh: 500,
-        createDocument: createDocument,
+        createDocument: createDocument
     });
-    var post = StreamerPost({
+    const post = StreamerPost({
         href: orbUri,
         entryTemplate: document.querySelector("#entryTemplate"),
         activityTemplate: document.querySelector("#activityTemplate"),
-        createDocument: createDocument,
+        createDocument: createDocument
     });
     
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         //console.log("access");
         ev.detail.accept();
         //console.log([ev.detail.request.method, ev.detail.request.href,]);
         switch (ev.detail.request.method) {
         case "GET": return source.get(ev);
         case "POST": return post.post(ev);
+        default: return ev.detail.respond(
+            "405", {allow: "GET, POST"}, "Allow GET or POST");
         }
-        ev.detail.respond("405", {allow: "GET, POST"}, "Allow GET or POST");
     }, false);
 }, false);
