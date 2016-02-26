@@ -1,12 +1,11 @@
 "use strict";
 
-var http = require("http");
-var url = require("url");
-var q = require("q");
-var iconv = require("iconv");
-var conftree = require("../conftree");
+const http = require("http");
+const url = require("url");
+const iconv = require("iconv");
+const conftree = require("../conftree");
 
-var Request = function Request(method, uri, headers, body, from) {
+const Request = function Request(method, uri, headers, body, from) {
     headers = normalizeHeaders(headers || {});
     body = new Buffer(body || []);
     if (body.length && !headers["content-length"]) {
@@ -17,14 +16,14 @@ var Request = function Request(method, uri, headers, body, from) {
         href: {value: uri, enumerable: true},
         location: {value: url.parse(uri, true, true), enumerable: true},
         headers: {value: headers, enumerable: true},
-        body: {get: function () {return new Buffer(body)}, enumerable: true},
-        from: {value: from},
+        body: {get: () => new Buffer(body), enumerable: true},
+        from: {value: from}
     });
 };
 // NOTE: for compatibility
 Request.prototype = {
     get uri() {return this.href;},
-    get uriObject() {return this.location;},
+    get uriObject() {return this.location;}
 };
 Request.prototype.contentType = function () {
     return ContentType(this.headers["content-type"]);
@@ -36,94 +35,91 @@ Request.prototype.origin = function () {
     return this.from ? this.from.origin() : this;
 };
 Request.prototype.text = function (charset) {
-    var type = this.contentType();
+    const type = this.contentType();
     charset = charset || type.parameter.charset || "binary";
     return this.body.toString(charset);
 };
 
-var Response = function Response(status, headers, body) {
+const Response = function Response(status, headers, body) {
     status = status.toString();
-    var statusText = http.STATUS_CODES[status];
     headers = normalizeHeaders(headers || {});
     body = new Buffer(body || []);
     if (body.length) {
         headers["content-length"] = body.length.toString();
     }
+    const statusText = http.STATUS_CODES[status];
     return Object.create(Response.prototype, {
         status: {value: status, enumerable: true},
         statusText: {value: statusText, enumerable: true},
         headers: {value: headers, enumerable: true},
-        body: {get: function () {return new Buffer(body)}, enumerable: true},
+        body: {get: () => new Buffer(body), enumerable: true}
     });
 };
 Response.prototype.contentType = function () {
     return ContentType(this.headers["content-type"]);
 };
 Response.prototype.text = function (charset) {
-    var type = this.contentType();
+    const type = this.contentType();
     charset = charset || type.parameter.charset || "binary";
     try {
         return this.body.toString(charset);
     } catch (ex) {
-        var converter = new iconv.Iconv(charset, "utf-8");
+        const converter = new iconv.Iconv(charset, "utf-8");
         return converter.convert(this.body).toString();
     }
 };
 
-var Space = function Space(opts) {
+const Space = function Space(opts) {
     opts = conftree.create(opts, {redirectMax: 5});
     return Object.create(Space.prototype, {
         opts: {value: opts, enumerable: true},
-        manager: {value: FieldManager(), enumerable: true},
+        manager: {value: FieldManager(), enumerable: true}
     });
 };
 Space.prototype.request = Request;
 Space.prototype.response = Response;
 Space.prototype.access = function (request) {
-    var self = this;
-    var redirector = function (request, response) {
-        var status = response.status.toString()[0];
+    const redirector = (reqres) => {
+        const request = reqres[0], response = reqres[1];
+        const status = response.status.toString()[0];
         if ((status === "3" || (request.method === "PUT" && status == "2")) &&
             response.headers["location"] &&
-            request.step() < self.opts.redirectMax) {
-            var redirect = Request(
+            request.step() < this.opts.redirectMax) {
+            const redirect = Request(
                 "GET", response.headers["location"],
                 request.headers, request.body, request);
-            return self.access(redirect);
+            return this.access(redirect);
         } else {
-            return q([request, response]);
+            return Promise.all([request, response]);
         }
     };
-    var field = this.manager.resolve(request);
-    var deferred = q.defer();
-    deferred.resolve(field.access(request));
-    return deferred.promise.spread(redirector);
+    const field = this.manager.resolve(request);
+    return Promise.resolve(field.access(request)).then(
+        a => Promise.all(a)).then(redirector);
 };
 
-var FieldUtils = {
-    error: function (request, error, errorStatus) {
-        var body = new Buffer((error || new Error()).toString());
-        var response = Response(errorStatus || "400", {
+const FieldUtils = {
+    error: (request, error, errorStatus) => {
+        const body = new Buffer((error || new Error()).toString());
+        const response = Response(errorStatus || "400", {
             "content-type": "text/plain;charset=utf-8",
-            "content-length": body.length.toString(),
+            "content-length": body.length.toString()
         }, body);
-        return q([request, response]);
-    },
+        return Promise.all([request, response]);
+    }
 };
 
 
-var UnknownField = Object.freeze({
-    access: function (request) {
-        return FieldUtils.error(
-            request, "Resource not found: " + request.href, "404");
-    },
+const UnknownField = Object.freeze({
+    access: (request) => FieldUtils.error(
+        request, `Resource not found: ${request.href}`, "404")
 });
 
 
-var FieldManager = function FieldManager() {
+const FieldManager = function FieldManager() {
     return Object.create(FieldManager.prototype, {
         factories: {value: {}},
-        fields: {value: {}},
+        fields: {value: {}}
     });
 };
 FieldManager.prototype.register = function (id, prefix, ctor) {
@@ -135,45 +131,37 @@ FieldManager.prototype.bind = function (id, prefix, field) {
     return id;
 };
 FieldManager.prototype.build = function (factoryId, name, args) {
-    var factory = this.factories[factoryId];
+    const factory = this.factories[factoryId];
     if (!factory) return null;
-    var fid = factoryId + (name ? name + "/" : "");
-    var prefix = factory.prefix + (name ? name + "/" : "");
-    var field = factory.ctor.apply(null, args);
+    const fid = `${factoryId}${name ? name + "/" : ""}`;
+    const prefix = `${factory.prefix}${name ? name + "/" : ""}`;
+    const field = factory.ctor.apply(null, args);
     return this.bind(fid, prefix, field);
 };
 FieldManager.prototype.resolve = function (request) {
-    var field = "";
-    var fields = this.fields;
-    Object.keys(fields).map(function (id) {
-        return fields[id];
-    }).sort(function (a, b) {
-        return a.prefix > b.prefix ? -1 : 1; //reversed dict order for resolve
-    }).some(function (elem) {
-        var prefix = elem.prefix;
-        if (request.href.substring(0, prefix.length) === prefix) {
-            field = elem.field;
-            return true;
-        }
-    });
-    return field ? field : UnknownField;
+    const fields = this.fields;
+    //reversed dict order for resolve (longer prefix one is adopted)
+    const detailPrefixFirst = Object.keys(fields).map(id => fields[id]).sort(
+        (a, b) => a.prefix > b.prefix ? -1 : 1);
+    for (let field of detailPrefixFirst) {
+        if (request.href.startsWith(field.prefix)) return field.field;
+    }
+    return UnknownField;
 };
 
-var normalizeHeaders = function (headers) {
-    return Object.keys(headers).reduce(function (o, key) {
-        o[key.toLowerCase()] = headers[key];
-        return o;
-    }, {});
-};
+const normalizeHeaders = (headers) => Object.keys(headers).reduce((o, key) => {
+    o[key.toLowerCase()] = headers[key];
+    return o;
+}, {});
 
-var ContentType = function ContentType(full) {
+const ContentType = function ContentType(full) {
     full = full || "application/octet-stream";
     // TBD: quated string value
-    var list = full.split(";");
-    var content = list[0].toLowerCase();
-    var detail = content.split("/");
-    var parameter = list.slice(1).reduce(function (params, param) {
-        var kv = param.split("=");
+    const list = full.split(";");
+    const content = list[0].toLowerCase();
+    const detail = content.split("/");
+    const parameter = list.slice(1).reduce((params, param) => {
+        const kv = param.split("=");
         params[kv[0].trim().toLowerCase()] = kv[1].trim();
         return params;
     }, {});
@@ -182,7 +170,7 @@ var ContentType = function ContentType(full) {
         value: {value: content, enumerable: true},
         parameter: {value: Object.freeze(parameter), enumerable: true},
         type: {value: detail[0], enumerable: true},
-        subtype: {value: detail[1], enumerable: true},
+        subtype: {value: detail[1], enumerable: true}
     });
 };
 ContentType.prototype.valueOf = function () {

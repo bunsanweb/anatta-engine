@@ -1,115 +1,80 @@
 "use strict";
 
-var q = require("q");
-var fs = require("fs");
-var path = require("path");
-var conftree = require("../conftree");
-var core = require("./core");
-var mime = require("./mime");
-var cachecontrol = require("./cachecontrol");
+const fs = require("fs");
+const path = require("path");
+const conftree = require("../conftree");
+const core = require("./core");
+const mime = require("./mime");
+const cachecontrol = require("./cachecontrol");
 
-var FileField = function FileField(opts) {
+const FileField = function FileField(opts) {
     return Object.create(FileField.prototype, {
         opts: {value: conftree.create(opts, {
-            root: "", prefix: "",
-            cache: false,
-        })},
+            root: "", prefix: "", cache: false
+        })}
     });
 };
 FileField.prototype.access = function (request) {
     if (request.method !== "GET") {
-        return q([request, core.Response("405", {allow: "GET"})]);
+        return Promise.all([request, core.Response("405", {allow: "GET"})]);
     }
     try {
-        var prefix = RegExp("^" + this.opts.prefix);
-        var relPath = request.location.pathname.replace(prefix, "");
-        var pathname = path.resolve(this.opts.root, relPath);
-        return getPath.call(this, request, pathname);
+        const prefix = RegExp(`^${this.opts.prefix}`);
+        const relPath = request.location.pathname.replace(prefix, "");
+        const pathname = path.resolve(this.opts.root, relPath);
+        return getPath(this, request, pathname);
     } catch (ex) {
-        if (ex.name === "AssertionError") throw ex;
-        return core.FieldUtils.error(request, ex, "404");
+        if (ex.name === "AssertionError") throw ex; //NOTE: for Test
+        return Promise.all(core.FieldUtils.error(request, ex, "404"));
     }
 };
 
-var getPath = function (request, pathname) {
-    var self = this;
-    var d = q.defer();
-    fs.stat(pathname, function (err, stat) {
-        if (err) {
-            return d.resolve(core.FieldUtils.error(request, err, "404"));
-        } else if (stat.isDirectory()) {
-            return d.resolve(getIndex.call(self, request, pathname, stat));
+const getPath = (self, request, pathname) => new Promise((f, r) => {
+    fs.stat(pathname, (err, stat) => {
+        if (err) return f(core.FieldUtils.error(request, err, "404"));
+        if (stat.isDirectory()) {
+            return f(getIndex(self, request, pathname, stat));
         } else if (stat.isFile()) {
-            return d.resolve(getContent.call(self, request, pathname, stat));
+            return f(getContent(self, request, pathname, stat));
         }
-        return d.reject(err);
+        return r(err);
     });
-    return d.promise;
-};
+});
 
-var getIndex = function (request, pathname, stat) {
-    var self = this;
-    var d = q.defer();
-    fs.readdir(pathname, function (err, names) {
-        if (err) return d.resolve(core.FieldUtil.error(request, "", "404"));
-        for (var i = 0; i < names.length; i++) {
-            if (!names[i].match(/^index\./)) continue;
-            var indexPath = path.resolve(pathname, names[i]);
-            return fs.stat(indexPath, function (err, stat) {
+const getIndex = (self, request, pathname, stat) => new Promise((f, r) => {
+    fs.readdir(pathname, (err, names) => {
+        if (err) return f(core.FieldUtil.error(request, "", "404"));
+        for (let name of names) {
+            if (!name.match(/^index\./)) continue;
+            const indexPath = path.resolve(pathname, name);
+            return fs.stat(indexPath, (err, stat) => {
                 if (err || !stat.isFile()) {
-                    var reqres = core.FieldUtils.error(request, err, "404");
-                    return d.resolve(reqres);
+                    return f(core.FieldUtils.error(request, err, "404"));
                 }
-                return d.resolve(
-                    getContent.call(self, request, indexPath, stat));
+                return f(getContent(self, request, indexPath, stat));
             });
         }
-        return d.resolve(core.FieldUtils.error(request, "", "404"));
+        return f(core.FieldUtils.error(request, "", "404"));
     });
-    return d.promise;
-};
+});
 
-var getContent = function (request, pathname, stat) {
-    var self = this;
+const getContent = (self, request, pathname, stat) => {
     if (self.opts.cache &&
         cachecontrol.clientCacheValid(request, stat.mtime)) {
-        return [request, cachecontrol.NotModified];
+        return Promise.all([request, cachecontrol.NotModified]);
     }
-    var d = q.defer();
-    var type = mime.contentType(pathname);
-    fs.readFile(pathname, function (err, data) {
-        if (err) return d.resolve(core.FieldUtil.error(request, "", "404"));
-        var response = core.Response("200", {
-            "content-type": type,
-            "content-length": data.length.toString(),
-            "last-modified": stat.mtime.toUTCString(),
-        }, data);
-        d.resolve([request, response]);
+    return new Promise((f, r) => {
+        const type = mime.contentType(pathname);
+        fs.readFile(pathname, (err, data) => {
+            if (err) return f(core.FieldUtil.error(request, "", "404"));
+            const response = core.Response("200", {
+                "content-type": type,
+                "content-length": data.length.toString(),
+                "last-modified": stat.mtime.toUTCString()
+            }, data);
+            return f([request, response]);
+        });
     });
-    return d.promise;
 };
-
-/*
-var notModified = function () {
-    return core.Response("304", {}, "");
-};
-var clientCacheValid = function (request, stat) {
-    var cc = parseCacheControl(request.headers["cacne-control"]);
-    var since = request.headers["if-modified-since"];
-    if (cc["no-cache"] || cc["no-store"] || !since) return false;
-    var sinceDate = new Date(since);
-    if (stat.mtime <= sinceDate) return true;
-    return false;
-};
-var parseCacheControl = function (cachecontrol) {
-    if (!cachecontrol) return {};
-    var cc = {};
-    cachecontrol.split(/;/).forEach(function (elem) {
-        var kv = elem.split(/=/);
-        cc[kv[0].trim().toLowerCase()] = kv[1] ? kv[1].trim() : true;
-    });
-    return cc;
-};
-*/
 
 exports.FileField = FileField;

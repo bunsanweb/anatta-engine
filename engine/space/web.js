@@ -1,39 +1,38 @@
 "use strict";
 
-var url = require("url");
-var protocols = {
+const url = require("url");
+const protocols = {
     "http:": require("http"),
-    "https:": require("https"),
+    "https:": require("https")
 };
-var q = require("q");
-var core = require("./core");
-var conftree = require("../conftree");
+const core = require("./core");
+const conftree = require("../conftree");
 
-var WebField = function WebField(opts) {
+const WebField = function WebField(opts) {
     return Object.create(WebField.prototype, {
-        opts: {value: conftree.create(opts, {rejectUnauthorized: false})},
+        opts: {value: conftree.create(opts, {rejectUnauthorized: false})}
     });
 };
+
 WebField.prototype.access = function (request) {
-    var deferred = q.defer();
-    var opts = url.parse(request.href);
-    opts.method = request.method;
-    opts.headers = request.headers;
-    opts.rejectUnauthorized = this.opts.rejectUnauthorized;
-    var req = protocols[opts.protocol].request(opts, function (res) {
-        var chunks = [];
-        res.on("data", chunks.push.bind(chunks));
-        res.on("end", function () {
-            var body = Buffer.concat(chunks);
-            var response = core.Response(res.statusCode, res.headers, body);
-            deferred.resolve([request, response]);
+    return new Promise((f, r) => {
+        const opts = url.parse(request.href);
+        opts.method = request.method;
+        opts.headers = request.headers;
+        opts.rejectUnauthorized = this.opts.rejectUnauthorized;
+        const req = protocols[opts.protocol].request(opts, res => {
+            const chunks = [];
+            res.on("data", chunk => chunks.push(chunk));
+            res.on("end", () => {
+                const body = Buffer.concat(chunks);
+                const response = core.Response(
+                    res.statusCode, res.headers, body);
+                f([request, response]);
+            });
         });
+        req.on("error", err => f(core.FieldUtils.error(request, err, "400")));
+        req.end(request.body);
     });
-    req.on("error", function (err) {
-        deferred.resolve(core.FieldUtils.error(request, err, "400"));
-    });
-    req.end(request.body);
-    return deferred.promise;
 };
 
 exports.WebField = WebField;
