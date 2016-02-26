@@ -1,18 +1,17 @@
 {
     "name": "anatta-engine",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "private": true,
     "scripts": {
         "test": "node ./node_modules/.bin/mocha"
     },
     "main": "./anatta",
-    "engines": {"node": ">=5.5"},
+    "engines": {"node": ">=5.7"},
     "dependencies": {
         "jsdom": "*",
         "xmldom": "*",
         "nwmatcher": "*",
         "iconv": "*",
-        "q": "*",
         "node-forge": "*",
         "mongodb": "*"
     },
