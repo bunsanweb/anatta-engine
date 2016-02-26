@@ -10,9 +10,9 @@ const Orb = function Orb(uri, collection) {
     });
 };
 Orb.prototype.entryList = function () {
-    return async(mongodb, "connect")(this.uri).then(
-        db => fin(async(db, "collection")(this.collection).then(
-            collection => async(collection.find(), "toArray")()
+    return mongodb.connect(this.uri).then(
+        db => fin(db.collection(this.collection).then(
+            collection => collection.find().toArray()
         ).then(docs => docs.reduce((result, doc) => {
             result[doc.pathname] = memory.Entry.fromObject(doc);
             return result;
@@ -20,32 +20,21 @@ Orb.prototype.entryList = function () {
     ).catch(err => ({}));
 };
 Orb.prototype.get = function (pathname) {
-    return async(mongodb, "connect")(this.uri).then(
-        db => fin(async(db, "collection")(this.collection).then(
-            collection => async(collection, "findOne")({pathname: pathname})
+    return mongodb.connect(this.uri).then(
+        db => fin(db.collection(this.collection).then(
+            collection => collection.findOne({pathname: pathname})
         ).then(doc => memory.Entry.fromObject(doc)), () => db.close())
     ).catch(err => null);
 };
 Orb.prototype.put = function (pathname, data) {
     const entry = memory.Entry.fromValue(pathname, data);
-    return async(mongodb, "connect")(this.uri).then(
-        db => fin(async(db, "collection")(this.collection).then(collection => {
+    return mongodb.connect(this.uri).then(
+        db => fin(db.collection(this.collection).then(collection => {
             const query = {pathname: pathname};
             const doc = entry.toObject();
-            return async(collection, "update")(query, doc, {upsert: true});
+            return collection.update(query, doc, {upsert: true});
         }).then(doc => entry), () => db.close())
     ).catch(err => null);
-};
-
-// convert method with callback to promise function as:
-//  obj.method(args..., function (err, result) {}) =>
-//  async(obj, "method")(args...).then(function (result) {}, function (err) {})
-const async = (obj, name) => () => {
-    const args = Array.from(arguments); //[ES6] rest parameters
-    return new Promise((f, r) => {
-        args.push((err, result) => void(err ? r(err) : f(result))); 
-        obj[name].apply(obj, args);
-    });
 };
 
 // replacement for q's p.finally(proc)
