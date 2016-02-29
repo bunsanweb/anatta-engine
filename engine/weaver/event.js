@@ -2,27 +2,30 @@
 
 const jsdom = require("jsdom");
 const factory = jsdom.jsdom();
-const Event = factory.createEvent("Event").constructor;
+const Event = factory.defaultView.Event;
+const CustomEvent = factory.defaultView.CustomEvent;
 
 const bindEventTarget = function (target) {
     const listeners = {};
 
-    const addEventListener = function (name, listener, capture) {
-        if (!listener) return;
-        name = name.toLowerCase();
-        capture = !!capture;
-        if (!listeners[name]) listeners[name] = emptyHandlers();
-        const list = listeners[name][capture];
-        if (!list.find(cur => cur === listener))
-            capture ? list.unshift(listener) : list.push(listener);
+    const listenerFinder = (listener, capture) => (cur) =>
+              cur.capture === capture && cur.listener === listener;
+    const addEventListener = function (eventname, listener, capture) {
+        if (typeof listener !== "function") return;
+        const name = eventname.toLowerCase();
+        if (!listeners[name]) listeners[name] = [];
+        const list = listeners[name];
+        const finder = listenerFinder(listener, !!capture);
+        const existed = list.find(finder);
+        if (!existed) list.push({listener: listener, capture: !!capture});
     };
-    const removeEventListener = function (name, listener, capture) {
-        if (!listener) return;
-        name = name.toLowerCase();
-        capture = !!capture;
+    const removeEventListener = function (eventname, listener, capture) {
+        if (typeof listener !== "function") return;
+        const name = eventname.toLowerCase();
         if (!listeners[name]) return;
-        const list = listeners[name][capture];
-        const index = list.findIndex(cur => cur === listener);
+        const list = listeners[name];
+        const finder = listenerFinder(listener, !!capture);
+        const index = list.findIndex(finder);
         if (index >= 0) list.splice(index, 1);
     };
 
@@ -30,34 +33,22 @@ const bindEventTarget = function (target) {
         // returns false if cancelled (preventDefault() called)
         // returns true, then caller may spawn default operation
         if (!(event instanceof Event)) {
-            const ev = createEvent("Event");
-            ev.initEvent(event.type, !!event.bubbles, !!event.cancelable);
-            if (event.detail) ev.detail = event.detail;
-            event = ev;
+            const ctor = event.detail ? CustomEvent : Event;
+            event = new ctor(event.type, event);
         }
         //NOTE: hack for access internal state of jsdom event object
         const internal = event[Object.getOwnPropertySymbols(event)[0]];
         internal.target = internal.currentTarget = target;
         if (!listeners[event.type]) return true;
-        const list = listeners[event.type][event.bubbles];
-        for (let cur of list) {
-            if (callHandler(cur, target, event)) break;
-        }
+        const list = listeners[event.type];
+        for (let cur of list) callHandler(cur.listener, target, event);
         return !internal._canceledFlag;
     };
-    
     
     target.addEventListener = addEventListener;
     target.removeEventListener = removeEventListener;
     target.dispatchEvent = dispatchEvent;
     return target;
-};
-
-const emptyHandlers = () => {
-    const h = {};
-    h[true] = [];
-    h[false] = [];
-    return h;
 };
 
 const callHandler = (handler, target, event) => {
@@ -67,13 +58,9 @@ const callHandler = (handler, target, event) => {
             event.preventDefault();
             event.stopPropagation();
         }
-        //NOTE: hack for access internal state of jsdom event object
-        const internal = event[Object.getOwnPropertySymbols(event)[0]];
-        if (internal._stopPropagationFlag) return true;
     } catch (err) {
         console.log(err);
     }
-    return false;
 };
 
 
