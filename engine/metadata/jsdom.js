@@ -11,8 +11,9 @@ const xmlSerializer = new xmldom.XMLSerializer();
 // compat function for "document.implementation.createHTMLDocument"
 exports.createHTMLDocument = (title) => {
     const html = jsdom.jsdom("<!doctype html>", {
+        virtualConsole: jsdom.createVirtualConsole().sendTo(console),
         features: {
-            FetchExternalResource: false,
+            FetchExternalResources: false,
             ProcessExternalResources: false
         }});
     if (typeof title === "string") {
@@ -31,8 +32,9 @@ exports.parseHTML = (src, uri) => {
     const html = jsdom.jsdom(src, {
         parsingMode: "html",
         url: uri,
+        virtualConsole: jsdom.createVirtualConsole().sendTo(console),
         features: {
-            FetchExternalResource: false,
+            FetchExternalResources: false,
             ProcessExternalResources: false
         }});
     return html;
