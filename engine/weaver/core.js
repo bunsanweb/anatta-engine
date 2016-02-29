@@ -6,7 +6,6 @@ const conftree = require("../conftree");
 const Agent = function Agent(opts) {
     return Object.create(Agent.prototype, {
         opts: {value: conftree.create(opts, {uri: ""})},
-        window: {value: window.Window()},
         entity: {value: null, writable: true},
         engine: {value: null, writable: true}
     });

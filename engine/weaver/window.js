@@ -6,21 +6,51 @@ const jsdom = require("../metadata/jsdom");
 const space = {
     core: require("../space/core")
 };
-const weaver = {
-    event: require("./event")
-};
 
 
-const Window = function Window() {
-    return vm.createContext(Object.create(Window.prototype, {}));
-};
-
-const bindApi = function (agent) {
-    const window = agent.window;
-    weaver.event.bindEventTarget(window);
-    Object.defineProperty(window, "location", {
-        get: () => url.parse(agent.entity.request.href, false, true)
+const access = function (agent, request) {
+    // request to agent-xxx event
+    return new Promise((f, r) => {
+        const event = agent.window.document.createEvent("CustomEvent");
+        event.initCustomEvent("agent-access", false, true, {
+            request: request,
+            accept: () => {
+                event.preventDefault();
+                event.stopPropagation();
+            },
+            respond: (status, headers, body) => {
+                const response = space.core.Response(status, headers, body);
+                f([request, response]);
+            }
+        });
+        if (agent.window.dispatchEvent(event)) {
+            //NOTE: self doc as a default response
+            if (request.method === "GET") {
+                event.detail.respond("200", {
+                    "content-type": "text/html;charset=utf-8"
+                }, agent.window.document.documentElement.outerHTML);
+            } else {
+                event.detail.respond("405", {"allow": "GET"});
+            }
+        }
     });
+};
+
+// lifecycle
+const init = function (agent) {
+    const contentType = agent.entity.response.contentType().value;
+    const document = contentType === "text/html" ?
+              agent.entity.html : jsdom.createHTMLDocument("");
+    agent.window = vm.createContext(document.defaultView);
+    bindApi(agent);
+    const scriptTags = agent.window.document.querySelectorAll("head script");
+    return loadScripts(agent, scriptTags, 0);
+};
+
+
+
+const bindApi = (agent) => {
+    const window = agent.window;
     window.XMLSerializer = jsdom.XMLSerializer;
     window.anatta = {
         builtin: {
@@ -37,77 +67,11 @@ const bindApi = function (agent) {
         form: require("./form"),
         inst: require("./inst")
     };
-    window.window = window;
-    // basic service
-    window.console = console;
-    window.setTimeout = setTimeout;
-    window.clearTimeout = clearTimeout;
-    window.setInterval = setInterval;
-    window.clearInterval = clearInterval;
-    // Typed Array
-    window.ArrayBuffer = ArrayBuffer;
-    window.DataView = DataView;
-    window.Int8Array = Int8Array;
-    window.Int16Array = Int16Array;
-    window.Int32Array = Int32Array;
-    window.Uint8Array = Uint8Array;
-    window.Uint8ClampedArray = Uint8ClampedArray;
-    window.Uint16Array = Uint16Array;
-    window.Uint32Array = Uint32Array;
-    window.Float32Array = Float32Array;
-    window.Float64Array = Float64Array;
-};
-
-const loaded = (agent) => {
-    agent.window.dispatchEvent({type: "agent-load"});
-    return agent;
-};
-
-const access = function (agent, request) {
-    // request to agent-xxx event
-    return new Promise((f, r) => {
-        const event = weaver.event.createEvent("Event");
-        event.initEvent("agent-access", false, true);
-        event.detail = {
-            request: request,
-            accept: () => {
-                event.preventDefault();
-                event.stopPropagation();
-            },
-            respond: (status, headers, body) => {
-                const response = space.core.Response(status, headers, body);
-                f([request, response]);
-            }
-        };
-        if (agent.window.dispatchEvent(event)) {
-            //NOTE: self doc as a default response
-            if (request.method === "GET") {
-                event.detail.respond("200", {
-                    "content-type": "text/html;charset=utf-8"
-                }, agent.window.document.documentElement.outerHTML);
-            } else {
-                event.detail.respond("405", {"allow": "GET"});
-            }
-        }
-    });
-};
-
-
-// lifecycle
-const init = function (agent) {
-    bindApi(agent);
-    if (agent.entity.response.contentType().value === "text/html") {
-        agent.window.document = agent.entity.html;
-    } else {
-        agent.window.document = jsdom.createHTMLDocument("");
-    }
-    const scriptTags = agent.window.document.querySelectorAll("head script");
-    return loadScripts(agent, scriptTags, 0);
 };
 
 const loadScripts = function loadScripts(agent, scriptTags, index) {
     // when all scripts executed
-    if (index >= scriptTags.length) return loaded(agent);
+    if (index >= scriptTags.length) return scriptsLoaded(agent);
     const scriptTag = scriptTags[index];
     if (!scriptTag.src) {
         // when embeded script
@@ -145,7 +109,13 @@ const runScript = (agent, code, uri) => {
     }
 };
 
+const scriptsLoaded = (agent) => {
+    const event = agent.window.document.createEvent("CustomEvent");
+    event.initCustomEvent("agent-load", false, true, {});
+    agent.window.dispatchEvent(event);
+    return agent;
+};
 
-exports.Window = Window;
+
 exports.init = init;
 exports.access = access;
