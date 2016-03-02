@@ -23,56 +23,64 @@ JSON Desciption TermSet example:
 const core = require("./core");
 
 const create = (json) => {
-    const binder = JsonDescBinder(json);
+    const binder = JsonDescBinder.new(json);
     const termset = core.TermSet(binder.name);
     termset.put(binder.contentType, binder);
     return termset;
 };
 
-const JsonDescBinder = function JsonDescBinder(json) {
-    return Object.create(JsonDescBinder.prototype, {
-        desc: {value: json, enumerable: true},
-        name: {value: json.name || "", enumerable: true},
-        uriPattern: {value: RegExp(json["uri-pattern"]), enumerable: true},
-        contentType: {value: json["content-type"], enumerable: true}
-    });
-};
-JsonDescBinder.prototype = core.TermBinder();
-JsonDescBinder.prototype.entityAttr = function (entity, key) {
-    if (!entity.request.href.match(this.uriPattern)) return "";
-    const binders = this.desc["entity"] || {};
-    const desc = binders[key];
-    if (!desc) return "";
-    if (desc.text) return desc.text.toString();
-    const selector = desc.selector || "";
-    const index = desc.index || 0;
-    const selected = entity.select(selector);
-    if (selected.length <= index) return "";
-    const elem = selected[index];
-    return (desc.value ? elem[desc.value] : elem.valueOf().toString()) || "";
-};
-JsonDescBinder.prototype.entityLinkAll = function (entity) {
-    if (!entity.request.href.match(this.uriPattern)) return [];
-    const binders = this.desc["entity"] || {};
-    const desc = binders["link"];
-    if (!desc) return [];
-    if (desc.text) return [];
-    const selector = desc.selector || "";
-    return entity.select(selector);
-};
-JsonDescBinder.prototype.linkAttr = function (link, key) {
-    if (!link.parent) return "";
-    if (!link.parent.request.href.match(this.uriPattern)) return "";
-    const binders = this.desc["link"] || {};
-    const desc = binders[key];
-    if (!desc) return "";
-    if (desc.text) return desc.text.toString();
-    const selector = desc.selector || "";
-    const index = desc.index || 0;
-    const selected = link.select(selector);
-    if (selected.length <= index) return "";
-    const elem = selected[index];
-    return (desc.value ? elem[desc.value] : elem.valueOf().toString()) || "";
+const states = new WeakMap();
+const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
+    static new(json) {return Object.freeze(new JsonDescBinder(json));}
+    constructor (json) {
+        super();
+        states.set(this, {
+            desc: json, name: json.name || "",
+            uriParrern: RegExp(json["uri-pattern"]),
+            contentType: json["content-type"]});
+    }
+    get desc() {return states.get(this).desc;}
+    get name() {return states.get(this).name;}
+    get uriPattern() {return states.get(this).uriPattern;}
+    get contentType() {return states.get(this).contentType;}
+    entityAttr(entity, key) {
+        if (!entity.request.href.match(this.uriPattern)) return "";
+        const binders = this.desc["entity"] || {};
+        const desc = binders[key];
+        if (!desc) return "";
+        if (desc.text) return desc.text.toString();
+        const selector = desc.selector || "";
+        const index = desc.index || 0;
+        const selected = entity.select(selector);
+        if (selected.length <= index) return "";
+        const elem = selected[index];
+        const ret = desc.value ? elem[desc.value] : elem.valueOf().toString();
+        return ret || "";
+    }
+    entityLinkAll(entity) {
+        if (!entity.request.href.match(this.uriPattern)) return [];
+        const binders = this.desc["entity"] || {};
+        const desc = binders["link"];
+        if (!desc) return [];
+        if (desc.text) return [];
+        const selector = desc.selector || "";
+        return entity.select(selector);
+    }
+    linkAttr(link, key) {
+        if (!link.parent) return "";
+        if (!link.parent.request.href.match(this.uriPattern)) return "";
+        const binders = this.desc["link"] || {};
+        const desc = binders[key];
+        if (!desc) return "";
+        if (desc.text) return desc.text.toString();
+        const selector = desc.selector || "";
+        const index = desc.index || 0;
+        const selected = link.select(selector);
+        if (selected.length <= index) return "";
+        const elem = selected[index];
+        const ret = desc.value ? elem[desc.value] : elem.valueOf().toString();
+        return ret || "";
+    }
 };
 
 exports.create = create;

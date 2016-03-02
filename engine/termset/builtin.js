@@ -15,93 +15,94 @@ const core = require("./core");
 const jsdom = require("../metadata/jsdom");
 const xmlSerializer = jsdom.XMLSerializer();
 
-const ResourceBinder = function ResourceBinder() {
-    return Object.create(ResourceBinder.prototype, {});
-};
-ResourceBinder.prototype = core.TermBinder();
-ResourceBinder.prototype.entityAttr = function (entity, key) {
-    if (key === "href") return entity.request.href;
-    if (key === "content-type") {
-        return entity.response.contentType().toString();
+const ResourceBinder = class ResourceBinder extends core.TermBinder {
+    static new() {return Object.freeze(new ResourceBinder());}
+    entityAttr(entity, key) {
+        switch (key) {
+        case "href": return entity.request.href;
+        case "content-type": return entity.response.contentType().toString();
+        case "body": return entity.response.text();
+        default: return "";
+        }
     }
-    if (key === "body") return entity.response.text();
-    return "";
-};
-ResourceBinder.prototype.linkAttr = function (link, key) {
-    if (key === "href") return "";
-    if (key === "content-type") {
-        return "application/octet-stream";
+    linkAttr(link, key) {
+        switch (key) {
+        case "href": return "";
+        case "content-type": return "application/octet-stream";
+        case "body": return "";
+        default: return "";
+        }
     }
-    if (key === "body") return "";
-    return "";
 };
 
-
-const JsonBinder = function JsonBinder() {
-    return Object.create(JsonBinder.prototype, {});
-};
-JsonBinder.prototype = ResourceBinder();
-JsonBinder.prototype.entityLinkAll = function (entity) {
-    if (typeof entity.json !== "object") return [];
-    return Object.keys(entity.json).reduce((r, key) => {
-        const v = entity.json[key];
-        if (typeof v !== "object") return r;
-        if (typeof v["href"] !== "string") return r;
-        r.push(v);
-        return r;
-    }, []);
-};
-JsonBinder.prototype.linkAttr = function (link, key) {
-    if (key === "href") return link.json["href"];
-    if (key === "content-type") return "application/json";
-    if (key === "body") return JSON.stringify(this.json);
-    return "";
-};
-
-const AtomBinder = function AtomBinder() {
-    return Object.create(AtomBinder.prototype, {});
-};
-AtomBinder.prototype = ResourceBinder();
-AtomBinder.prototype.entityLinkAll = function (entity) {
-    const doc = entity.atom.ownerDocument ? entity.atom.ownerDocument :
-              entity.atom;
-    const entries = doc.defaultView.matcher.select(
-        "feed > entry", entity.atom);
-    return Array.from(entries);
-};
-AtomBinder.prototype.linkAttr = function (link, key) {
-    if (key === "href") {
-        const doc = link.atom.ownerDocument ? link.atom.ownerDocument :
-                  link.atom;
-        const elem = doc.defaultView.matcher.select(
-            "entry > link[rel='self']", link.atom)[0];
-        return elem ? elem.getAttribute("href") : "";
+const JsonBinder = class JsonBinder extends ResourceBinder {
+    static new() {return Object.freeze(new JsonBinder());}
+    entityLinkAll (entity) {
+        if (typeof entity.json !== "object") return [];
+        return Object.keys(entity.json).reduce((r, key) => {
+            const v = entity.json[key];
+            if (typeof v !== "object") return r;
+            if (typeof v["href"] !== "string") return r;
+            r.push(v);
+            return r;
+        }, []);
     }
-    if (key === "content-type") return "application/atom+xml";
-    if (key === "body") return xmlSerializer.serializeToString(link.atom);
-    return "";
+    linkAttr(link, key) {
+        switch (key) {
+        case "href": return link.json["href"];
+        case "content-type": return "application/json";
+        case "body": return JSON.stringify(this.json);
+        default: return "";
+        }
+    }
+};
+
+const AtomBinder = class AtomBinder extends ResourceBinder {
+    static new() {return Object.freeze(new AtomBinder());}
+    entityLinkAll(entity) {
+        const doc = entity.atom.ownerDocument ? entity.atom.ownerDocument :
+                  entity.atom;
+        const entries = doc.defaultView.matcher.select(
+            "feed > entry", entity.atom);
+        return Array.from(entries);
+    }
+    linkAttr(link, key) {
+        switch (key) {
+        case "href": {
+            const doc = link.atom.ownerDocument ? link.atom.ownerDocument :
+                      link.atom;
+            const elem = doc.defaultView.matcher.select(
+                "entry > link[rel='self']", link.atom)[0];
+            return elem ? elem.getAttribute("href") : "";
+        }
+        case "content-type": return "application/atom+xml";
+        case "body": return xmlSerializer.serializeToString(link.atom);
+        default: return "";
+        }
+    }
 };
 
 
-const HtmlBinder = function HtmlBinder() {
-    return Object.create(HtmlBinder.prototype, {});
-};
-HtmlBinder.prototype = ResourceBinder();
-HtmlBinder.prototype.entityLinkAll = function (entity) {
-    const entries = entity.html.querySelectorAll("[href], [src]");
-    return Array.from(entries);
-};
-HtmlBinder.prototype.linkAttr = function (link, key) {
-    if (key === "href") return link.html.href || link.html.src;
-    if (key === "content-type") return "text/html;charset=utf-8";
-    if (key === "body") return xmlSerializer.serializeToString(link.html);
-    return "";
+const HtmlBinder = class HtmlBinder extends ResourceBinder {
+    static new() {return Object.freeze(new HtmlBinder());}
+    entityLinkAll(entity) {
+        const entries = entity.html.querySelectorAll("[href], [src]");
+        return Array.from(entries);
+    }
+    linkAttr(link, key) {
+        switch (key) {
+        case "href": return link.html.href || link.html.src;
+        case "content-type": return "text/html;charset=utf-8";
+        case "body": return xmlSerializer.serializeToString(link.html);
+        default: return "";
+        }
+    }
 };
 
 const termset = core.TermSet("buitiln");
-termset.put("application/json", JsonBinder());
-termset.put("application/atom+xml", AtomBinder());
-termset.put("text/html", HtmlBinder());
-termset.put("*", ResourceBinder());
+termset.put("application/json", JsonBinder.new());
+termset.put("application/atom+xml", AtomBinder.new ());
+termset.put("text/html", HtmlBinder.new());
+termset.put("*", ResourceBinder.new());
 
 exports.termset = termset;
