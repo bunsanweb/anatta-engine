@@ -2,38 +2,47 @@
 
 const core = require("./core");
 const jsdom = require("./jsdom");
-const termset = {
-    core: require("../termset/core")
+const termsetCore = require("../termset/core");
+
+const states = new WeakMap();
+const select = (atom, selector) => {
+    if (!selector) return [atom];
+    const doc = atom.ownerDocument ? atom.ownerDocument : atom;
+    return doc.defaultView.matcher.select(selector, atom);
 };
 
-const Entity = function AtomEntity(engine, request, response) {
-    const atom = jsdom.parseXML(response.text(), request.href);
-    return Object.create(AtomEntity.prototype, {
-        engine: {value: engine},
-        glossary: {value: termset.core.EntityGlossary(
-            "application/atom+xml", engine.glossary)},
-        request: {value: request},
-        response: {value: response},
-        atom: {value: atom}
-    });
-};
-Entity.prototype = core.Entity();
-Entity.prototype.select = function (selector) {
-    if (!selector) return [this.atom];
-    const doc = this.atom.ownerDocument ? this.atom.ownerDocument : this.atom;
-    return doc.defaultView.matcher.select(selector, this.atom);
+const AtomEntity = class AtomEntity extends core.Entity {
+    static new(engine, request, response) {
+        return Object.freeze(new AtomEntity(engine, request, response));
+    }
+    constructor (engine, request, response) {
+        super();
+        const atom = jsdom.parseXML(response.text(), request.href);
+        const glossary = termsetCore.EntityGlossary(
+            "application/atom+xml", engine.glossary);
+        states.set(this, {engine, glossary, request, response, atom});
+    }
+    get engine() {return states.get(this).engine;}
+    get glossary() {return states.get(this).glossary;}
+    get request() {return states.get(this).request;}
+    get response() {return states.get(this).response;}
+    get atom() {return states.get(this).atom;}
+    select(selector) {return select(this.atom, selector);}
 };
 
-const Link = function AtomLink(engine, atom, parent) {
-    return Object.create(AtomLink.prototype, {
-        engine: {value: engine},
-        atom: {value: atom},
-        parent: {value: parent}
-    });
+const AtomLink = class AtomLink extends core.Link {
+    static new(engine, atom, parent) {
+        return Object.freeze(new AtomLink(engine, atom, parent));
+    }
+    constructor (engine, atom, parent) {
+        super();
+        states.set(this, {engine, atom, parent});
+    }
+    get engine() {return states.get(this).engine;}
+    get atom() {return states.get(this).atom;}
+    get parent() {return states.get(this).parent;}
+    select(selector) {return select(this.atom, selector);}
 };
-Link.prototype = core.Link();
-Link.prototype.select = Entity.prototype.select;
 
-
-exports.Link = Link;
-exports.Entity = Entity;
+exports.Link = AtomLink.new;
+exports.Entity = AtomEntity.new;

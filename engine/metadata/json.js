@@ -1,38 +1,48 @@
 "use strict";
 
 const core = require("./core");
-const termset = {
-    core: require("../termset/core")
-};
+const termsetCore = require("../termset/core");
 
-const Entity = function JsonEntity(engine, request, response) {
-    return Object.create(JsonEntity.prototype, {
-        engine: {value: engine},
-        glossary: {value: termset.core.EntityGlossary(
-            "application/json", engine.glossary)},
-        request: {value: request},
-        response: {value: response},
-        json: {value: JSON.parse(response.body)}
-    });
-};
-Entity.prototype = core.Entity();
-Entity.prototype.select = function (selector) {
-    const value = this.json[selector];
+const states = new WeakMap();
+const select = (json, selector) => {
+    const value = json[selector];
     if (value === undefined) return [];
     if (Array.isArray(value)) return value;
     return [value];
 };
 
-const Link = function JsonLink(engine, json, parent) {
-    return Object.create(JsonLink.prototype, {
-        engine: {value: engine},
-        json: {value: json},
-        parent: {value: parent}
-    });
+const JsonEntity = class JsonEntity extends core.Entity {
+    static new(engine, request, response) {
+        return Object.freeze(new JsonEntity(engine, request, response));
+    }
+    constructor (engine, request, response) {
+        super();
+        const json = JSON.parse(response.body);
+        const glossary = termsetCore.EntityGlossary(
+            "application/json", engine.glossary);
+        states.set(this, {engine, glossary, request, response, json});
+    }
+    get engine() {return states.get(this).engine;}
+    get glossary() {return states.get(this).glossary;}
+    get request() {return states.get(this).request;}
+    get response() {return states.get(this).response;}
+    get json() {return states.get(this).json;}
+    select(selector) {return select(this.json, selector);}
 };
-Link.prototype = core.Link();
-Link.prototype.select = Entity.prototype.select;
 
+const JsonLink = class JsonLink extends core.Link {
+    static new(engine, json, parent) {
+        return Object.freeze(new JsonLink(engine, json, parent));
+    }
+    constructor (engine, json, parent) {
+        super();
+        states.set(this, {engine, json, parent});
+    }
+    get engine() {return states.get(this).engine;}
+    get json() {return states.get(this).json;}
+    get parent() {return states.get(this).parent;}
+    select(selector) {return select(this.json, selector);}
+};
 
-exports.Link = Link;
-exports.Entity = Entity;
+exports.Link = JsonLink.new;
+exports.Entity = JsonEntity.new;

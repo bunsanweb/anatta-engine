@@ -49,14 +49,16 @@ exports.parseXML = (src, uri) => {
 
 
 // compat object for XMLSerializer
-const XMLSerializer = exports.XMLSerializer = function () {
-    return Object.create(XMLSerializer.prototype);
-};
-XMLSerializer.prototype.serializeToString = function (node) {
-    const doc = node.ownerDocument ? node.ownerDocument : node;
-    if (doc.implementation.createHTMLDocument) {
-        return jsdom.serializeDocument(node);
-    } else {
-        return xmlSerializer.serializeToString(node);
+const XMLSerializer = class XMLSerializer {
+    serializeToString(node) {
+        const doc = node.ownerDocument ? node.ownerDocument : node;
+        if (doc.implementation.createHTMLDocument) {
+            return jsdom.serializeDocument(node);
+        } else {
+            return xmlSerializer.serializeToString(node);
+        }
     }
+};
+exports.XMLSerializer = function () {
+    return new XMLSerializer();
 };
