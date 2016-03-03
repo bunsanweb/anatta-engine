@@ -57,96 +57,84 @@ const keyFromPem = (pem) => {
 };
 
 
-const Key = function (key) {
-    return Object.create(Key.prototype, {
-        key: {value: key}
-    });
+const states = new WeakMap();
+const Key = class Key {
+    constructor (key) {states.set(this, {key});}
+    get key() {return states.get(this).key;}
+    isPrivateKey() {return isPrivateKey(this.key);}
+    isPublicKey() {return isPublicKey(this.key);}
+    getPem() {
+        if (!this.key) return "";
+        return keyToPem(this.key);
+    }
+    encode(info) {
+        const encoding = info.encoding || "base64";
+        const rawPass = crypto.randomBytes(info.size || 64);
+        const encoder = crypto.createCipher(info.cipher, rawPass);
+        encoder.update(Buffer(info.data));
+        const data = encoder.final(encoding);
+        const pass = isPrivateKey(this.key) ?
+                  privateEncrypt(this.key, rawPass, encoding) :
+                  publicEncrypt(this.key, rawPass, encoding);
+        return {cipher: info.cipher, encoding: encoding, pass, data};
+    }
+    decode(info) {
+        const encoding = info.encoding || "base64";
+        try {
+            const rawPass = isPrivateKey(this.key) ?
+                      privateDecrypt(this.key, info.pass, encoding) :
+                      publicDecrypt(this.key, info.pass, encoding);
+            const decoder = crypto.createDecipher(info.cipher, rawPass);
+            decoder.update(info.data, encoding);
+            const data = decoder.final();
+            return data;
+        } catch (err) {
+            return null;
+        }
+    }
 };
-Key.prototype.isPrivateKey = function () {
-    return isPrivateKey(this.key);
+
+const Private = class Private extends Key {
+    static new(key) {return Object.freeze(new Private(key));}
+    getPublicPem() {
+        return forge.pki.publicKeyToPem(publicKeyFromPrivateKey(this.key));
+    }
+    sign(info) {
+        info.alg = info.alg || "sha256";
+        info.bufEncoding = info.bufEncoding || "utf8";
+        info.signEncoding = info.signEncoding || "base64";
+        try {
+            const buf = Buffer.isBuffer(info.buf) ? info.buf :
+                      Buffer(info.buf, info.bufEncoding);
+            if (Buffer.isBuffer(info.buf)) info.buf = info.buf.toString();
+            info.sign = hashAndSign(
+                this.key, info.alg, buf, info.signEncoding);
+        } catch (err) {
+            info.error = err;
+            info.sign = "";
+        }
+        return info;
+    }
 };
-Key.prototype.isPublicKey = function () {
-    return isPublicKey(this.key);
-};
-Key.prototype.getPem = function () {
-    if (!this.key) return "";
-    return keyToPem(this.key);
-};
-Key.prototype.encode = function (info) {
-    const encoding = info.encoding || "base64";
-    const rawPass = crypto.randomBytes(info.size || 64);
-    const encoder = crypto.createCipher(info.cipher, rawPass);
-    encoder.update(Buffer(info.data));
-    const data = encoder.final(encoding);
-    const pass = isPrivateKey(this.key) ?
-              privateEncrypt(this.key, rawPass, encoding) :
-              publicEncrypt(this.key, rawPass, encoding);
-    return {
-        cipher: info.cipher,
-        encoding: encoding,
-        pass: pass,
-        data: data
-    };
-};
-Key.prototype.decode = function (info) {
-    const encoding = info.encoding || "base64";
-    try {
-        const rawPass = isPrivateKey(this.key) ?
-                  privateDecrypt(this.key, info.pass, encoding) :
-                  publicDecrypt(this.key, info.pass, encoding);
-        const decoder = crypto.createDecipher(info.cipher, rawPass);
-        decoder.update(info.data, encoding);
-        const data = decoder.final();
-        return data;
-    } catch (err) {
-        return null;
+
+const Public = class Public extends Key {
+    static new(key) {return Object.freeze(new Public(key));}
+    verify(info) {
+        const bufEncoding = info.bufEncoding || "utf8";
+        const signEncoding = info.signEncoding || "base64";
+        try {
+            const buf = Buffer.isBuffer(info.buf) ? info.buf :
+                      Buffer(info.buf, bufEncoding);
+            return hashAndVerify(
+                this.key, info.alg, buf, info.sign, signEncoding);
+        } catch (err) {
+            return false;
+        }
     }
 };
 
 
-const Private = function (key) {
-    return Object.create(Private.prototype, {
-        key: {value: key}
-    });
-};
-Private.prototype = Key();
-Private.prototype.getPublicPem = function () {
-    return forge.pki.publicKeyToPem(publicKeyFromPrivateKey(this.key));
-};
-Private.prototype.sign = function (info) {
-    info.alg = info.alg || "sha256";
-    info.bufEncoding = info.bufEncoding || "utf8";
-    info.signEncoding = info.signEncoding || "base64";
-    try {
-        const buf = Buffer.isBuffer(info.buf) ? info.buf :
-                  Buffer(info.buf, info.bufEncoding);
-        if (Buffer.isBuffer(info.buf)) info.buf = info.buf.toString();
-        info.sign = hashAndSign(this.key, info.alg, buf, info.signEncoding);
-    } catch (err) {
-        info.error = err;
-        info.sign = "";
-    }
-    return info;
-};
-
-const Public = function (key) {
-    return Object.create(Public.prototype, {
-        key: {value: key}
-    });
-};
-Public.prototype = Key();
-Public.prototype.verify = function (info) {
-    const bufEncoding = info.bufEncoding || "utf8";
-    const signEncoding = info.signEncoding || "base64";
-    try {
-        const buf = Buffer.isBuffer(info.buf) ? info.buf :
-                  Buffer(info.buf, bufEncoding);
-        return hashAndVerify(this.key, info.alg, buf, info.sign, signEncoding);
-    } catch (err) {
-        return false;
-    }
-};
-
+// exports
 const generate = function (bits, exp) {
     bits = bits || 1024;
     exp = exp || 17;
@@ -155,8 +143,8 @@ const generate = function (bits, exp) {
 
 const load = function (pem) {
     const key = keyFromPem(pem);
-    if (isPrivateKey(key)) return new Private(key);
-    if (isPublicKey(key)) return new Public(key);
+    if (isPrivateKey(key)) return Private.new(key);
+    if (isPublicKey(key)) return Public.new(key);
 };
 
 const isPrivateKeyPem = function (pem) {

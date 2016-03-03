@@ -3,37 +3,41 @@
 const window = require("./window");
 const conftree = require("../conftree");
 
-const Agent = function Agent(opts) {
-    return Object.create(Agent.prototype, {
-        opts: {value: conftree.create(opts, {uri: ""})},
-        entity: {value: null, writable: true},
-        engine: {value: null, writable: true}
-    });
-};
-Agent.prototype.activate = function () {
-    if (this.entity) return Promise.resolve(this);
-    const link = this.engine.link({href: this.opts.uri});
-    return link.get().then(entity => {
-        if (this.entity) return this;
-        this.entity = entity;
-        return window.init(this);
-    });
-};
-Agent.prototype.access = function (request) {
-    return window.access(this, request);
-};
-
-
-const AgentField = function AgentField(opts) {
-    return Object.create(AgentField.prototype, {
-        opts: {value: opts},
-        agent: {value: Agent(opts)}
-    });
-};
-AgentField.prototype.access = function (request) {
-    return this.agent.activate().then(agent => agent.access(request));
+const states = new WeakMap();
+const Agent = class Agent {
+    static new(opts) {return Object.freeze(new Agent(opts));}
+    constructor (opts) {
+        opts = conftree.create(opts, {uri: ""});
+        states.set(this, {opts, entity: null, engine: null, window: null});
+    }
+    get opts() {return states.get(this).opts;}
+    get entity() {return states.get(this).entity;}
+    set entity(e) {states.get(this).entity = e;}
+    get engine() {return states.get(this).engine;} 
+    set engine(e) {states.get(this).engine = e;}
+    get window() {return states.get(this).window;} 
+    set window(w) {states.get(this).window = w;}
+    activate() {
+        if (this.entity) return Promise.resolve(this);
+        const link = this.engine.link({href: this.opts.uri});
+        return link.get().then(entity => {
+            if (this.entity) return this;
+            this.entity = entity;
+            return window.init(this);
+        });
+    }
+    access(request) {return window.access(this, request);}
 };
 
+const AgentField = class AgentField {
+    static new(opts) {return new AgentField(opts);}
+    constructor (opts) {states.set(this, {opts, agent: Agent.new(opts)});}
+    get opts() {return states.get(this).opts;}
+    get agent() {return states.get(this).agent;}
+    access(request) {
+        return this.agent.activate().then(agent => agent.access(request));
+    }
+};
 
-exports.Agent = Agent;
-exports.AgentField = AgentField;
+exports.Agent = Agent.new;
+exports.AgentField = AgentField.new;
