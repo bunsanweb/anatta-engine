@@ -4,53 +4,50 @@ const crypto = require("crypto");
 
 const conftree = require("../conftree");
 
-const Entry = function Entry(pathname, type, value, timestamp) {
-    value = value || Buffer();
-    const alg = crypto.createHash("sha256");
-    const hash = value.length > 0 ? alg.update(value).digest("base64") : "";
-    return Object.create(Entry.prototype, {
-        pathname: {value: pathname, enumerable: true},
-        type: {value: type, enumerable: true},
-        value: {value: value, enumerable: true},
-        timestamp: {value: timestamp || new Date(), enumerable: true},
-        hash: {value: hash, enumerable: true}
-    });
-};
-Entry.fromValue = function (pathname, data) {
-    return Entry(pathname, data.type, data.value, data.timestamp);
-};
-Entry.prototype.toObject = function () {
-    return {
-        pathname: this.pathname,
-        type: this.type,
-        value: this.value.toString("base64"),
-        timestamp: this.timestamp.toUTCString()
-    };
-};
-Entry.prototype.toJson = function () {
-    return JSON.stringify(this.toObject());
-};
-Entry.fromObject = function (data) {
-    const value = Buffer(data.value, "base64");
-    const date = new Date(data.timestamp);
-    return Entry(data.pathname, data.type, value, date);
-};
-Entry.fromJson = function (json) {
-    try {
-        const data = JSON.parse(json);
-        return Entry.fromObject(data);
-    } catch (ex) {
-        return null;
+const Entry = class Entry {
+    static new(pathname, type, value, timestamp) {
+        return Object.freeze(new Entry(pathname, type, value, timestamp));
     }
-};
-Entry.exists = function (entry) {
-    return entry && entry.value !== null;
-};
-Entry.equal = function (a, b) {
-    if (!a || !b) return !a && !b;
-    return a.pathname === b.pathname && a.type === b.type &&
-        a.timestamp === b.timestamp &&
-        a.hash === b.hash && bufferEq(a.value, b.value);
+    constructor (pathname, type, value, timestamp) {
+        value = value || Buffer();
+        timestamp = timestamp || new Date();
+        const alg = crypto.createHash("sha256");
+        const hash =
+                  value.length > 0 ? alg.update(value).digest("base64") : "";
+        Object.assign(this, {pathname, type, value, timestamp, hash});
+    }
+    toObject() {
+        return {
+            pathname: this.pathname,
+            type: this.type,
+            value: this.value.toString("base64"),
+            timestamp: this.timestamp.toUTCString()            
+        };
+    }
+    toJson() {return JSON.stringify(this.toObject());}
+    static fromValue(pathname, data) {
+        return Entry.new(pathname, data.type, data.value, data.timestamp);
+    };
+    static fromObject(data) {
+        const value = Buffer(data.value, "base64");
+        const date = new Date(data.timestamp);
+        return Entry.new(data.pathname, data.type, value, date);
+    }
+    static fromJson(json) {
+        try {
+            const data = JSON.parse(json);
+            return Entry.fromObject(data);
+        } catch (ex) {
+            return null;
+        }
+    }
+    static exists(entry) {return entry && entry.value !== null;}
+    static queal(a, b) {
+        if (!a || !b) return !a && !b;
+        return a.pathname === b.pathname && a.type === b.type &&
+            a.timestamp === b.timestamp &&
+            a.hash === b.hash && bufferEq(a.value, b.value);
+    }
 };
 
 const bufferEq = (a, b) => {
@@ -59,23 +56,21 @@ const bufferEq = (a, b) => {
     return a.toString("binary") === b.toString("binary");
 };
 
-const Orb = function Orb(init) {
-    return Object.create(Orb.prototype, {
-        entries: {value: init || {}, writable: true, enumerable: true}
-    });
-};
-Orb.prototype.entryList = function () {
-    return Promise.resolve(this.entries);
-};
-Orb.prototype.get = function (pathname) {
-    const entry = this.entries[pathname];
-    return Promise.resolve(entry || null);
-};
-Orb.prototype.put = function (pathname, data) {
-    const entry = Entry.fromValue(pathname, data);
-    this.entries[pathname] = entry;
-    return Promise.resolve(entry);
+const states = new WeakMap();
+const Orb = class Orb {
+    static new(init) {return Object.freeze(new Orb(init));}
+    constructor (init) {states.set(this, {entries: init || {}});}
+    entryList() {return Promise.resolve(states.get(this).entries);}
+    get(pathname) {
+        const entry = states.get(this).entries[pathname];
+        return Promise.resolve(entry || null);
+    }
+    put(pathname, data) {
+        const entry = Entry.fromValue(pathname, data);
+        states.get(this).entries[pathname] = entry;
+        return Promise.resolve(entry);
+    }
 };
 
 exports.Entry = Entry;
-exports.Orb = Orb;
+exports.Orb = Orb.new;
