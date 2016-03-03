@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const memory = require("./memory");
 
-const async = (obj, name) => () => {
+const async = (obj, name) => function () {
     const args = Array.from(arguments); //[ES6] rest parameters
     return new Promise((f, r) => {
         args.push((err, result) => void(err ? r(err) : f(result)));
