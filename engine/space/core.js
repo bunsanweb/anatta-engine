@@ -2,7 +2,7 @@
 
 const http = require("http");
 const url = require("url");
-const iconv = require("iconv");
+const iconv = require("iconv-lite");
 const conftree = require("../conftree");
 
 const states = new WeakMap();
@@ -65,9 +65,8 @@ const bodyText = (r, charset) => {
     try {
         return r.body.toString(charset);
     } catch (ex) {
-        const converter = new iconv.Iconv(charset, "utf-8");
-        return converter.convert(r.body).toString();
-    }    
+        return iconv.decode(r.body, charset);
+    } 
 };
 
 const Space = class Space {

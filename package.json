@@ -11,7 +11,7 @@
         "jsdom": "*",
         "xmldom": "*",
         "nwmatcher": "*",
-        "iconv": "*",
+        "iconv-lite": "*",
         "node-forge": "*",
         "mongodb": "*"
     },
