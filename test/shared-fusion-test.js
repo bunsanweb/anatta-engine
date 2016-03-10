@@ -10,15 +10,15 @@ test("via unittest agent", function (done) {
         type: "generic",
         porter: {
             "application/json": "json",
-            "text/html": "html",
+            "text/html": "html"
         },
         space: {
             "src:": {
                 field: "file", root: "./test/assets/fusion/", prefix: "/"},
             "src:/shared/": {
                 field: "file", root: anatta.shared(), prefix: "/shared/"},
-            "module:/unittest/": {field: "agent", uri: "src:/unittest.html"},
-        },
+            "module:/unittest/": {field: "agent", uri: "src:/unittest.html"}
+        }
     });
     
     engine.link({href: "module:/unittest/"}).get().then(entity => {
@@ -46,7 +46,7 @@ const parseTap = (tapresult) => {
         if (!test) return;
         const ok = test[1] === "ok";
         if (ok) pass += 1; else fail += 1;
-        tests.push({ok: ok, id: 0|test[2], info: test[3], detail: ""})
+        tests.push({ok: ok, id: 0|test[2], info: test[3], detail: ""});
     });
     return {count: count, pass: pass, fail: fail, tests: tests};
 };

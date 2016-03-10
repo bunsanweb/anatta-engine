@@ -27,7 +27,7 @@ const loadSystemMimeTypes = () => {
         "/etc/httpd/mime.types",
         "/etc/apache2/mime.types",
     ];
-    for (let mimepath of pathnames) {
+    for (const mimepath of pathnames) {
         try {
             return mimeTypesFromFile(mimepath);
         } catch (err) {}

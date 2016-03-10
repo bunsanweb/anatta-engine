@@ -55,7 +55,7 @@ test("encode and decode", function () {
     assert.equal(decoded["single"].headers["content-type"],
                  obj["single"].headers["content-type"]);
 
-    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+    for (const [d, o] of zip(decoded["multi"], obj["multi"])) {
         assert.equal(d.filename, o.filename);
         assert.equal(d.body.toString(), o.body.toString());
         assert.equal(d.headers["content-type"], o.headers["content-type"]);
@@ -105,7 +105,7 @@ test("encode/decode with non-ascii utf-8 charset value", function () {
     assert.equal(decoded["single"].headers["content-type"],
                  obj["single"].headers["content-type"]);
 
-    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+    for (const [d, o] of zip(decoded["multi"], obj["multi"])) {
         assert.equal(d.filename, o.filename);
         assert.equal(d.body.toString(), o.body.toString());
         assert.equal(d.headers["content-type"], o.headers["content-type"]);
@@ -156,7 +156,7 @@ test("encode/decode with non-ascii utf-8 charset key", function () {
     assert.equal(decoded["\u5727"].headers["content-type"],
                  obj["\u5727"].headers["content-type"]);
 
-    for (let [d, o] of zip(decoded["\u5708"], obj["\u5708"])) {
+    for (const [d, o] of zip(decoded["\u5708"], obj["\u5708"])) {
         assert.equal(d.filename, o.filename);
         assert.equal(d.body.toString(), o.body.toString());
         assert.equal(d.headers["content-type"], o.headers["content-type"]);
@@ -207,7 +207,7 @@ test("encode and decode with non-ascii filename", function () {
     assert.equal(decoded["single"].headers["content-type"],
                  obj["single"].headers["content-type"]);
 
-    for (let [d, o] of zip(decoded["multi"], obj["multi"])) {
+    for (const [d, o] of zip(decoded["multi"], obj["multi"])) {
         assert.equal(d.filename, o.filename);
         assert.equal(d.body.toString(), o.body.toString());
         assert.equal(d.headers["content-type"], o.headers["content-type"]);

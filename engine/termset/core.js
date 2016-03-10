@@ -57,21 +57,21 @@ const EntityGlossary = class EntityGlossary {
         return list.length === 0 ? self.parent.binderList("*") : list;
     }
     entityAttr(entity, key) {
-        for (let binder of this.binderList()) {
+        for (const binder of this.binderList()) {
             const value = binder.entityAttr(entity, key);
             if (value) return value;
         }
         return "";
     }
     entityLinkAll(entity) {
-        for (let binder of this.binderList()) {
+        for (const binder of this.binderList()) {
             const value = binder.entityLinkAll(entity);
             if (value.length) return value;
         }
         return [];
     }
     linkAttr (link, key) {
-        for (let binder of this.binderList()) {
+        for (const binder of this.binderList()) {
             const value = binder.linkAttr(link, key);
             if (value) return value;
         }

@@ -150,7 +150,7 @@ const FieldManager = class FieldManager {
         //reversed dict order for resolve (longer prefix one is adopted)
         const detailPrefixFirst = Object.keys(fields).map(
             id => fields[id]).sort((a, b) => a.prefix > b.prefix ? -1 : 1);
-        for (let field of detailPrefixFirst) {
+        for (const field of detailPrefixFirst) {
             if (request.href.startsWith(field.prefix)) return field.field;
         }
         return UnknownField;
