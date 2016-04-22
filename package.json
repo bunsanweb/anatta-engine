@@ -6,7 +6,7 @@
         "test": "node ./node_modules/.bin/mocha"
     },
     "main": "./anatta",
-    "engines": {"node": ">=5.7"},
+    "engines": {"node": ">=6"},
     "dependencies": {
         "jsdom": "*",
         "xmldom": "*",
