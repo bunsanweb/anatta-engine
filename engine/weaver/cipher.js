@@ -11,31 +11,31 @@ const isPrivateKey = (forgeKey) => forgeKey && !isPublicKey(forgeKey);
 const publicEncrypt = (forgeKey, buf, encoding) => {
     const raw = buf.toString("binary");
     const encrypted = forgeKey.encrypt(raw);
-    return Buffer(encrypted, "binary").toString(encoding);
+    return Buffer.from(encrypted, "binary").toString(encoding);
 };
 const privateDecrypt = (forgeKey, str, encoding) => {
-    const raw = Buffer(str, encoding).toString("binary");
+    const raw = Buffer.from(str, encoding).toString("binary");
     const decrypted = forgeKey.decrypt(raw);
-    return Buffer(decrypted, "binary");
+    return Buffer.from(decrypted, "binary");
 };
 const privateEncrypt = (forgeKey, buf, encoding) => {
     const raw = buf.toString("binary");
     const encrypted = forge.pki.rsa.encrypt(raw, forgeKey, 1);
-    return Buffer(encrypted, "binary").toString(encoding);
+    return Buffer.from(encrypted, "binary").toString(encoding);
 };
 const publicDecrypt = (forgeKey, str, encoding) => {
     const raw = Buffer(str, encoding).toString("binary");
     const decrypted = forge.pki.rsa.decrypt(raw, forgeKey, true, true);
-    return Buffer(decrypted, "binary");
+    return Buffer.from(decrypted, "binary");
 };
 
 const hashAndSign = (forgeKey, alg, buf, encoding) => {
     const md = forge.md[alg].create().update(buf);
     const sign = forgeKey.sign(md);
-    return Buffer(sign, "binary").toString(encoding);
+    return Buffer.from(sign, "binary").toString(encoding);
 };
 const hashAndVerify = (forgeKey, alg, buf, signStr, encoding) => {
-    const sign = Buffer(signStr, encoding).toString("binary");
+    const sign = Buffer.from(signStr, encoding).toString("binary");
     const md = forge.md[alg].create().update(buf);
     return forgeKey.verify(md.digest().bytes(), sign);
 };
@@ -71,7 +71,7 @@ const Key = class Key {
         const encoding = info.encoding || "base64";
         const rawPass = crypto.randomBytes(info.size || 64);
         const encoder = crypto.createCipher(info.cipher, rawPass);
-        encoder.update(Buffer(info.data));
+        encoder.update(Buffer.from(info.data));
         const data = encoder.final(encoding);
         const pass = isPrivateKey(this.key) ?
                   privateEncrypt(this.key, rawPass, encoding) :
@@ -105,7 +105,7 @@ const Private = class Private extends Key {
         info.signEncoding = info.signEncoding || "base64";
         try {
             const buf = Buffer.isBuffer(info.buf) ? info.buf :
-                      Buffer(info.buf, info.bufEncoding);
+                      Buffer.from(info.buf, info.bufEncoding);
             if (Buffer.isBuffer(info.buf)) info.buf = info.buf.toString();
             info.sign = hashAndSign(
                 this.key, info.alg, buf, info.signEncoding);
@@ -124,7 +124,7 @@ const Public = class Public extends Key {
         const signEncoding = info.signEncoding || "base64";
         try {
             const buf = Buffer.isBuffer(info.buf) ? info.buf :
-                      Buffer(info.buf, bufEncoding);
+                      Buffer.from(info.buf, bufEncoding);
             return hashAndVerify(
                 this.key, info.alg, buf, info.sign, signEncoding);
         } catch (err) {

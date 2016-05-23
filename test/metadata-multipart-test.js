@@ -22,7 +22,7 @@ test("encode and decode", function () {
             headers: {
                 "content-type": "text/plain;charset=utf-8",
             },
-            body: Buffer("Hello World!"),
+            body: Buffer.from("Hello World!"),
         },
         "multi": [
             {
@@ -30,14 +30,15 @@ test("encode and decode", function () {
                 headers: {
                     "content-type": "text/html;charset=utf-8",
                 },
-                body: Buffer("<body><script src='script.js'></script></body>"),
+                body: Buffer.from(
+                    "<body><script src='script.js'></script></body>"),
             },
             {
                 filename: "script.js",
                 headers: {
                     "content-type": "text/javascript",
                 },
-                body: Buffer("document.write('Hello World');"),
+                body: Buffer.from("document.write('Hello World');"),
             },
         ],
     };
@@ -72,7 +73,7 @@ test("encode/decode with non-ascii utf-8 charset value", function () {
             headers: {
                 "content-type": "text/plain;charset=utf-8",
             },
-            body: Buffer("\u5727"),
+            body: Buffer.from("\u5727"),
         },
         "multi": [
             {
@@ -80,14 +81,15 @@ test("encode/decode with non-ascii utf-8 charset value", function () {
                 headers: {
                     "content-type": "text/html;charset=utf-8",
                 },
-                body: Buffer("<body><script src='script.js'></script></body>"),
+                body: Buffer.from(
+                    "<body><script src='script.js'></script></body>"),
             },
             {
                 filename: "script.js",
                 headers: {
                     "content-type": "text/javascript",
                 },
-                body: Buffer("document.write('\u5708');"),
+                body: Buffer.from("document.write('\u5708');"),
             },
         ],
     };
@@ -123,7 +125,7 @@ test("encode/decode with non-ascii utf-8 charset key", function () {
             headers: {
                 "content-type": "text/plain;charset=utf-8",
             },
-            body: Buffer("Hello World!"),
+            body: Buffer.from("Hello World!"),
         },
         "\u5708": [
             {
@@ -131,14 +133,16 @@ test("encode/decode with non-ascii utf-8 charset key", function () {
                 headers: {
                     "content-type": "text/html;charset=utf-8",
                 },
-                body: Buffer("<body><script src='script.js'></script></body>"),
+                body: Buffer.from(
+                    "<body><script src='script.js'></script></body>"),
             },
             {
                 filename: "script.js",
                 headers: {
                     "content-type": "text/javascript",
                 },
-                body: Buffer("document.write('Hello World');"),
+                body: Buffer.from(
+                    "document.write('Hello World');"),
             },
         ],
     };
@@ -174,7 +178,7 @@ test("encode and decode with non-ascii filename", function () {
             headers: {
                 "content-type": "text/plain;charset=utf-8",
             },
-            body: Buffer("Hello World!"),
+            body: Buffer.from("Hello World!"),
         },
         "multi": [
             {
@@ -182,14 +186,15 @@ test("encode and decode with non-ascii filename", function () {
                 headers: {
                     "content-type": "text/html;charset=utf-8",
                 },
-                body: Buffer("<body><script src='script.js'></script></body>"),
+                body: Buffer.from(
+                    "<body><script src='script.js'></script></body>"),
             },
             {
                 filename: "\u5708.js",
                 headers: {
                     "content-type": "text/javascript",
                 },
-                body: Buffer("document.write('Hello World');"),
+                body: Buffer.from("document.write('Hello World');"),
             },
         ],
     };

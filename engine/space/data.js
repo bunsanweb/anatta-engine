@@ -25,7 +25,8 @@ const DataField = class DataField {
             return core.FieldUtil.error(
                 request, "Invalid Data Scheme URI", "404");
         }
-        const body = Buffer(decodeURI(data[3]), data[2] ? "base64" : "utf-8");
+        const body = Buffer.from(
+            decodeURI(data[3]), data[2] ? "base64" : "utf-8");
         const response = core.Response("200", {
             "content-type": data[1] ? data[1] : "text/plain;charset=utf-8",
             "content-length": body.length.toString()

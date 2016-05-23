@@ -76,9 +76,9 @@ const parseMultipart = (body, boundary) => {
         if (!type.match(/^form-data/)) return result;
 
         const rawname = type.match(/\bname="([^"]+)"/)[1];
-        const name = Buffer(rawname, "binary").toString();
+        const name = Buffer.from(rawname, "binary").toString();
         if (!contentType) {
-            result[name] = new Buffer(disposition.body, "binary").toString();
+            result[name] = Buffer.from(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
             result[name] = parseMixed(disposition);
         } else {
@@ -104,9 +104,9 @@ const parseMultipart5 = (body, boundary) => {
         if (!type.match(/^form-data/)) return result;
 
         const rawname = type.match(/\bname="([^"]+)"/)[1];
-        const name = Buffer(rawname, "binary").toString();
+        const name = Buffer.from(rawname, "binary").toString();
         if (!contentType) {
-            result[name] = new Buffer(disposition.body, "binary").toString();
+            result[name] = Buffer.from(disposition.body, "binary").toString();
         } else if (contentType.match(/^multipart\/mixed;/)) {
             result[name] = parseMixed(disposition);
         } else {
@@ -122,10 +122,10 @@ const parseMultipart5 = (body, boundary) => {
 
 const parseFile = (disposition) => {
     const type = disposition.headers["content-disposition"];
-    const filename = Buffer(
+    const filename = Buffer.from(
         type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
     return {filename: filename,
-            body: Buffer(disposition.body, "binary"),
+            body: Buffer.from(disposition.body, "binary"),
             headers: disposition.headers};
 };
 
@@ -180,7 +180,7 @@ const parseDisposition = (part) => {
 const encodeMultipart = function (obj) {
     const bodies = Object.keys(obj).map(key => {
         const value = obj[key];
-        const binkey = Buffer(key).toString("binary");
+        const binkey = Buffer.from(key).toString("binary");
         if (typeof value === "string") return encodeKeyValue(binkey, value);
         if (Array.isArray(value)) return encodeFileList(binkey, value);
         return encodeSingleFile(binkey, value);
@@ -194,13 +194,13 @@ const encodeMultipart = function (obj) {
     const headers = {
         "content-type": `multipart/form-data; boundary=${boundary}`
     };
-    return {headers: headers, body: Buffer(body, "binary")};
+    return {headers: headers, body: Buffer.from(body, "binary")};
 };
 
 const encodeMultipart5 = function (obj) {
     const bodies = Object.keys(obj).reduce((bodies, key) => {
         const value = obj[key];
-        const binkey = Buffer(key).toString("binary");
+        const binkey = Buffer.from(key).toString("binary");
         if (typeof value === "string") {
             bodies.push(encodeKeyValue(binkey, value));
         } else if (Array.isArray(value)) {
@@ -217,7 +217,7 @@ const encodeMultipart5 = function (obj) {
     const headers = {
         "content-type": `multipart/form-data; boundary=${boundary}`
     };
-    return {headers: headers, body: Buffer(body, "binary")};
+    return {headers: headers, body: Buffer.from(body, "binary")};
 };
 
 const encodeMessage = (headers, body) => {
@@ -232,10 +232,10 @@ const encodeKeyValue = (key, value) => {
     const headers = {
         "content-disposition": disposition
     };
-    return encodeMessage(headers, Buffer(value).toString("binary"));
+    return encodeMessage(headers, Buffer.from(value).toString("binary"));
 };
 const encodeSingleFile = (key, fileData) => {
-    const filename = Buffer(fileData.filename).toString("binary");
+    const filename = Buffer.from(fileData.filename).toString("binary");
     const disposition = `form-data; name="${key}"; filename="${filename}"`;
     const headers = updateHeaders(fileData.headers, {
         //"content-transfer-encoding": "binary",
@@ -258,7 +258,7 @@ const encodeFileList = (key, fileDataList) => {
     return encodeMessage(headers, body);
 };
 const encodeFileData = (fileData) => {
-    const filename = Buffer(fileData.filename).toString("binary");
+    const filename = Buffer.from(fileData.filename).toString("binary");
     const disposition = `file; filename="${filename}"`;
     const headers = updateHeaders(fileData.headers, {
         "content-disposition": disposition,

@@ -20,7 +20,7 @@ test("Create Orb field with mongodb.Orb, do put then get", function (done) {
     const body = "<html><body>Hello</body></html>";
     const put = space.request("PUT", "orb:/foo/bar/buzz.html", {
         "content-type": "text/html;charset=utf-8"
-    }, Buffer(body));
+    }, Buffer.from(body));
     space.access(put).then(([request, response]) => {
         assert.equal(response.status, "200");
         assert.equal(response.headers["content-type"],

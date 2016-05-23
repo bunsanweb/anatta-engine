@@ -43,7 +43,7 @@ test("data scheme URI encoded base64", function (done) {
     space.manager.bind("data", "data:", dataField);
     
     const body = "<body>foo</body>";
-    const coded = new Buffer(body).toString("base64");
+    const coded = Buffer.from(body).toString("base64");
     const uri = "data:;base64," + coded;
     const req = core.Request("GET", uri);
     space.access(req).then(([req, res]) => {
@@ -61,7 +61,7 @@ test("data scheme URI encoded base64 with content-type", function (done) {
     space.manager.bind("data", "data:", dataField);
     
     const body = "<body>foo</body>";
-    const coded = new Buffer(body).toString("base64");
+    const coded = Buffer.from(body).toString("base64");
     const uri = "data:text/html;charset=utf-8;base64," + coded;
     const req = core.Request("GET", uri);
     space.access(req).then(([req, res]) => {

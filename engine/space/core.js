@@ -14,7 +14,7 @@ const Request = class Request {
     constructor (method, href, headers, body, from) {
         method = method.toUpperCase();
         headers = normalizeHeaders(headers || {});
-        body = Buffer(body || []);
+        body = Buffer.from(body || []);
         if (body.length && !headers["content-length"]) {
             headers["content-length"] = body.length.toString();
         }
@@ -25,7 +25,7 @@ const Request = class Request {
     get href() {return states.get(this).href;}
     get location() {return states.get(this).location;}
     get headers() {return states.get(this).headers;}
-    get body() {return Buffer(states.get(this).body);}
+    get body() {return Buffer.from(states.get(this).body);}
     get from() {return states.get(this).from;}
     contentType() {
         return ContentType.new(this.headers["content-type"]);
@@ -42,7 +42,7 @@ const Response = class Response {
     constructor (status, headers, body) {
         status = status.toString();
         headers = normalizeHeaders(headers || {});
-        body = Buffer(body || []);
+        body = Buffer.from(body || []);
         if (body.length) {
             headers["content-length"] = body.length.toString();
         }
@@ -52,7 +52,7 @@ const Response = class Response {
     get status() {return states.get(this).status;}
     get statusText() {return states.get(this).statusText;}
     get headers() {return states.get(this).headers;}
-    get body() {return Buffer(states.get(this).body);}
+    get body() {return Buffer.from(states.get(this).body);}
     contentType() {
         return ContentType.new(this.headers["content-type"]);
     }
@@ -108,7 +108,7 @@ const redirector = (space, reqres) => {
 
 const FieldUtils = {
     error: (request, error, errorStatus) => {
-        const body = new Buffer((error || new Error()).toString());
+        const body = Buffer.from((error || new Error()).toString());
         const response = Response.new(errorStatus || "400", {
             "content-type": "text/plain;charset=utf-8",
             "content-length": body.length.toString()

@@ -9,7 +9,7 @@ const Entry = class Entry {
         return Object.freeze(new Entry(pathname, type, value, timestamp));
     }
     constructor (pathname, type, value, timestamp) {
-        value = value || Buffer();
+        value = value || Buffer.from([]);
         timestamp = timestamp || new Date();
         const alg = crypto.createHash("sha256");
         const hash =
@@ -29,7 +29,7 @@ const Entry = class Entry {
         return Entry.new(pathname, data.type, data.value, data.timestamp);
     };
     static fromObject(data) {
-        const value = Buffer(data.value, "base64");
+        const value = Buffer.from(data.value, "base64");
         const date = new Date(data.timestamp);
         return Entry.new(data.pathname, data.type, value, date);
     }

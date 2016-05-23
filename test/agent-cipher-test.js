@@ -102,7 +102,7 @@ test("sign with Buffer and verify", function (done) {
 
     const info = {
         alg: "sha256",
-        buf: new Buffer("hello world!"),
+        buf: Buffer.from("hello world!"),
         bufEncoding: undefined,
         signEncoding: "base64",
     };
