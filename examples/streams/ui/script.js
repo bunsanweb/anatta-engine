@@ -1,10 +1,11 @@
+/*global StreamerChannels, Post*/
 "use strict";
 window.addEventListener("load", ev => {
     const main = document.querySelector("main");
     const streamUri = "/streams/";
     const streamer = StreamerChannels.Linear({href: streamUri});
     streamer.on("update", (entries, position) => {
-        const next = position ? main.querySelector(`#${position.id}`) : null;
+        let next = position ? main.querySelector(`#${position.id}`) : null;
         entries.forEach(entry => {
             const imported = importedEntry(entry);
             if (!next || next.id !== imported.id) {
@@ -12,6 +13,7 @@ window.addEventListener("load", ev => {
             }
             main.replaceChild(imported, next);
             next = imported.nextSibling;
+            return undefined;
         });
     });
     streamer.load();

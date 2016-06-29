@@ -6,6 +6,10 @@ module.exports = {
         node: true,
     },
     globals: {
+        // TBD: put /*global xxx*/ for each js file
+        anatta: true,
+        Streamer: true, tap: true, // shared
+        suite: true, test: true, // mocha
     },
     extends: "eslint:recommended",
     ecmaFeatures: {
@@ -128,7 +132,7 @@ module.exports = {
         //"no-undef-init": [0],
         //"no-undefined": [0],
         "no-unused-vars": [1, {vars: "local", args: "none"}],
-        "no-use-before-define": [2, {functions: false, classes: false}],
+        "no-use-before-define": [0, {functions: false, classes: false}],
         
         //[Node.js and CommonsJS] //Omitted
         
@@ -142,7 +146,7 @@ module.exports = {
         "computed-property-spacing": [2, "never"],
         "consistent-this": [0, "self"],
         "eol-last": [2],
-        "func-names": [2, "always"],
+        "func-names": [0, "always"],
         //"func-style": [2, "declaration", {allowArrowFunctions: true}],
         //"id-blacklist": [2, "callback"],
         //"id-length": [2, {min: 2, max: 30}],
@@ -210,7 +214,8 @@ module.exports = {
         "operator-linebreak": [2, "after"],
         "padded-blocks": [2, "never"],
         "quote-props": [2, "as-needed", {numbers: true}],
-        quotes: [2, "double", {allowTemplateLiterals: true}],
+        quotes: [2, "double", {
+            avoidEscape: true, allowTemplateLiterals: true}],
         "require-jsdoc": [0],
         semi: [2, "always"],
         "semi-spacing": [2, {before: false, after: true}],

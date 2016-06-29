@@ -1,7 +1,7 @@
 "use strict";
 
 window.addEventListener("agent-load", ev => {
-    const pubkeyPems = []
+    const pubkeyPems = [];
 
     const getPems = (ev) => ev.detail.respond("200", {
         "content-type": "application/json",
@@ -28,9 +28,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return getPems(ev);
-            case "POST": return postPem(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return getPems(ev);
+        case "POST": return postPem(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

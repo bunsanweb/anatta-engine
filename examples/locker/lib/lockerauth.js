@@ -1,3 +1,4 @@
+/*global LockerAuth*/
 "use strict";
 
 const LockerAuth = (function () {
@@ -17,9 +18,9 @@ const LockerAuth = (function () {
         text.slice(index).split(",").forEach((elem) => {
             const elems = elem.split("=");
             param[elems[0].trim()] = elems[1].trim().slice(1, -1);
-        }); 
-        return {scheme: scheme, param: param};
-    }; 
+        });
+        return {scheme, param};
+    };
 
     const format = (param) => {
         if (!param || param.error) return "";
@@ -28,10 +29,6 @@ const LockerAuth = (function () {
     };
 
     return {
-        scheme: scheme,
-        challenge: challenge,
-        format: format,
-        parse: parse,
-        wwwAuthenticate: format(challenge)
+        scheme, challenge, format, parse, wwwAuthenticate: format(challenge)
     };
 })();

@@ -77,12 +77,14 @@ window.addEventListener("agent-load", ev => {
     const findStatuses = (query) => {
         const pivot = container.ownerDocument.getElementById(query.id);
         switch (query.on) {
-        case "refresh":
+        case "refresh": {
             const updated = statusSlice(pivot, NUM + 1, false);
             return updated.slice(0, -1);
-        case "backward":
+        }
+        case "backward": {
             const past = statusSlice(pivot, NUM + 1, true);
             return past.slice(1);
+        }
         default:
             return statusSlice(container.firstChild, NUM, true);
         }
@@ -100,9 +102,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return replyStatuses(ev);
-            case "POST": return postStatus(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return replyStatuses(ev);
+        case "POST": return postStatus(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

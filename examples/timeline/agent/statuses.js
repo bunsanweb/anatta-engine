@@ -6,7 +6,6 @@ window.addEventListener("agent-load", ev => {
     const infoTemplate = document.querySelector(".info");
     const url = anatta.builtin.url;
     const orbURI = "/orb/";
-    const postURI = "root:/orb/";
     const NUM = 5;
 
     const createStatusItem = (data) => {
@@ -37,7 +36,7 @@ window.addEventListener("agent-load", ev => {
         content.appendChild(doc.importNode(info, true));
 
         const resource = data.origin.html.querySelector(form.selector);
-        resource.id += "-" + data.id;
+        resource.id += `-${data.id}`;
         resource.className += " reblogged";
         content.appendChild(doc.importNode(resource, true));
 
@@ -56,7 +55,7 @@ window.addEventListener("agent-load", ev => {
             const link = anatta.engine.link({href: form.href});
             return link.get().then(entity => {
                 const reblog = {
-                    id: data.id, uri: data.uri, form: form,
+                    id: data.id, uri: data.uri, form,
                     date: data.date, origin: entity
                 };
                 return toReblog(reblog);
@@ -114,9 +113,9 @@ window.addEventListener("agent-load", ev => {
         const form = anatta.form.decode(ev.detail.request);
         const orgUriObj = ev.detail.request.origin().location;
         const date = new Date();
-        const id = `status-${ Math.round(date.getTime() / 10)}`;
+        const id = `status-${Math.round(date.getTime() / 10)}`;
         const uri = formatUri(orgUriObj, id);
-        const data = {id: id, uri: uri, form: form, date: date};
+        const data = {id, uri, form, date};
         createItem(data).then(
             item => item ? putStatus(uri, item, orgUriObj) : ""
         ).then(() => ev.detail.respond("200", {
@@ -136,16 +135,18 @@ window.addEventListener("agent-load", ev => {
 
     const findStatuses = (query) => {
         const pivot =
-                  query.id ? container.querySelector("#" + query.id) : null;
+                  query.id ? container.querySelector(`#${query.id}`) : null;
         switch (query.on) {
-            case "refresh":
-                const updated = statusSlice(pivot, NUM + 1, false);
-                return updated.slice(0, -1);
-            case "backward":
-                const past = statusSlice(pivot, NUM + 1, true);
-                return past.slice(1);
-            default:
-                return statusSlice(container.firstChild, NUM, true);
+        case "refresh": {
+            const updated = statusSlice(pivot, NUM + 1, false);
+            return updated.slice(0, -1);
+        }
+        case "backward": {
+            const past = statusSlice(pivot, NUM + 1, true);
+            return past.slice(1);
+        }
+        default:
+            return statusSlice(container.firstChild, NUM, true);
         }
     };
     
@@ -161,9 +162,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return replyStatuses(ev);
-            case "POST": return postStatus(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return replyStatuses(ev);
+        case "POST": return postStatus(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

@@ -22,8 +22,8 @@ window.addEventListener("load", ev => {
     const doRender = (ev) => {
         const doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = ev.target.responseText;
-        const insts_ = doc.getElementById("insts");
-        insts.innerHTML = insts_ ? insts_.innerHTML : "";
+        const instsElem = doc.getElementById("insts");
+        insts.innerHTML = instsElem ? instsElem.innerHTML : "";
     };
 
     const doLoad = (ev) => {

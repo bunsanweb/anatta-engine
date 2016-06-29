@@ -1,7 +1,9 @@
+/*eslint prefer-arrow-callback: 0*/
+/*global tap, join, get*/
 "use strict";
 
 // test example
-tap.test("[sync ok] library.join", function () {
+tap.test("[sync ok] library.join", function test() {
     tap.ok(join);
     tap.equal(join("http://example.org/", "index.html"),
               "http://example.org/index.html");
@@ -13,7 +15,7 @@ tap.test("[sync ok] library.join", function () {
 //
 // - success: done() or done("all not instanceof Error")
 // - failure: done(Error("something instanceof Error")) or timeout
-tap.test("[async ok] library.get", function (done) {
+tap.test("[async ok] library.get", function test(done) {
     this.timeout = 5000; // update timeout wait by each test
     tap.ok(get);
     get("http://example.org/").then(entity => {
@@ -23,12 +25,12 @@ tap.test("[async ok] library.get", function (done) {
 });
 
 // failure case of test
-tap.test("[sync fail] raise error", function () {
+tap.test("[sync fail] raise error", function test() {
     throw new Error("fail");
 });
 
 // failure case of async test
-tap.test("[async fail] raise error in function", function (done) {
+tap.test("[async fail] raise error in function", function test(done) {
     this.timeout = 5000; // update timeout wait by each test
     get("http://example.org/").then(entity => {
         throw new Error("fail");
@@ -36,17 +38,17 @@ tap.test("[async fail] raise error in function", function (done) {
 });
 
 // another async test example with returned a promise
-tap.test("[another async ok] library.get", function () {
+tap.test("[another async ok] library.get", function test() {
     this.timeout = 5000; // update timeout wait by each test
     tap.ok(get);
     return get("http://example.org/").then(entity => {
         tap.ok(entity);
         tap.equal(entity.request.href, "http://example.org/");
-    })
+    });
 });
 
 // failure case of async test with returned a promise
-tap.test("[another async fail] library.get", function () {
+tap.test("[another async fail] library.get", function test() {
     this.timeout = 5000; // update timeout wait by each test
     return get("http://example.org/").then(entity => {
         tap.equal(entity.request.href, "http://example.com/");
@@ -56,7 +58,7 @@ tap.test("[another async fail] library.get", function () {
 
 // self test
 tap.suite("[tap.js]");
-tap.test("[test of test] deepEqual", function () {
+tap.test("[test of test] deepEqual", function test() {
     // deep eq
     tap.deepEqual({foo: "bar"}, {foo: "bar"});
     tap.throws(
@@ -75,7 +77,7 @@ tap.test("[test of test] deepEqual", function () {
     
     // cyclic
     const a = {}, b = {};
-    a.self = a, b.self = b;
+    a.self = a; b.self = b;
     tap.deepEqual(a, b);
     b.z = 0;
     tap.notDeepEqual(a, b);

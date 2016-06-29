@@ -59,9 +59,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return get(ev);
-            case "POST": return post(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return get(ev);
+        case "POST": return post(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

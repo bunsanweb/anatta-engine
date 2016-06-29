@@ -10,7 +10,7 @@ window.addEventListener("load", ev => {
 
     const streamer = Streamer(
         streamUri, entry => document.importNode(entry, true));
-    streamer.on("clear", () => timeline.innerHTML = "");
+    streamer.on("clear", () => {timeline.innerHTML = "";});
     streamer.on("insert", (entry, id) => {
         const elem = timeline.querySelector(`#${id}`);
         timeline.insertBefore(entry, elem);

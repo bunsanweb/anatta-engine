@@ -4,7 +4,7 @@ window.addEventListener("load", ev => {
     const agent = document.querySelector("link[rel='agent']").href;
 
     const doRender = (ev) => {
-        const plain = ev.target.status == 200 ? ev.target.responseText : "";
+        const plain = +ev.target.status === 200 ? ev.target.responseText : "";
         document.querySelector("#content").innerHTML = plain;
         source.value = document.getElementById("text").textContent;
     };

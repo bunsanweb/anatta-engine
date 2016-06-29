@@ -1,3 +1,4 @@
+/*eslint max-statements: [2, 25]*/
 "use strict";
 
 window.addEventListener("load", ev => {
@@ -8,8 +9,7 @@ window.addEventListener("load", ev => {
     const post = document.getElementById("post");
     const source = document.getElementById("source");
     const backward = document.getElementById("backward");
-    const timelineUri = "/timeline/";
-    const statusesUri = "/statuses/";
+    const timelineUri = "/timeline/", statusesUri = "/statuses/";
     const waits = {continued: 500, interval: 5000};
 
     const request = (method, uri, data) => new Promise((f, r) => {
@@ -17,7 +17,6 @@ window.addEventListener("load", ev => {
         req.addEventListener("load", f, false);
         req.open(method, uri, true);
         req.send(data);
-        return req;
     });
     
     const formData = (obj) => {
@@ -29,7 +28,7 @@ window.addEventListener("load", ev => {
     const setReblogEvent = (entry) => {
         const from = entry.querySelector(".from");
         const reblog = entry.querySelector(".reblog");
-        if (from.querySelector(".href").href != document.baseURI) {
+        if (from.querySelector(".href").href !== document.baseURI) {
             reblog.addEventListener("click", () => {
                 const uri =
                           reblog.parentNode.querySelector(".id > .href").href;
@@ -37,7 +36,7 @@ window.addEventListener("load", ev => {
                 const via = author ? author.href : "";
                 const req = request("POST", statusesUri, formData({
                     author: document.baseURI,
-                    href: uri, selector: "article", via: via
+                    href: uri, selector: "article", via
                 }));
                 req.then(() => streamer.refresh());
             });
@@ -50,7 +49,7 @@ window.addEventListener("load", ev => {
     const streamer = Streamer(
         timelineUri, entry => timeline.ownerDocument.importNode(entry, true));
     streamer.on("clear", () => {
-        followings.innerHTML ="";
+        followings.innerHTML = "";
         timeline.innerHTML = "";
     });
     streamer.on("insertFollowing",

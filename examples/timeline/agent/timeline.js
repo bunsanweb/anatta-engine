@@ -1,16 +1,14 @@
 "use strict";
 
 window.addEventListener("agent-load", ev => {
-    const followings = document.querySelector("#followings");
     const followingTemplate = document.querySelector(".following");
     const fromTemplate = document.querySelector(".from");
     const reblogButtonTemplate = document.querySelector(".reblog");
+    const followings = document.querySelector("#followings");
     const container = document.querySelector("#statuses");
-    const statusesPath = "/statuses/";
-    const streamers = {};
     const url = anatta.builtin.url;
-    const waits = {continued: 500, interval: 5000};
-    const NUM = 5;
+    const statusesPath = "/statuses/", NUM = 5;
+    const streamers = {}, waits = {continued: 500, interval: 5000};
 
     const createLink = (uriObj, rel, elem) => {
         const base = `${uriObj.protocol}//${uriObj.host}/`;
@@ -55,12 +53,14 @@ window.addEventListener("agent-load", ev => {
         const pivot =
                   query.id ? container.querySelector(`#${query.id}`) : null;
         switch (query.on) {
-        case "refresh":
+        case "refresh": {
             const updated = statusSlice(pivot, NUM + 1, false);
             return updated.slice(0, -1);
-        case "backward":
+        }
+        case "backward": {
             const past = statusSlice(pivot, NUM + 1, true);
             return past.slice(1);
+        }
         default:
             return statusSlice(container.firstChild, NUM, true);
         }
@@ -135,9 +135,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return replyStatuses(ev);
-            case "POST": return postFollower(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return replyStatuses(ev);
+        case "POST": return postFollower(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

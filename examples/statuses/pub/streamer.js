@@ -28,10 +28,9 @@ const Streamer = (function () {
         return this;
     };
 
-    Streamer.prototype.spawn = function (name) {
-        const args = Array.from(arguments).slice(1);
+    Streamer.prototype.spawn = function (name, ...args) {
         try {
-            this.events[name].apply(this, args);
+            Reflect.apply(this.events[name], this, args);
         } catch (ex) {}
     };
 
@@ -46,7 +45,7 @@ const Streamer = (function () {
     };
 
     const handlers = {
-        load: function (streamer, doc) {
+        load(streamer, doc) {
             streamer.entries.innerHTML = "";
             streamer.spawn("clear");
             streamer.links.refresh = getHref(doc, streamer.selectors.refresh);
@@ -56,45 +55,45 @@ const Streamer = (function () {
             const updated = updates.load(streamer, entries);
             streamer.spawn("refresh", updated);
         },
-        refresh: function (streamer, doc) {
+        refresh(streamer, doc) {
             streamer.links.refresh = getHref(doc, streamer.selectors.refresh);
             const entries = doc.querySelectorAll(streamer.selectors.entries);
             const updated = updates.refresh(streamer, entries);
             streamer.spawn("refresh", updated);
         },
-        backward: function (streamer, doc) {
+        backward(streamer, doc) {
             streamer.links.backward =
                 getHref(doc, streamer.selectors.backward);
             const entries = doc.querySelectorAll(streamer.selectors.entries);
-            const updated = updates.backward(streamer, entries);
+            updates.backward(streamer, entries);
         }
     };
 
     const updates = {
-        load: function (streamer, entries) {
+        load(streamer, entries) {
             return Array.from(entries).reduce(
                 (updated, entry) => updates.insert(streamer, entry, () => {}),
                 false);
         },
-        refresh: function (streamer, entries) {
-            const entries_ = Array.from(entries);
-            entries_.reverse();
-            return entries_.reduce(
+        refresh(streamer, entries) {
+            const entriesArray = Array.from(entries);
+            entriesArray.reverse();
+            return entriesArray.reduce(
                 (updated, entry) =>
                     updates.insert(streamer, entry, cont => cont.firstChild),
                 false);
         },
-        backward: function (streamer, entries) {
+        backward(streamer, entries) {
             return Array.from(entries).reduce(
                 (updated, entry) => updates.insert(streamer, entry, () => {}),
                 false);
         },
-        insert: function (streamer, entry, getter) {
-            if (!!streamer.entries.querySelector(`#${entry.id}`)) return false;
+        insert(streamer, entry, getter) {
+            if (streamer.entries.querySelector(`#${entry.id}`)) return false;
             const pivot = getter(streamer.entries);
             const e = streamer.entries.ownerDocument.importNode(entry, true);
             streamer.entries.insertBefore(e, pivot);
-            const id = !!pivot ? pivot.id : null;
+            const id = pivot ? pivot.id : null;
             streamer.spawn("insert", streamer.formatter(entry), id);
             return true;
         }
@@ -107,12 +106,13 @@ const Streamer = (function () {
     };
 
     const getHtml = (uri) => new Promise((f, r) => {
-        if (!uri) return r(null);
+        if (!uri) return void r(null);
         const req = new XMLHttpRequest();
         req.addEventListener(
             "load", ev => f(parseHtml(req.responseText)), false);
         req.open("GET", uri, true);
         req.send();
+        return undefined;
     });
 
     const getHref = (doc, selector) => {

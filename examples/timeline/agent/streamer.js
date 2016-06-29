@@ -21,7 +21,7 @@ const Streamer = (function () {
     anatta.engine.glossary.add(anatta.termset.desc.create({
         name: "statuses",
         "content-type": "text/html",
-        "uri-pattern": "^.*" + "/statuses/" + ".*",
+        "uri-pattern": "^.*/statuses/.*",
         entity: {
             refresh: {selector: "link[rel='refresh']", value: "href"},
             backward: {selector: "link[rel='backward']", value: "href"},
@@ -34,10 +34,9 @@ const Streamer = (function () {
         return this;
     };
 
-    Streamer.prototype.spawn = function (name) {
-        const args = Array.from(arguments).slice(1);
+    Streamer.prototype.spawn = function (name, ...args) {
         try {
-            this.events[name].apply(this, args);
+            Reflect.apply(this.events[name], this, args);
         } catch (ex) {}
     };
 
@@ -54,7 +53,7 @@ const Streamer = (function () {
     };
 
     const handlers = {
-        load: function (streamer, entity) {
+        load(streamer, entity) {
             streamer.entries.innerHTML = "";
             streamer.spawn("clear");
             streamer.links.refresh = entity.attr("refresh");
@@ -62,45 +61,44 @@ const Streamer = (function () {
             const updated = updates.load(streamer, entity.html);
             streamer.spawn("refresh", updated);
         },
-        refresh: function (streamer, entity) {
+        refresh(streamer, entity) {
             streamer.links.refresh = entity.attr("refresh");
             const updated = updates.refresh(streamer, entity.html);
             streamer.spawn("refresh", updated);
         },
-        backward: function (streamer, entity) {
+        backward(streamer, entity) {
             streamer.links.backward = entity.attr("backward");
-            const updated = updates.backward(streamer, entity.html);
+            updates.backward(streamer, entity.html);
         }
     };
 
     const updates = {
-        load: function (streamer, doc) {
+        load(streamer, doc) {
             const articles = doc.querySelectorAll("body > div > article");
             return Array.from(articles).reduce(
                 (updated, article) =>
                     updates.insert(streamer, article, () => {}),
                 false);
         },
-        refresh: function (streamer, doc) {
-            const articles = doc.querySelectorAll("body > div > article");
-            const articles_ = Array.from(articles);
-            articles_.reverse();
-            return articles_.reduce(
+        refresh(streamer, doc) {
+            const articles = Array.from(
+                doc.querySelectorAll("body > div > article"));
+            articles.reverse();
+            return articles.reduce(
                 (updated, article) =>
                     updates.insert(
                         streamer, article, cont => cont.firstChild) || updated,
                 false);
         },
-        backward: function (streamer, doc) {
+        backward(streamer, doc) {
             const articles = doc.querySelectorAll("body > div > article");
             return Array.from(articles).reduce(
                 (updated, article) =>
                     updates.insert(streamer, article, () => {}),
                 false);
         },
-        insert: function (streamer, article, getter) {
-            if (!!streamer.entries.querySelector(`#${article.id}`))
-                return false;
+        insert(streamer, article, getter) {
+            if (streamer.entries.querySelector(`#${article.id}`)) return false;
             const pivot = getter(streamer.entries);
             const e = streamer.entries.ownerDocument.importNode(article, true);
             streamer.entries.insertBefore(e, pivot);

@@ -16,8 +16,8 @@ window.addEventListener("load", ev => {
     const doRender = function (ev) {
         const doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = ev.target.responseText;
-        const message_ = doc.getElementById("message");
-        message.textContent = message_ ? message_.textContent : "";
+        const messageElem = doc.getElementById("message");
+        message.textContent = messageElem ? messageElem.textContent : "";
     };
 
     const doLoad = function (ev) {

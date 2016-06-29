@@ -1,30 +1,25 @@
+/*global LockerAuth*/
 "use strict";
 
 window.addEventListener("agent-load", ev => {
-    let priv = "";
-    let pub = "";
     let house = "";
     const keybox = anatta.engine.link(
         document.getElementById("keybox"), "text/html", anatta.entity);
-    const load = function () {
-        priv = anatta.cipher.generate();
-        const publicPem = priv.getPublicPem();
-        pub = anatta.cipher.load(publicPem);
-        keybox.post({
-            headers: {"content-type": "text/plain;charset=utf-8"},
-            body: publicPem
-        });
-    };
-    load();
+
+    const priv = anatta.cipher.generate();
+    keybox.post({
+        headers: {"content-type": "text/plain;charset=utf-8"},
+        body: priv.getPublicPem()
+    });
 
     const auth = (entity) => {
-        if (entity.response.status != "401") return entity;
+        if (+entity.response.status !== 401) return entity;
 
         const challenge = entity.response.headers["www-authenticate"];
         if (!challenge) return entity;
 
         const parsed = LockerAuth.parse(challenge);
-        if (parsed.scheme != LockerAuth.scheme) return entity;
+        if (parsed.scheme !== LockerAuth.scheme) return entity;
 
         const signed = priv.sign(parsed.param);
         if (signed.error) return entity;
@@ -51,7 +46,7 @@ window.addEventListener("agent-load", ev => {
         ev.detail.respond(res.status, res.headers, resText);
     };
 
-    const postToHouse= (ev) => {
+    const postToHouse = (ev) => {
         const req = ev.detail.request;
         const form = anatta.form.decode(req);
         if (form) {
@@ -83,9 +78,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return getFromHouse(ev);
-            case "POST": return postToHouse(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return getFromHouse(ev);
+        case "POST": return postToHouse(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

@@ -8,8 +8,8 @@ window.addEventListener("agent-load", ev => {
     }, publicPem);
     
     const postPublicPem = (ev) => {
-        const publicPem_ = ev.detail.request.body.toString();
-        if (publicPem_) publicPem = publicPem_;
+        const postedPublicPem = ev.detail.request.body.toString();
+        if (postedPublicPem) publicPem = postedPublicPem;
         ev.detail.respond("200", {
             "content-type": "text/html;charset=utf-8"
         }, "");
@@ -18,9 +18,9 @@ window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return getPublicPem(ev);
-            case "POST": return postPublicPem(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return getPublicPem(ev);
+        case "POST": return postPublicPem(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

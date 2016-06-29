@@ -12,10 +12,10 @@ window.addEventListener("load", ev => {
     const doRender = function (ev) {
         const doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = ev.target.responseText;
-        const house_ = doc.querySelector("link[rel='house']");
-        registered.textContent = house_ ? house_.href : "";
-        const pubkeys_ = doc.getElementById("pubkeys");
-        pubkeys.innerHTML = pubkeys_ ? pubkeys_.innerHTML : "";
+        const houseElem = doc.querySelector("link[rel='house']");
+        registered.textContent = houseElem ? houseElem.href : "";
+        const pubkeysElem = doc.getElementById("pubkeys");
+        pubkeys.innerHTML = pubkeysElem ? pubkeysElem.innerHTML : "";
     };
 
     const request = (method, uri, data) => new Promise((f, r) => {

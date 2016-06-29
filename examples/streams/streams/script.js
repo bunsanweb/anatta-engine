@@ -1,3 +1,4 @@
+/*global StreamerSource, StreamerPost*/
 window.addEventListener("agent-load", ev => {
     "use strict";
     
@@ -9,13 +10,13 @@ window.addEventListener("agent-load", ev => {
         selector: {entries: "[rel=entry]"},
         entriesMax: 20,
         waitRefresh: 500,
-        createDocument: createDocument
+        createDocument
     });
     const post = StreamerPost({
         href: orbUri,
         entryTemplate: document.querySelector("#entryTemplate"),
         activityTemplate: document.querySelector("#activityTemplate"),
-        createDocument: createDocument
+        createDocument
     });
     
     window.addEventListener("agent-access", ev => {

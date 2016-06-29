@@ -1,3 +1,4 @@
+/*global LockerAuth*/
 "use strict";
 
 window.addEventListener("agent-load", ev => {
@@ -6,15 +7,13 @@ window.addEventListener("agent-load", ev => {
     const message = anatta.engine.link(
         document.getElementById("message"), "text/html", anatta.entity);
 
-    const verify = (authParam) => {
-        return keybox.get().then(entity => {
-            const pubkeyPems = JSON.parse(entity.response.body.toString());
-            return pubkeyPems.some(pem => {
-                const pubkey = anatta.cipher.load(pem);
-                return pubkey.verify(authParam);
-            });
+    const verify = (authParam) => keybox.get().then(entity => {
+        const pubkeyPems = JSON.parse(entity.response.body.toString());
+        return pubkeyPems.some(pem => {
+            const pubkey = anatta.cipher.load(pem);
+            return pubkey.verify(authParam);
         });
-    };
+    });
 
     const respond = (ev) => (entity) => {
         const res = entity.response;
@@ -47,7 +46,7 @@ window.addEventListener("agent-load", ev => {
         if (!authStr) return respondChallenge(ev);
 
         const parsed = LockerAuth.parse(authStr);
-        if (parsed.scheme != LockerAuth.scheme) return respondChallenge(ev);
+        if (parsed.scheme !== LockerAuth.scheme) return respondChallenge(ev);
 
         return verify(parsed.param).then(
             authOK => authOK ? doPost(ev) : respondChallenge(ev));
@@ -55,12 +54,12 @@ window.addEventListener("agent-load", ev => {
 
     const get = (ev) => message.get().then(respond(ev));
 
-    window.addEventListener("agent-access", function (ev) {
+    window.addEventListener("agent-access", ev => {
         ev.detail.accept();
         switch (ev.detail.request.method) {
-            case "GET": return get(ev);
-            case "POST": return post(ev);
-            default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
+        case "GET": return get(ev);
+        case "POST": return post(ev);
+        default: return ev.detail.respond("405", {allow: "GET,POST"}, "");
         }
     }, false);
 }, false);

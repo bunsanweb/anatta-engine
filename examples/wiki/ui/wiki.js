@@ -33,9 +33,7 @@ window.addEventListener("load", ev => {
         source.value = plain;
     };
     const wikiName = /\[\[([^\]]+)\]\]/g;
-    const linker = (match, name) => {
-        return `<a href='#${name}'>${name}</a>`;
-    };
+    const linker = (match, name) => `<a href='#${name}'>${name}</a>`;
     
     const doUpdate = (ev) => {
         const name = location.hash.substring(1);
