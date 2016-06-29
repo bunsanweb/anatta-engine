@@ -1,7 +1,8 @@
+/*global fusion*/
 (function (root, factory) {
     if (typeof exports === "object") module.exports = factory;
     else root.StreamerPost = factory(root);
-})(this, function (window) {
+})(this, window => {
     "use strict";
     
     const anatta = window.anatta;
@@ -21,19 +22,18 @@
             const info = formToInfo(data);
             const activity = makeActivity(info);
             taskLane = taskLane.then(() => storeActivity(activity, info)).
-                then(getIndex).then(index =>  updateIndex(index, info)).
+                then(getIndex).then(index => updateIndex(index, info)).
                 then(() => {
                     const loc = anatta.builtin.url.resolve(
                         ev.detail.request.origin().href, info.id);
                     return ev.detail.respond("303", {location: loc});
-            }, err => {
-                console.log(err.stack);
-                return ev.detail.respond("500", {}, "");
-            });
+                }, err => {
+                    console.log(err.stack);
+                    return ev.detail.respond("500", {}, "");
+                });
         };
         
         const updateIndex = (index, info) => {
-            const rellink = info.id;
             const doc = index.html;
             const entry = fusion(info, opts.entryTemplate, doc);
             // insert arrived activity to head of index
@@ -47,7 +47,7 @@
             const indexUri = opts.href;
             const link = anatta.engine.link({href: indexUri});
             return link.get().then(entity => {
-                if (entity.response.status == "200") return entity;
+                if (+entity.response.status === 200) return entity;
                 return putDoc(link, emptyIndex());
             });
         };

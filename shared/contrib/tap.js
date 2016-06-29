@@ -1,7 +1,7 @@
 "use strict";
 
 window.tap = (function () {
-    const suites = {}; 
+    const suites = {};
     
     const newSuite = () => ({
         tests: {},
@@ -17,10 +17,9 @@ window.tap = (function () {
             const body = value.stack.split("\n").map(
                 line => `  ${line}${"\n"}`);
             return {log: `${head}${body}`, success: 0, failure: 1};
-        } else {
-            const msg = `ok ${index + 1} - ${name}${desc}${"\n"}`;
-            return {log: msg, success: 1, failure: 0};
         }
+        const msg = `ok ${index + 1} - ${name}${desc}${"\n"}`;
+        return {log: msg, success: 1, failure: 0};
     };
     const formatResult = (result) => {
         const total = result.success + result.failure;
@@ -35,9 +34,9 @@ window.tap = (function () {
     const callTest = (context, test, done) => {
         try {
             if (test.length > 0) {
-                test.call(context, done);
+                Reflect.apply(test, context, [done]);
             } else {
-                const promise = test.call(context);
+                const promise = Reflect.apply(test, context, []);
                 if (promise && typeof promise.then === "function") {
                     promise.then(done, done);
                 } else {
@@ -105,7 +104,7 @@ window.tap = (function () {
     const getResult = (ev) => {
         if (ev.detail.request.method !== "GET") return;
         ev.detail.accept();
-        runSuites(suites).then(function (result) {
+        runSuites(suites).then(result => {
             ev.detail.respond("200", {
                 "content-type": "text/plain;charset=UTF-8"
             }, result);
@@ -115,21 +114,21 @@ window.tap = (function () {
     
     // for assertion
     const deq = function deq(a, b, cache) {
-        if (a == b) return true;
+        if (a === b) return true;
         if (typeof a !== "object" || typeof b !== "object") return a === b;
         if (a.prototype !== b.prototype) return false;
         cache = cache || [];
         if (cache.some(pair => pair.a === a && pair.b === b ||
                        pair.a === b && pair.b === a)) return true;
-        cache.push({a: a, b: b});
+        cache.push({a, b});
         const ka = Object.keys(a), kb = Object.keys(b);
         if (!vaeq(ka, kb)) return false;
         return ka.every(name => deq(a[name], b[name], cache));
     };
     const vaeq = (a, b) => {
         if (a.length !== b.length) return false;
-        a.sort(), b.sort();
-        return a.every((e, i) => e == b[i]);
+        a.sort(); b.sort();
+        return a.every((e, i) => e === b[i]);
     };
     
     const AssertionError = function AssertionError(message, actual, expected) {
@@ -148,53 +147,69 @@ window.tap = (function () {
             if (!suites[desc]) suites[desc] = newSuite();
             suite = suites[desc];
         },
-        test: (desc, func) => suite.tests[desc] = func,
+        test: (desc, func) => {suite.tests[desc] = func;},
         // from CommonsJS Unit Testing/1.0
-        AssertionError: AssertionError,
+        AssertionError,
         ok: (guard, message) => {
             message = message || "guard not existed";
-            if (!guard) throw new AssertionError(
-                `[ok(guard)] ${message}`, guard, true);
+            if (!guard) {
+                throw new AssertionError(
+                    `[ok(guard)] ${message}`, guard, true);
+            }
         },
         equal: (actual, expected, message) => {
             message = message || `${actual} != ${expected}`;
-            if (actual != expected) throw new AssertionError(
-                `[equal(actual, expected)] ${message}`, actual, expected);
-            },
+            if (actual !== expected) {
+                throw new AssertionError(
+                    `[equal(actual, expected)] ${message}`, actual, expected);
+            }
+        },
         notEqual: (actual, expected, message) => {
             message = message || `${actual} == ${expected}`;
-            if (actual == expected) throw new AssertionError(
-                `[notEqual(actual, expected)] ${message}`, actual, expected);
+            if (actual === expected) {
+                throw new AssertionError(
+                    `[notEqual(actual, expected)] ${message}`,
+                    actual, expected);
+            }
         },
         strictEqual: (actual, expected, message) => {
             message = message || `${actual} !== ${expected}`;
-            if (actual !== expected) throw new AssertionError(
-                `[strictEqual(actual, expected)] ${message}`,
-                actual, expected);
+            if (actual !== expected) {
+                throw new AssertionError(
+                    `[strictEqual(actual, expected)] ${message}`,
+                    actual, expected);
+            }
         },
         notStrictEqual: (actual, expected, message) => {
             message = message || `${actual} === ${expected}`;
-            if (actual === expected) throw new AssertionError(
-                `[notStrictEqual(actual, expected)] ${message}`,
-                actual, expected);
+            if (actual === expected) {
+                throw new AssertionError(
+                    `[notStrictEqual(actual, expected)] ${message}`,
+                    actual, expected);
+            }
         },
         deepEqual: (actual, expected, message) => {
             message = message || `${actual} not deep equal ${expected}`;
-            if (!deq(actual, expected)) throw new AssertionError(
-                `[deepEqual(actual, expected)] ${message}`, actual, expected);
+            if (!deq(actual, expected)) {
+                throw new AssertionError(
+                    `[deepEqual(actual, expected)] ${message}`,
+                    actual, expected);
+            }
         },
         notDeepEqual: (actual, expected, message) => {
             message = message || `${actual} deep equal ${expected}`;
-            if (deq(actual, expected)) throw new AssertionError(
-                `[notDeepEqual(actual, expected)] ${message}`,
-                actual, expected);
+            if (deq(actual, expected)) {
+                throw new AssertionError(
+                    `[notDeepEqual(actual, expected)] ${message}`,
+                    actual, expected);
+            }
         },
         throws: (block, expected, message) => {
             let actual = null;
-            message = message || 
+            message = message ||
                 `${expected ? expected : "Error"} not thrown`;
             try {
-                block.call();
+                Reflect.apply(block, null, []);
             } catch (err) {
                 if (!expected || err instanceof expected) return;
                 actual = err;

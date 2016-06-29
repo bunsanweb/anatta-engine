@@ -33,7 +33,7 @@ window.fusion = (function () {
     */
     
     const fuse = (context, template, doc) => {
-        if (typeof context.attr !== "function" && 
+        if (typeof context.attr !== "function" &&
             typeof context.find !== "function") {
             context = JsonEntity(context);
         }
@@ -75,12 +75,11 @@ window.fusion = (function () {
             if (specials.indexOf(key) >= 0) return null;
             const attr = context.attr(desc[key]);
             if (shorthandAttrs[key]) {
-                return elem[shorthandAttrs[key]] = attr;
+                return void (elem[shorthandAttrs[key]] = attr);
             } else if (htmlAttrs.indexOf(key) >= 0) {
-                return elem[key] = attr;
-            } else {
-                return elem.setAttribute(key, attr);
+                return void (elem[key] = attr);
             }
+            return void elem.setAttribute(key, attr);
         });
         Array.from(elem.childNodes).forEach(
             child => applyTree(child, context));
@@ -89,7 +88,7 @@ window.fusion = (function () {
     const shorthandAttrs = {
         text: "textContent",
         html: "innerHTML",
-        "class": "className"
+        class: "className"
     };
     const htmlAttrs = ["id", "title", "lang", "rel"];
 

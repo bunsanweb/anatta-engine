@@ -1,7 +1,8 @@
+/*eslint no-else-return: 0*/
 (function (root, factory) {
     if (typeof exports === "object") module.exports = factory;
     else root.StreamerSource = factory(root);
-})(this, function (window) {
+})(this, window => {
     "use strict";
 
     const anatta = window.anatta;
@@ -53,10 +54,13 @@
             const indexUri = opts.href;
             const link = anatta.engine.link({href: indexUri});
             return link.get().then(entity => {
-                if (entity.response.status == "200") return {
-                    doc: entity.html,
-                    date: new Date(entity.response.headers["last-modified"])
-                };
+                if (+entity.response.status === 200) {
+                    const dateStr = entity.response.headers["last-modified"];
+                    return {
+                        doc: entity.html,
+                        date: new Date(dateStr)
+                    };
+                }
                 return {
                     doc: emptyIndex(),
                     date: new Date(0)
@@ -149,7 +153,7 @@
             div.appendChild(backA);
             doc.body.appendChild(div);
             
-            return {doc: doc, date: index.date};
+            return {doc, date: index.date};
         };
         
         // Spec of message links
@@ -165,26 +169,32 @@
                 // req: "/?backward=bid&until=uid&refresh=rid"
                 // - refresh: "/?refresh=rid"
                 // - backward: "/?backward=last.id&until=uid&refresh=rid"
-                if (bid && rid && uid) return {
-                    refresh: {count: c, refresh: rid},
-                    backward: {count: c, backward: lid, refresh: rid, 
-                               until: uid}
-                };
+                if (bid && rid && uid) {
+                    return {
+                        refresh: {count: c, refresh: rid},
+                        backward: {count: c, backward: lid, refresh: rid,
+                                   until: uid}
+                    };
+                }
                 // req: "/?backward=bid&refresh=rid"
                 // - refresh: "/?refresh=rid"
                 // - backward: "/?backward=last.id&refresh=rid"
-                if (bid && rid) return {
-                    refresh: {count: c, refresh: rid},
-                    backward: {count: c, backward: lid, refresh: rid}
-                };
+                if (bid && rid) {
+                    return {
+                        refresh: {count: c, refresh: rid},
+                        backward: {count: c, backward: lid, refresh: rid}
+                    };
+                }
                 // req: "/?refresh=rid"
                 // - refresh: "/?refresh=first.id"
                 // - backward: "/?backward=last.id&until=rid&refresh=first.id"
-                if (rid) return {
-                    refresh: {count: c, refresh: fid},
-                    backward: {count: c, backward: lid, refresh: fid, 
-                               until: rid}
-                };
+                if (rid) {
+                    return {
+                        refresh: {count: c, refresh: fid},
+                        backward: {count: c, backward: lid, refresh: fid,
+                                   until: rid}
+                    };
+                }
                 // req: "/"
                 // - refresh: "/?refresh=first.id"
                 // - backward: "/?backward=last.id&refresh=first.id"
@@ -196,26 +206,32 @@
                 // req: "/?backward=bid&until=uid&refresh=rid"
                 // - refresh: "/?refresh=rid"
                 // - backward: "/?backward=bid&until=uid&refresh=rid"
-                if (bid && rid && uid) return {
-                    refresh: {count: c, refresh: rid},
-                    backward: {count: c, backward: bid, refresh: rid, 
-                               until: uid}
-                };
+                if (bid && rid && uid) {
+                    return {
+                        refresh: {count: c, refresh: rid},
+                        backward: {count: c, backward: bid, refresh: rid,
+                                   until: uid}
+                    };
+                }
                 // req: "/?backward=bid&refresh=rid"
                 // - refresh: "/?refresh=rid"
                 // - backward: "/?backward=bid&refresh=rid"
-                if (bid && rid) return {
-                    refresh: {count: c, refresh: rid},
-                    backward: {count: c, backward: bid, refresh: rid}
-                };
+                if (bid && rid) {
+                    return {
+                        refresh: {count: c, refresh: rid},
+                        backward: {count: c, backward: bid, refresh: rid}
+                    };
+                }
                 // req: "/?refresh=rid"
                 // - refresh: "/?refresh=rid"
                 // - backward: "/?backward=rid&until=rid&refresh=rid"
-                if (rid) return {
-                    refresh: {count: c, refresh: rid},
-                    backward: {count: c, backward: rid, refresh: rid, 
-                               until: rid}
-                };
+                if (rid) {
+                    return {
+                        refresh: {count: c, refresh: rid},
+                        backward: {count: c, backward: rid, refresh: rid,
+                                   until: rid}
+                    };
+                }
                 // req: "/"
                 // - refresh: "/"
                 // - backward: "/"
@@ -239,7 +255,7 @@
             return link;
         };
         const queryHref = (req, query) => anatta.builtin.url.format(
-            {pathname: req.location.pathname, query: query});
+            {pathname: req.location.pathname, query});
         
         return {
             get: onGet

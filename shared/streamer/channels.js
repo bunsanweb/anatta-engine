@@ -1,7 +1,7 @@
-(function (root, factory) {
+(function top(root, factory) {
     if (typeof exports === "object") module.exports = factory;
     else root.StreamerChannels = factory(root);
-})(this, function (window) {
+})(this, window => {
     "use strict";
     
     // Streamer that provides single layer view of chain streamer
@@ -14,7 +14,7 @@
             layers: {value: []},
             entries: {value: [], writable: true},
             handlers: {value: {
-                update: function (updateEntries, positionEntry, isBackward) {}
+                update(updateEntries, positionEntry, isBackward) {}
             }}
         });
         // chain event handling
@@ -37,11 +37,11 @@
         return this.chain.backward();
     };
     const linear = {
-        arrive: function (layerIndex, entries, full) {
+        arrive(layerIndex, entries, full) {
             const isBackward = !!this.layers[layerIndex];
             this.layers[layerIndex] = full;
             const old = this.entries;
-            this.entries = linear.asList.call(this);
+            this.entries = Reflect.apply(linear.asList, this, []);
             // find pos that is the first overwrapped element in old entries
             // for each entries as entry:
             //     when !pos: col.appendChild(entry);
@@ -54,11 +54,12 @@
                     this.entries, e => e.id === entries[0].id);
                 pos = index >= 0 ? old[index] : null;
             } else {
-                pos = old.length > 0 ?  old[0] : null;
+                pos = old.length > 0 ? old[0] : null;
             }
-            this.handlers.update.call(this, entries, pos, isBackward);
+            Reflect.apply(this.handlers.update, this,
+                          [entries, pos, isBackward]);
         },
-        asList: function () {
+        asList() {
             if (this.layers.length === 0) return [];
             let ret = this.layers[this.layers.length - 1];
             for (let index = this.layers.length - 2; index >= 0; index--) {
@@ -82,7 +83,7 @@
             opts: {value: opts},
             fragments: {value: []},
             handlers: {value: {
-                arrive: function (index, newEntries, fragmentEntries) {}
+                arrive(index, newEntries, fragmentEntries) {}
             }}
         });
         return self;
@@ -96,28 +97,29 @@
     Chain.prototype.load = function () {
         const first = Fragment(this.opts);
         this.fragments.push(first);
-        chain.bindChain.call(this, first);
+        Reflect.apply(chain.bindChain, this, [first]);
         first.load();
     };
     Chain.prototype.refresh = function () {
-        this.fragments[this.fragments.length -  1].refresh();
+        this.fragments[this.fragments.length - 1].refresh();
     };
     Chain.prototype.backward = function () {
-        this.fragments[this.fragments.length -  1].backward();
+        this.fragments[this.fragments.length - 1].backward();
     };
     const chain = {
-        bindChain: function (fragment) {
+        bindChain(fragment) {
             const self = this;
             let refreshedOnce = false;
             const index = self.fragments.indexOf(fragment);
             fragment.on(
-                "arrive", entries => self.handlers.arrive.call(
-                    self, index, entries, fragment.entries));
+                "arrive", entries => Reflect.apply(
+                    self.handlers.arrive, self,
+                    [index, entries, fragment.entries]));
             fragment.on("refresh", fragment => {
                 if (refreshedOnce) return;
                 refreshedOnce = true;
                 self.fragments.push(fragment);
-                chain.bindChain.call(self, fragment);
+                Reflect.apply(chain.bindChain, self, [fragment]);
                 fragment.load();
             });
         }
@@ -134,8 +136,8 @@
             entries: {value: [], writable: true},
             date: {value: new Date(0), writable: true},
             handlers: {value: {
-                refresh: function (fragment) {},
-                arrive: function (entries) {}
+                refresh(fragment) {},
+                arrive(entries) {}
             }}
         });
         basic.on("load", fragment.onLoad.bind(self));
@@ -157,22 +159,21 @@
     Fragment.prototype.refresh = function () {
         const uri = this.basic.link.refresh;
         const opts = merge({href: uri}, this.opts);
-        this.handlers.refresh.call(this, Fragment(opts));
+        Reflect.apply(this.handlers.refresh, this, [Fragment(opts)]);
     };
     const fragment = {
-        onLoad: function (date, entries) {
+        onLoad(date, entries) {
             this.entries = entries;
             this.backward = entries.length;
             this.date = date;
-            this.handlers.arrive.call(this, entries);
+            Reflect.apply(this.handlers.arrive, this, [entries]);
         },
-        onBackward: function (date, entries) {
+        onBackward(date, entries) {
             this.date = date;
-            const before = this.entries[this.backward] || null;
-            this.entries = this.entries.splice.apply(
-                this.entries, [this.backward, 0].concat(entries));
+            this.entries = this.entries.splice(
+                ...[this.backward, 0].concat(entries));
             this.backward += entries.length;
-            this.handlers.arrive.call(entries);
+            Reflect.apply(this.handlers.arrive, entries, []);
         }
     };
     
@@ -203,9 +204,9 @@
             last: {value: new Date(0), writable: true},
             lane: {value: Promise.resolve(""), writable: true},
             handlers: {value: {
-                load: function (date, entries) {},
-                refresh: function (date, newEntries, oldEntries) {},
-                backward: function (date, newEntries, oldEntries) {}
+                load(date, entries) {},
+                refresh(date, newEntries, oldEntries) {},
+                backward(date, newEntries, oldEntries) {}
             }}
         });
     };
@@ -229,23 +230,25 @@
     };
     
     const basic = {
-        onLoad: function (reqres) {
-            const msg = basic.accept.call(this, reqres);
-            this.handlers.load.call(this, this.last, msg.entries);
+        onLoad(reqres) {
+            const msg = Reflect.apply(basic.accept, this, [reqres]);
+            Reflect.apply(this.handlers.load, this, [this.last, msg.entries]);
         },
-        onRefresh: function (reqres) {
-            const msg = basic.accept.call(this, reqres);
-            this.handlers.refresh.call(this, this.last, msg.entries);
+        onRefresh(reqres) {
+            const msg = Reflect.apply(basic.accept, this, [reqres]);
+            Reflect.apply(this.handlers.refresh, this,
+                          [this.last, msg.entries]);
         },
-        onBackward: function (reqres) {
-            const msg = basic.accept.call(this, reqres);
-            this.handlers.backward.call(this, this.last, msg.entries);
+        onBackward(reqres) {
+            const msg = Reflect.apply(basic.accept, this, [reqres]);
+            Reflect.apply(this.handlers.backward, this,
+                          [this.last, msg.entries]);
         },
-        accept: function (reqres) {
+        accept(reqres) {
             const modified = platform.responseHeader(reqres, "last-modified");
             const date = modified ? new Date(modified) : new Date();
             this.last = date;
-            const msg = parseMessage.call(this, reqres);
+            const msg = Reflect.apply(parseMessage, this, [reqres]);
             if (msg.refresh) this.link.refresh = msg.refresh.href;
             if (msg.backward) this.link.backward = msg.backward.href;
             return msg;
@@ -255,7 +258,7 @@
     const parseMessage = function (reqres) {
         const doc = platform.createHtml(reqres);
         return {
-            entries: Array.prototype.slice.call(
+            entries: Array.from(
                 doc.querySelectorAll(this.opts.selectors.entries)),
             refresh: doc.querySelector(this.opts.selectors.refresh),
             backward: doc.querySelector(this.opts.selectors.backward)
@@ -271,15 +274,20 @@
         if (base === null || typeof base !== "object") return base;
         if (support === null || typeof support !== "object") return support;
         const merged = {};
-        Object.keys(support).forEach(key => merged[key] = clone(support[key]));
-        Object.keys(base).forEach(
-            key => merged[key] = merge(base[key], merged[key]));
+        Object.keys(support).forEach(key => {
+            merged[key] = clone(support[key]);
+        });
+        Object.keys(base).forEach(key => {
+            merged[key] = merge(base[key], merged[key]);
+        });
         return merged;
     };
     const clone = function clone(obj) {
         if (obj === null || typeof obj !== "object") return obj;
         const cloned = {};
-        Object.keys(obj).forEach(key => cloned[key] = clone(obj[key]));
+        Object.keys(obj).forEach(key => {
+            cloned[key] = clone(obj[key]);
+        });
         return cloned;
     };
     const indexOf = (array, cond) => Array.from(array).findIndex(cond);
@@ -287,10 +295,10 @@
     // platforms
     const platforms = {
         browser: {
-            responseHeader: function (reqres, key) {
+            responseHeader(reqres, key) {
                 return reqres.getResponseHeader(key);
             },
-            createHtml: function (reqres) {
+            createHtml(reqres) {
                 const document = window.document;
                 const doc = document.implementation.createHTMLDocument("");
                 doc.documentElement.innerHTML = reqres.responseText;
@@ -301,7 +309,7 @@
                 doc.head.appendChild(base);
                 return doc;
             },
-            get: function (uri) {
+            get(uri) {
                 return new Promise((f, r) => {
                     const req = new window.XMLHttpRequest();
                     req.href = uri;
@@ -315,11 +323,11 @@
             }
         },
         agent: {
-            responseHeader: function (reqres, key) {
+            responseHeader(reqres, key) {
                 const res = reqres[1];
                 return res.headers[key];
             },
-            createHtml: function (reqres) {
+            createHtml(reqres) {
                 const req = reqres[0], res = reqres[1];
                 const document = window.document;
                 const doc = document.implementation.createHTMLDocument("");
@@ -331,7 +339,7 @@
                 doc.head.appendChild(base);
                 return doc;
             },
-            get: function (uri) {
+            get(uri) {
                 const space = window.anatta.engine.space;
                 const req = space.request("GET", uri, {
                     "cache-control": "no-cache"
@@ -353,10 +361,5 @@
         return platforms.browser;
     })();
     
-    return {
-        Basic: Basic,
-        Fragment: Fragment,
-        Chain: Chain,
-        Linear: Linear
-    };
+    return {Basic, Fragment, Chain, Linear};
 });
