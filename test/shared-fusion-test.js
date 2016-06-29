@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -34,19 +35,19 @@ test("via unittest agent", function (done) {
 
 const parseTap = (tapresult) => {
     const lines = tapresult.split(/\n/);
-    const count = 0| lines[0].match(/^1\.\.(\d+)$/)[1];
+    const count = lines[0].match(/^1\.\.(\d+)$/)[1] |0;
     const tests = [];
     let pass = 0, fail = 0;
     lines.slice(1).forEach(line => {
-        if (line.match(/^  /)) {
-            tests[tests.length - 1].detail += line.slice(2) + "\n";
+        if (line.match(/^ {2}/)) {
+            tests[tests.length - 1].detail += `${line.slice(2)}\n`;
             return;
         }
         const test = line.match(/^((?:not )?ok) (\d+) -(.*)$/);
         if (!test) return;
         const ok = test[1] === "ok";
         if (ok) pass += 1; else fail += 1;
-        tests.push({ok: ok, id: 0|test[2], info: test[3], detail: ""});
+        tests.push({ok, id: test[2] |0, info: test[3], detail: ""});
     });
-    return {count: count, pass: pass, fail: fail, tests: tests};
+    return {count, pass, fail, tests};
 };

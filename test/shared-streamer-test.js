@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -66,10 +67,7 @@ test("post", function (done) {
     streams.post(msg).then(entity => {
         assert.equal(entity.response.status, "200");
         return streams.get();
-    }).then(index => {
-        //console.log(index.response.text());
-        return index.first({rel: "origin"}).get();
-    }).then(activity => {
+    }).then(index => index.first({rel: "origin"}).get()).then(activity => {
         //console.log(activity.response.text());
         assert.equal(activity.attr("content"), formdata.content);
     }).then(done, done);

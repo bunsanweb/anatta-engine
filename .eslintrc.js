@@ -8,7 +8,7 @@ module.exports = {
     globals: {
         // TBD: put /*global xxx*/ for each js file
         anatta: true,
-        Streamer: true, tap: true, // shared
+        Streamer: true, fusion: true, tap: true, // shared
         suite: true, test: true, // mocha
     },
     extends: "eslint:recommended",

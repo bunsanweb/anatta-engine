@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -10,7 +11,7 @@ test("Get JSON resource", function (done) {
     engine.space.manager.bind("data", "data:", anatta.space.data.DataField());
     engine.porter.map["application/json"] = anatta.metadata.json;
     
-    const body =  '{"name": "taro"}';
+    const body = '{"name": "taro"}';
     const contentType = "application/json";
     const uri = `data:${contentType},${encodeURI(body)}`;
     const link = engine.link({href: uri});
@@ -27,11 +28,11 @@ test("Get JSON resource from relative link", function (done) {
     const anatta = require("../anatta");
     const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
-        root: "./test/", "prefix": "",
+        root: "./test/", prefix: "",
     }));
     engine.porter.map["application/json"] = anatta.metadata.json;
     
-    const uri = 'file:assets/linker.json';
+    const uri = "file:assets/linker.json";
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {

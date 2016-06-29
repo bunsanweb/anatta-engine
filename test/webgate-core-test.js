@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -29,7 +30,7 @@ test("", function (done) {
     webgate.start(port);
     
     
-    const gateUri = engine.link({href: "http://localhost:" + port + "/"});
+    const gateUri = engine.link({href: `http://localhost:${port}/`});
     gateUri.get().then(entity => {
         assert.equal(entity.attr("content-type"), "text/plain;charset=utf-8");
         assert.equal(entity.response.text(), "Hello from Linked Script!");
@@ -54,7 +55,7 @@ test("http request.origin().uri is absolute URI", function (done) {
                 anatta.space.core.Response(
                     "200", {"content-type": "text/plain"}, ""),
             ]));
-        };
+        }
     };
     
     engine.space.manager.bind("inner-uri", "inner-uri:", new AssertField());
@@ -74,7 +75,6 @@ test("https request.origin().uri is absolute URI", function (done) {
     const fs = require("fs");
 
     const engine = anatta.engine.core.Engine();
-    const webField = anatta.space.web.WebField();
     engine.space.manager.bind("https", "https:", anatta.space.web.WebField());
     engine.porter.map["application/json"] = anatta.metadata.json;
 
@@ -88,7 +88,7 @@ test("https request.origin().uri is absolute URI", function (done) {
                 anatta.space.core.Response("200", {
                     "content-type": "text/plain"}, ""),
             ]));
-        };
+        }
     };
     
     engine.space.manager.bind("inner-uri", "inner-uri:", new AssertField());

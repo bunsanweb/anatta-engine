@@ -1,3 +1,4 @@
+/*global tap*/
 "use strict";
 
 // self test
@@ -21,7 +22,7 @@ tap.test("[test of test] deepEqual", () => {
     
     // cyclic
     const a = {}, b = {};
-    a.self = a, b.self = b;
+    a.self = a; b.self = b;
     tap.deepEqual(a, b);
     b.z = 0;
     tap.notDeepEqual(a, b);

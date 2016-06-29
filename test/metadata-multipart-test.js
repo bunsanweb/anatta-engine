@@ -1,8 +1,9 @@
+/*eslint prefer-arrow-callback: 0, quote-props: 0, dot-notation: 0*/
 "use strict";
 
 const assert = require("assert");
-const zip = function* () {
-    const its = Array.from(arguments, e => e[Symbol.iterator]());
+const zip = function* (...args) {
+    const its = args.map(e => e[Symbol.iterator]());
     while (true) {
         const es = its.map(it => it.next());
         if (es.reduce((r, e) => r || e.done, false)) return;

@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -35,7 +36,6 @@ test("Create Orb field with dir.Orb , do put then get", function (done) {
 });
 
 const tmpDir = () => {
-    const fs = require("fs");
     const os = require("os");
     const path = require("path");
     return path.join(os.tmpDir(), `anatta-engine-orb-dir-test-${process.pid}`);

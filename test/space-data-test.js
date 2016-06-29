@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -44,7 +45,7 @@ test("data scheme URI encoded base64", function (done) {
     
     const body = "<body>foo</body>";
     const coded = Buffer.from(body).toString("base64");
-    const uri = "data:;base64," + coded;
+    const uri = `data:;base64,${coded}`;
     const req = core.Request("GET", uri);
     space.access(req).then(([req, res]) => {
         assert.equal("200", res.status);
@@ -62,7 +63,7 @@ test("data scheme URI encoded base64 with content-type", function (done) {
     
     const body = "<body>foo</body>";
     const coded = Buffer.from(body).toString("base64");
-    const uri = "data:text/html;charset=utf-8;base64," + coded;
+    const uri = `data:text/html;charset=utf-8;base64,${coded}`;
     const req = core.Request("GET", uri);
     space.access(req).then(([req, res]) => {
         assert.equal("200", res.status);

@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -23,7 +24,7 @@ test("Set JSON description and use", function (done) {
     });
     engine.glossary.add(termset);
     
-    const uri = 'file:assets/doc.html';
+    const uri = "file:assets/doc.html";
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {
@@ -64,7 +65,7 @@ test("Set link description in JSON", function (done) {
     });
     engine.glossary.add(termset);
     
-    const uri = 'file:assets/links.html';
+    const uri = "file:assets/links.html";
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {

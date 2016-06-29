@@ -1,3 +1,4 @@
+/*global tap, fusion*/
 "use strict";
 
 tap.suite("[fusion]");

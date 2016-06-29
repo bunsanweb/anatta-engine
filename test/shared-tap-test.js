@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -22,7 +23,7 @@ test("self test as tap agent", function (done) {
     
     engine.link({href: "module:/unittest/"}).get().then(entity => {
         const result = entity.attr("body").split(/\n/);
-        const count = 0| result[0].match(/^1\.\.(\d+)$/)[1];
+        const count = result[0].match(/^1\.\.(\d+)$/)[1] |0;
         assert.equal(count, 1);
         result.slice(1).forEach(line => {
             const eachResult = line.match(/^((?:not )?ok) (\d+) -(.*)$/);

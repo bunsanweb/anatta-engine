@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -16,15 +17,15 @@ test("Create raw space core", function (done) {
 test("access to field with longest matched prefix", function (done) {
     const core = require("../engine/space/core");
     const TextField = class {
-        constructor (text) {
+        constructor(text) {
             this.text = text;
-        };
+        }
         access(request) {
             return new Promise(f => f([
                 request,
                 core.Response("200", {"content-type": "text/plain"}, this.text)
             ]));
-        };
+        }
     };
     const space = core.Space();
     const field1 = new TextField("this is field1");

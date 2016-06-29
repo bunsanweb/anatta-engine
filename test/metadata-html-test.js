@@ -1,3 +1,4 @@
+/*eslint prefer-arrow-callback: 0*/
 "use strict";
 
 const assert = require("assert");
@@ -7,12 +8,12 @@ test("Get HTML resource", function (done) {
     const anatta = require("../anatta");
     const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
-        root: "./test/", "prefix": "",
+        root: "./test/", prefix: "",
     }));
     engine.porter.map["application/json"] = anatta.metadata.json;
     engine.porter.map["text/html"] = anatta.metadata.html;
     
-    const uri = 'file:assets/doc.html';
+    const uri = "file:assets/doc.html";
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {
@@ -25,12 +26,12 @@ test("Get HTML resource includes relative href", function (done) {
     const anatta = require("../anatta");
     const engine = anatta.engine.core.Engine();
     engine.space.manager.bind("file", "file:", anatta.space.file.FileField({
-        root: "./test/", "prefix": "",
+        root: "./test/", prefix: "",
     }));
     engine.porter.map["application/json"] = anatta.metadata.json;
     engine.porter.map["text/html"] = anatta.metadata.html;
     
-    const uri = 'file:assets/relhref/doc.html';
+    const uri = "file:assets/relhref/doc.html";
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {
