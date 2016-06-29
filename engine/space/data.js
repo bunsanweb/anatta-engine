@@ -11,7 +11,7 @@ const dsPattern = new RegExp(
 const states = new WeakMap();
 const DataField = class DataField {
     static new(opts) {return Object.freeze(new DataField(opts));}
-    constructor (opts) {
+    constructor(opts) {
         opts = conftree.create(opts, {});
         states.set(this, {opts});
     }

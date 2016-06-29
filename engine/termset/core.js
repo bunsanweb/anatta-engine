@@ -16,7 +16,7 @@ const TermBinder = class TermBinder {
 
 const TermSet = class TermSet {
     static new(name) {return Object.freeze(new TermSet(name));}
-    constructor (name) {states.set(this, {name, binders: []});}
+    constructor(name) {states.set(this, {name, binders: []});}
     get name() {return states.get(this).name;}
     get(type) {return states.get(this).binders[type];}
     put(type, binder) {states.get(this).binders[type] = binder;}
@@ -25,7 +25,7 @@ const TermSet = class TermSet {
 
 const EngineGlossary = class EngineGlossary {
     static new() {return Object.freeze(new EngineGlossary());}
-    constructor () {states.set(this, {sets: []});}
+    constructor() {states.set(this, {sets: []});}
     add(termSet) {states.get(this).sets.unshift(termSet);}
     remove(termSet) {
         const self = states.get(this);
@@ -46,7 +46,7 @@ const EntityGlossary = class EntityGlossary {
     static new(contentType, engineGlossary) {
         return Object.freeze(new EntityGlossary(contentType, engineGlossary));
     }
-    constructor (contentType, parent) {
+    constructor(contentType, parent) {
         states.set(this, {contentType, parent, binders: []});
     }
     add(binder) {states.get(this).binders.unshift(binder);}
@@ -70,7 +70,7 @@ const EntityGlossary = class EntityGlossary {
         }
         return [];
     }
-    linkAttr (link, key) {
+    linkAttr(link, key) {
         for (const binder of this.binderList()) {
             const value = binder.linkAttr(link, key);
             if (value) return value;

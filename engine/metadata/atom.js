@@ -15,7 +15,7 @@ const AtomEntity = class AtomEntity extends core.Entity {
     static new(engine, request, response) {
         return Object.freeze(new AtomEntity(engine, request, response));
     }
-    constructor (engine, request, response) {
+    constructor(engine, request, response) {
         super();
         const atom = jsdom.parseXML(response.text(), request.href);
         const glossary = termsetCore.EntityGlossary(
@@ -34,7 +34,7 @@ const AtomLink = class AtomLink extends core.Link {
     static new(engine, atom, parent) {
         return Object.freeze(new AtomLink(engine, atom, parent));
     }
-    constructor (engine, atom, parent) {
+    constructor(engine, atom, parent) {
         super();
         states.set(this, {engine, atom, parent});
     }

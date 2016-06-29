@@ -5,7 +5,7 @@ const forge = require("node-forge");
 
 // forge utilities
 const isPublicKey = (forgeKey) =>
-          forgeKey && !Object.getOwnPropertyDescriptor(forgeKey, "d");
+          forgeKey && !Reflect.getOwnPropertyDescriptor(forgeKey, "d");
 const isPrivateKey = (forgeKey) => forgeKey && !isPublicKey(forgeKey);
 
 const publicEncrypt = (forgeKey, buf, encoding) => {
@@ -40,7 +40,7 @@ const hashAndVerify = (forgeKey, alg, buf, signStr, encoding) => {
     return forgeKey.verify(md.digest().bytes(), sign);
 };
 
-const publicKeyFromPrivateKey = (forgeKey) => 
+const publicKeyFromPrivateKey = (forgeKey) =>
           forge.pki.rsa.setPublicKey(forgeKey.n, forgeKey.e);
 const keyToPem = (forgeKey) => isPrivateKey(forgeKey) ?
           forge.pki.privateKeyToPem(forgeKey) :
@@ -59,7 +59,7 @@ const keyFromPem = (pem) => {
 
 const states = new WeakMap();
 const Key = class Key {
-    constructor (key) {states.set(this, {key});}
+    constructor(key) {states.set(this, {key});}
     get key() {return states.get(this).key;}
     isPrivateKey() {return isPrivateKey(this.key);}
     isPublicKey() {return isPublicKey(this.key);}
@@ -76,7 +76,7 @@ const Key = class Key {
         const pass = isPrivateKey(this.key) ?
                   privateEncrypt(this.key, rawPass, encoding) :
                   publicEncrypt(this.key, rawPass, encoding);
-        return {cipher: info.cipher, encoding: encoding, pass, data};
+        return {cipher: info.cipher, encoding, pass, data};
     }
     decode(info) {
         const encoding = info.encoding || "base64";
@@ -135,35 +135,36 @@ const Public = class Public extends Key {
 
 
 // exports
-const generate = function (bits, exp) {
+function generate(bits, exp) {
     bits = bits || 1024;
     exp = exp || 17;
     return new Private(forge.pki.rsa.generateKeyPair(bits, exp).privateKey);
-};
+}
 
-const load = function (pem) {
+function load(pem) {
     const key = keyFromPem(pem);
     if (isPrivateKey(key)) return Private.new(key);
     if (isPublicKey(key)) return Public.new(key);
-};
+    return null;
+}
 
-const isPrivateKeyPem = function (pem) {
+function isPrivateKeyPem(pem) {
     try {
         const key = load(pem);
         return key.isPrivateKey();
     } catch (err) {
         return false;
     }
-};
+}
 
-const isPublicKeyPem = function (pem) {
+function isPublicKeyPem(pem) {
     try {
         const key = load(pem);
         return key.isPublicKey();
     } catch (err) {
         return false;
     }
-};
+}
 
 exports.generate = generate;
 exports.load = load;

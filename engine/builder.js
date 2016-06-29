@@ -1,15 +1,14 @@
 "use strict";
 
 const url = require("url");
-
-const load = () => require("../anatta");
-
-const engine = (json) => builders[json.type](json);
-
 const builders = {};
 
+const load = () => require("../anatta");
+const engine = (json) => builders[json.type](json);
+
+
 // build generic configuration
-builders.generic = (function () {
+builders.generic = (function generic() {
     const factories = {
         web: (anatta, engine, opts) => anatta.space.web.WebField(opts),
         orb: (anatta, engine, opts) => anatta.orb.core.OrbField(opts),
@@ -31,7 +30,7 @@ builders.generic = (function () {
         }
     };
     
-    const builder = (json) => {
+    function builder(json) {
         json = json || {};
         const anatta = load();
         const engine = anatta.engine.core.Engine(json.engine);
@@ -52,13 +51,13 @@ builders.generic = (function () {
         });
         
         return engine;
-    };
+    }
     
     return builder;
 })();
 
 // build from simpler config
-builders.simple = (function () {
+builders.simple = (function simple() {
     const factories = {
         web: (anatta, engine, opts) => {
             const field = anatta.space.web.WebField();
@@ -81,8 +80,7 @@ builders.simple = (function () {
                 const pathPrefix = prefixObj.path;
                 const id = `file|${prefix}`;
                 const field = anatta.space.file.FileField({
-                    root: root, prefix: pathPrefix
-                });
+                    root, prefix: pathPrefix});
                 engine.space.manager.bind(id, prefix, field);
             });
         },
@@ -97,7 +95,7 @@ builders.simple = (function () {
             Object.keys(opts).forEach(prefix => {
                 const uri = opts[prefix];
                 const id = `agent|${prefix}`;
-                const field = anatta.weaver.core.AgentField({uri: uri});
+                const field = anatta.weaver.core.AgentField({uri});
                 field.agent.engine = engine;
                 engine.space.manager.bind(id, prefix, field);
             });
@@ -121,7 +119,7 @@ builders.simple = (function () {
         }
     };
     
-    const builder = function (json) {
+    function builder(json) {
         json = json || {};
         const anatta = load();
         const engine = anatta.engine.core.Engine(json.engine);
@@ -140,7 +138,7 @@ builders.simple = (function () {
         });
         
         return engine;
-    };
+    }
     
     return builder;
 })();

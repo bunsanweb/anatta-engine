@@ -19,7 +19,7 @@ const readFull = (rs) => new Promise((f, r) => {
 const states = new WeakMap();
 const WebField = class WebField {
     static new(opts) {return Object.freeze(new WebField(opts));}
-    constructor (opts) {
+    constructor(opts) {
         opts = conftree.create(opts, {rejectUnauthorized: false});
         states.set(this, {opts});
     }
@@ -34,7 +34,7 @@ const WebField = class WebField {
                     const response = core.Response(
                         res.statusCode, res.headers, body);
                     f([request, response]);
-                }, err  => f(core.FieldUtils.error(request, err, "400")));
+                }, err => f(core.FieldUtils.error(request, err, "400")));
             }).end(request.body);
         });
     }

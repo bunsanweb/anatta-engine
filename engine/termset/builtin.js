@@ -37,19 +37,19 @@ const ResourceBinder = class ResourceBinder extends core.TermBinder {
 
 const JsonBinder = class JsonBinder extends ResourceBinder {
     static new() {return Object.freeze(new JsonBinder());}
-    entityLinkAll (entity) {
+    entityLinkAll(entity) {
         if (typeof entity.json !== "object") return [];
         return Object.keys(entity.json).reduce((r, key) => {
             const v = entity.json[key];
             if (typeof v !== "object") return r;
-            if (typeof v["href"] !== "string") return r;
+            if (typeof v.href !== "string") return r;
             r.push(v);
             return r;
         }, []);
     }
     linkAttr(link, key) {
         switch (key) {
-        case "href": return link.json["href"];
+        case "href": return link.json.href;
         case "content-type": return "application/json";
         case "body": return JSON.stringify(this.json);
         default: return "";
@@ -101,7 +101,7 @@ const HtmlBinder = class HtmlBinder extends ResourceBinder {
 
 const termset = core.TermSet("buitiln");
 termset.put("application/json", JsonBinder.new());
-termset.put("application/atom+xml", AtomBinder.new ());
+termset.put("application/atom+xml", AtomBinder.new());
 termset.put("text/html", HtmlBinder.new());
 termset.put("*", ResourceBinder.new());
 

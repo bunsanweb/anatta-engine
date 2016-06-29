@@ -15,7 +15,7 @@ const JsonEntity = class JsonEntity extends core.Entity {
     static new(engine, request, response) {
         return Object.freeze(new JsonEntity(engine, request, response));
     }
-    constructor (engine, request, response) {
+    constructor(engine, request, response) {
         super();
         const json = JSON.parse(response.body);
         const glossary = termsetCore.EntityGlossary(
@@ -34,7 +34,7 @@ const JsonLink = class JsonLink extends core.Link {
     static new(engine, json, parent) {
         return Object.freeze(new JsonLink(engine, json, parent));
     }
-    constructor (engine, json, parent) {
+    constructor(engine, json, parent) {
         super();
         states.set(this, {engine, json, parent});
     }

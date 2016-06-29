@@ -71,7 +71,7 @@ const Metadata = class Metadata {
     }
     find(query) {
         return this.all().filter(metadataQuery.toQuery(query));
-    };
+    }
     first(query) {
         const r = this.find(query);
         if (r.length < 1) return nilLink(this.engine);
@@ -110,7 +110,7 @@ const NilEntity = class NilEntity extends Entity {
     static new(engine, request, response) {
         return Object.freeze(new NilEntity(engine, request, response));
     }
-    constructor (engine, request, response) {
+    constructor(engine, request, response) {
         super();
         const glossary = termsetCore.EntityGlossary("*", engine.glossary);
         states.set(this, {engine, glossary, request, response});
@@ -125,7 +125,7 @@ const NilLink = class NilLink extends Link {
     static new(engine, none, parent) {
         return Object.freeze(new NilLink(engine, none, parent));
     }
-    constructor (engine, none, parent) {
+    constructor(engine, none, parent) {
         super();
         states.set(this, {engine, parent});
     }
@@ -134,21 +134,21 @@ const NilLink = class NilLink extends Link {
 };
 
 // nil instance
-const nilEntity = function (engine) {
+function nilEntity(engine) {
     // TBD: nil url
     const nilRequest = engine.space.request("GET", "");
     const nilResponse = engine.space.response("200", {
         "content-type": "application/octet-stream"});
     return NilEntity.new(engine, nilRequest, nilResponse);
-};
-const nilLink = function (engine) {
+}
+function nilLink(engine) {
     return NilLink.new(engine, null, nilEntity(engine));
-};
+}
 
 // Metadata factory
 const PorterClass = class PorterClass {
     static new() {return Object.freeze(new PorterClass());}
-    constructor () {states.set(this, {map: {}});}
+    constructor() {states.set(this, {map: {}});}
     get map() {return states.get(this).map;}
     entity(engine, request, response) {
         const contentType = response.contentType();
@@ -174,9 +174,10 @@ const PorterClass = class PorterClass {
             contentType = contentType.substring(0, paramStart).trim();
         }
         if (self.map[contentType]) return self.map[contentType];
+        const Porter = PorterClass.new;
         if (Porter.map[contentType]) return Porter.map[contentType];
         return Porter.nil;
-    };  
+    }
 };
 const Porter = PorterClass.new;
 Porter.map = {};

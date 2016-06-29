@@ -54,11 +54,10 @@ const XMLSerializer = class XMLSerializer {
         const doc = node.ownerDocument ? node.ownerDocument : node;
         if (doc.implementation.createHTMLDocument) {
             return jsdom.serializeDocument(node);
-        } else {
-            return xmlSerializer.serializeToString(node);
         }
+        return xmlSerializer.serializeToString(node);
     }
 };
-exports.XMLSerializer = function () {
+exports.XMLSerializer = function Serializer() {
     return new XMLSerializer();
 };

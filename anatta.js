@@ -38,9 +38,9 @@ exports.orb = {
 exports.galaxy = {
     core: require("./engine/galaxy/core"),
 };
-exports.shared = function (relpath) {
+exports.shared = function shared(relpath) {
     relpath = relpath || "/";
-    var path = require("path");
+    const path = require("path");
     return path.resolve(path.dirname(module.filename),
                         path.join("shared", relpath));
 };

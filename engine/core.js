@@ -10,7 +10,7 @@ const states = new WeakMap();
 
 const Engine = class Engine {
     static new(opts) {return Object.freeze(new Engine(opts));}
-    constructor (opts) {
+    constructor(opts) {
         opts = conftree.create(opts, {space: {}, medatata: {}});
         const glossary = termsetCore.EngineGlossary();
         glossary.add(termsetBuiltin.termset);

@@ -38,29 +38,66 @@
 
 const crypto = require("crypto");
 
-const normalizeHeaders = (headers, to) => {
-    return Object.keys(headers).reduce((o, key) => {
-        o[key.toLowerCase()] = headers[key];
-        return o;
-    }, to || {});
-};
-const updateHeaders = (headers, updates) => {
-    return normalizeHeaders(updates, normalizeHeaders(headers));
-};
+const normalizeHeaders = (headers, to) => Object.keys(headers).reduce(
+    (o, key) => Object.assign(o, {[key.toLowerCase()]: headers[key]}),
+    to || {});
+const updateHeaders = (headers, updates) =>
+          normalizeHeaders(updates, normalizeHeaders(headers));
 
 // decoder
-const decodeMultipart = function (message) {
-    const contentType = message.headers["content-type"];
-    if (!contentType.match(/^multipart\/form-data/)) return null;
-    const boundary = getBoundary(contentType);
-    return parseMultipart(message.body.toString("binary"), boundary);
+const getBoundary = (contentType) => {
+    const regex = /boundary=(?:"([^"]+)"|([^;]+))+/i;
+    const result = contentType.match(regex);
+    return result[1] || result[2];
 };
 
-const decodeMultipart5 = function (message) {
-    const contentType = message.headers["content-type"];
-    if (!contentType.match(/^multipart\/form-data/)) return null;
+const parseFile = (disposition) => {
+    const type = disposition.headers["content-disposition"];
+    const filename = Buffer.from(
+        type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
+    return {filename,
+            body: Buffer.from(disposition.body, "binary"),
+            headers: disposition.headers};
+};
+
+const splitMultipart = (body, boundary) => {
+    const head = `--${boundary}\r\n`;
+    const tail = `\r\n--${boundary}--`;
+    // assert(body.substring(0, head.length) === head)
+    // assert(body.substring(body.length - tail.length) === tail)
+    const core = body.substring(head.length, body.length - tail.length);
+    const regex = RegExp(`\r\n--${boundary}\r\n`);
+    return core.split(regex);
+};
+
+const parseDisposition = (part) => {
+    const headerLast = part.indexOf("\r\n\r\n");
+    // when invalid
+    if (headerLast < 0) return null;
+    const headerLines = part.substring(0, headerLast).split("\r\n");
+    const headers = headerLines.reduce((headers, line) => {
+        const keyLast = line.indexOf(": ");
+        const key = line.substring(0, keyLast);
+        const value = line.substring(keyLast + 2);
+        headers[key.toLowerCase()] = value; //TBD: RFC5987 for non-ascii vals
+        return headers;
+    }, {});
+    const body = part.substring(headerLast + 4, part.length);
+    return {headers, body};
+};
+
+const parseMixed = (disposition) => {
+    const contentType = disposition.headers["content-type"];
     const boundary = getBoundary(contentType);
-    return parseMultipart5(message.body.toString("binary"), boundary);
+    const dispositions = splitMultipart(disposition.body, boundary).map(
+        part => parseDisposition(part)).filter(disposition => disposition);
+    
+    return dispositions.reduce((result, disposition) => {
+        const type = disposition.headers["content-disposition"];
+        if (!type.match(/^file/)) return result;
+        result.push(parseFile(disposition));
+        return result;
+    }, []);
 };
 
 const parseMultipart = (body, boundary) => {
@@ -119,65 +156,81 @@ const parseMultipart5 = (body, boundary) => {
     }, {});
 };
 
-
-const parseFile = (disposition) => {
-    const type = disposition.headers["content-disposition"];
-    const filename = Buffer.from(
-        type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
-    return {filename: filename,
-            body: Buffer.from(disposition.body, "binary"),
-            headers: disposition.headers};
-};
-
-const parseMixed = (disposition) => {
-    const contentType = disposition.headers["content-type"];
+function decodeMultipart(message) {
+    const contentType = message.headers["content-type"];
+    if (!contentType.match(/^multipart\/form-data/)) return null;
     const boundary = getBoundary(contentType);
-    const dispositions = splitMultipart(disposition.body, boundary).map(
-        part => parseDisposition(part)).filter(disposition => disposition);
-    
-    return dispositions.reduce((result, disposition) => {
-        const type = disposition.headers["content-disposition"];
-        if (!type.match(/^file/)) return result;
-        result.push(parseFile(disposition));
-        return result;
-    }, []);
-};
+    return parseMultipart(message.body.toString("binary"), boundary);
+}
 
-const getBoundary = (contentType) => {
-    const regex = /boundary=(?:"([^"]+)"|([^;]+))+/i;
-    const result = contentType.match(regex);
-    return result[1] || result[2];
-};
-
-const splitMultipart = (body, boundary) => {
-    const head = `--${boundary}${"\r\n"}`;
-    const tail = `${"\r\n"}--${boundary}--`;
-    // assert(body.substring(0, head.length) === head)
-    // assert(body.substring(body.length - tail.length) === tail)
-    const core = body.substring(head.length, body.length - tail.length);
-    const regex = RegExp(`${"\r\n"}--${ boundary}${"\r\n"}`);
-    return core.split(regex);
-};
-
-const parseDisposition = (part) => {
-    const headerLast = part.indexOf("\r\n\r\n");
-    // when invalid
-    if (headerLast < 0) return null;
-    const headerLines = part.substring(0, headerLast).split("\r\n");
-    const headers = headerLines.reduce((headers, line) => {
-        const keyLast = line.indexOf(": ");
-        const key = line.substring(0, keyLast);
-        const value = line.substring(keyLast + 2);
-        headers[key.toLowerCase()] = value; //TBD: RFC5987 for non-ascii vals
-        return headers;
-    }, {});
-    const body = part.substring(headerLast + 4, part.length);
-    return {headers: headers, body: body};
-};
+function decodeMultipart5(message) {
+    const contentType = message.headers["content-type"];
+    if (!contentType.match(/^multipart\/form-data/)) return null;
+    const boundary = getBoundary(contentType);
+    return parseMultipart5(message.body.toString("binary"), boundary);
+}
 
 
 // encoder
-const encodeMultipart = function (obj) {
+const makeBoundary = (bodies) => {
+    while (true) {
+        const candidate = crypto.randomBytes(4).toString("hex");
+        const ok = bodies.every(body => body.indexOf(candidate) < 0);
+        if (ok) return candidate;
+    }
+};
+
+const encodeMessage = (headers, body) => {
+    //TBD: RFC5987 for non-ascii vals
+    const headerPart = Object.keys(headers).reduce(
+        (part, key) => `${part}${key}: ${headers[key]}\r\n`, "");
+    return `${headerPart}\r\n${body}`;
+};
+
+const encodeKeyValue = (key, value) => {
+    const disposition = `form-data; name="${key}"`;
+    const headers = {
+        "content-disposition": disposition
+    };
+    return encodeMessage(headers, Buffer.from(value).toString("binary"));
+};
+
+const encodeSingleFile = (key, fileData) => {
+    const filename = Buffer.from(fileData.filename).toString("binary");
+    const disposition = `form-data; name="${key}"; filename="${filename}"`;
+    const headers = updateHeaders(fileData.headers, {
+        //"content-transfer-encoding": "binary",
+        "content-disposition": disposition
+    });
+    return encodeMessage(headers, fileData.body.toString("binary"));
+};
+
+const encodeFileData = (fileData) => {
+    const filename = Buffer.from(fileData.filename).toString("binary");
+    const disposition = `file; filename="${filename}"`;
+    const headers = updateHeaders(fileData.headers, {
+        "content-disposition": disposition,
+        "content-transfer-encoding": "binary"
+    });
+    return encodeMessage(headers, fileData.body.toString("binary"));
+};
+
+const encodeFileList = (key, fileDataList) => {
+    const bodies = fileDataList.map(fileData => encodeFileData(fileData));
+    const boundary = makeBoundary(bodies);
+    const sep = `--${boundary}`;
+    const body = `${bodies.reduce(
+        (buf, body) => `${buf}\r\n${body}\r\n${sep}`, sep)}--`;
+    
+    const disposition = `form-data; name="${key}"`;
+    const headers = {
+        "content-disposition": disposition,
+        "content-type": `multipart/mixed; boundary=${boundary}`
+    };
+    return encodeMessage(headers, body);
+};
+
+function encodeMultipart(obj) {
     const bodies = Object.keys(obj).map(key => {
         const value = obj[key];
         const binkey = Buffer.from(key).toString("binary");
@@ -187,17 +240,16 @@ const encodeMultipart = function (obj) {
     });
     const boundary = makeBoundary(bodies);
     const sep = `--${boundary}`;
-    const body = bodies.reduce(
-        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`,
-        sep) + "--\r\n";
+    const body = `${bodies.reduce(
+        (buf, body) => `${buf}\r\n${body}\r\n${sep}`, sep)}--\r\n`;
     
     const headers = {
         "content-type": `multipart/form-data; boundary=${boundary}`
     };
-    return {headers: headers, body: Buffer.from(body, "binary")};
-};
+    return {headers, body: Buffer.from(body, "binary")};
+}
 
-const encodeMultipart5 = function (obj) {
+function encodeMultipart5(obj) {
     const bodies = Object.keys(obj).reduce((bodies, key) => {
         const value = obj[key];
         const binkey = Buffer.from(key).toString("binary");
@@ -210,69 +262,15 @@ const encodeMultipart5 = function (obj) {
     }, []);
     const boundary = makeBoundary(bodies);
     const sep = `--${boundary}`;
-    const body = bodies.reduce(
-        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`,
-        sep) + "--\r\n";
+    const body = `${bodies.reduce(
+        (buf, body) => `${buf}\r\n${body}\r\n${sep}`, sep)}--\r\n`;
     
     const headers = {
         "content-type": `multipart/form-data; boundary=${boundary}`
     };
-    return {headers: headers, body: Buffer.from(body, "binary")};
-};
+    return {headers, body: Buffer.from(body, "binary")};
+}
 
-const encodeMessage = (headers, body) => {
-    //TBD: RFC5987 for non-ascii vals
-    const headerPart = Object.keys(headers).reduce(
-        (part, key) => `${part}${key}: ${headers[key]}${"\r\n"}`, "");
-    return `${headerPart}${"\r\n"}${body}`;
-};
-
-const encodeKeyValue = (key, value) => {
-    const disposition = `form-data; name="${key}"`;
-    const headers = {
-        "content-disposition": disposition
-    };
-    return encodeMessage(headers, Buffer.from(value).toString("binary"));
-};
-const encodeSingleFile = (key, fileData) => {
-    const filename = Buffer.from(fileData.filename).toString("binary");
-    const disposition = `form-data; name="${key}"; filename="${filename}"`;
-    const headers = updateHeaders(fileData.headers, {
-        //"content-transfer-encoding": "binary",
-        "content-disposition": disposition
-    });
-    return encodeMessage(headers, fileData.body.toString("binary"));
-};
-const encodeFileList = (key, fileDataList) => {
-    const bodies = fileDataList.map(fileData => encodeFileData(fileData));
-    const boundary = makeBoundary(bodies);
-    const sep = `--${boundary}`;
-    const body = bodies.reduce(
-        (buf, body) => `${buf}${"\r\n"}${body}${"\r\n"}${sep}`, sep) + "--";
-    
-    const disposition = `form-data; name="${key}"`;
-    const headers = {
-        "content-disposition": disposition,
-        "content-type": `multipart/mixed; boundary=${boundary}`
-    };
-    return encodeMessage(headers, body);
-};
-const encodeFileData = (fileData) => {
-    const filename = Buffer.from(fileData.filename).toString("binary");
-    const disposition = `file; filename="${filename}"`;
-    const headers = updateHeaders(fileData.headers, {
-        "content-disposition": disposition,
-        "content-transfer-encoding": "binary"
-    });
-    return encodeMessage(headers, fileData.body.toString("binary"));
-};
-const makeBoundary = (bodies) => {
-    while (true) {
-        const candidate = crypto.randomBytes(4).toString("hex");
-        const ok = bodies.every(body => body.indexOf(candidate) < 0);
-        if (ok) return candidate;
-    }
-};
 
 exports.encode = encodeMultipart;
 exports.decode = decodeMultipart;

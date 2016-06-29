@@ -6,7 +6,7 @@ const spaceCore = require("../space/core");
 const states = new WeakMap();
 const GalaxyField = class GalaxyField {
     static new(opts) {return Object.freeze(new GalaxyField(opts));}
-    constructor (opts) {
+    constructor(opts) {
         opts = conftree.create(opts, {to: "module:/", from: "/"});
         states.set(this, {engine: null, opts});
     }

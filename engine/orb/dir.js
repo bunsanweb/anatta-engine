@@ -4,24 +4,33 @@ const fs = require("fs");
 const path = require("path");
 const memory = require("./memory");
 
-const async = (obj, name) => function () {
-    const args = Array.from(arguments); //[ES6] rest parameters
-    return new Promise((f, r) => {
-        args.push((err, result) => void(err ? r(err) : f(result)));
-        obj[name].apply(obj, args);
-    });
+const async = (obj, name) => (...args) => new Promise((f, r) => {
+    const nodeCb = (err, result) => void (err ? r(err) : f(result));
+    obj[name](...args.concat([nodeCb]));
+});
 
-};
 const readdir = async(fs, "readdir");
 const readFile = async(fs, "readFile");
 const writeFile = async(fs, "writeFile");
 
+const readEntry = (self, filename) => {
+    const filepath = path.join(self.dir, filename);
+    return readFile(filepath, "utf8").then(
+        json => memory.Entry.fromJson(json), err => null);
+};
+
+const writeEntry = (self, filename, entry) => {
+    const filepath = path.join(self.dir, filename);
+    const json = entry.toJson();
+    return writeFile(filepath, json, "utf8").then(ok => entry, err => null);
+};
+
 const states = new WeakMap();
 const Orb = class Orb {
     static new(dir) {return Object.freeze(new Orb(dir));}
-    constructor (dir) {
+    constructor(dir) {
         if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-        states.set(this, {dir: dir});
+        states.set(this, {dir});
     }
     entryList() {
         const self = states.get(this);
@@ -46,16 +55,5 @@ const Orb = class Orb {
     }
 };
 
-const readEntry = (self, filename) => {
-    const filepath = path.join(self.dir, filename);
-    return readFile(filepath, "utf8").then(
-        json => memory.Entry.fromJson(json), err => null);
-};
-
-const writeEntry = (self, filename, entry) => {
-    const filepath = path.join(self.dir, filename);
-    const json = entry.toJson();
-    return writeFile(filepath, json, "utf8").then(ok => entry, err => null);
-};
 
 exports.Orb = Orb.new;

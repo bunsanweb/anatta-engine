@@ -13,7 +13,7 @@ const HtmlEntity = class HtmlEntity extends core.Entity {
     static new(engine, request, response) {
         return Object.freeze(new HtmlEntity(engine, request, response));
     }
-    constructor (engine, request, response) {
+    constructor(engine, request, response) {
         super();
         const html = jsdom.parseHTML(response.text(), request.href);
         const glossary = termsetCore.EntityGlossary(
@@ -32,7 +32,7 @@ const HtmlLink = class Link extends core.Link {
     static new(engine, html, parent) {
         return Object.freeze(new HtmlLink(engine, html, parent));
     }
-    constructor (engine, html, parent) {
+    constructor(engine, html, parent) {
         super();
         states.set(this, {engine, html, parent});
     }

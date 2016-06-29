@@ -22,17 +22,11 @@ JSON Desciption TermSet example:
 
 const core = require("./core");
 
-const create = (json) => {
-    const binder = JsonDescBinder.new(json);
-    const termset = core.TermSet(binder.name);
-    termset.put(binder.contentType, binder);
-    return termset;
-};
 
 const states = new WeakMap();
 const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
     static new(json) {return Object.freeze(new JsonDescBinder(json));}
-    constructor (json) {
+    constructor(json) {
         super();
         states.set(this, {
             desc: json, name: json.name || "",
@@ -45,7 +39,7 @@ const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
     get contentType() {return states.get(this).contentType;}
     entityAttr(entity, key) {
         if (!entity.request.href.match(this.uriPattern)) return "";
-        const binders = this.desc["entity"] || {};
+        const binders = this.desc.entity || {};
         const desc = binders[key];
         if (!desc) return "";
         if (desc.text) return desc.text.toString();
@@ -59,8 +53,8 @@ const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
     }
     entityLinkAll(entity) {
         if (!entity.request.href.match(this.uriPattern)) return [];
-        const binders = this.desc["entity"] || {};
-        const desc = binders["link"];
+        const binders = this.desc.entity || {};
+        const desc = binders.link;
         if (!desc) return [];
         if (desc.text) return [];
         const selector = desc.selector || "";
@@ -69,7 +63,7 @@ const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
     linkAttr(link, key) {
         if (!link.parent) return "";
         if (!link.parent.request.href.match(this.uriPattern)) return "";
-        const binders = this.desc["link"] || {};
+        const binders = this.desc.link || {};
         const desc = binders[key];
         if (!desc) return "";
         if (desc.text) return desc.text.toString();
@@ -81,6 +75,13 @@ const JsonDescBinder = class JsonDescBinder extends core.TermBinder {
         const ret = desc.value ? elem[desc.value] : elem.valueOf().toString();
         return ret || "";
     }
+};
+
+const create = (json) => {
+    const binder = JsonDescBinder.new(json);
+    const termset = core.TermSet(binder.name);
+    termset.put(binder.contentType, binder);
+    return termset;
 };
 
 exports.create = create;

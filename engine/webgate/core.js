@@ -2,7 +2,6 @@
 
 const http = require("http");
 const https = require("https");
-const url = require("url");
 const path = require("path");
 const conftree = require("../conftree");
 
@@ -17,13 +16,13 @@ const readFull = (rs, cb) => {
 
 const WebGate = class WebGate {
     static new(space, opts) {return Object.freeze(new WebGate(space, opts));}
-    constructor (space, opts) {
-        opts = conftree.create(opts,  {from: "/", to: "me:/"});
+    constructor(space, opts) {
+        opts = conftree.create(opts, {from: "/", to: "me:/"});
         states.set(this, {space, opts, server: null});
     }
-    handler(req, res) {
+    handler(req, res, next) {
+        next = next || (err => {}); // as connect.js middleware
         const self = states.get(this);
-        const next = arguments[2] || (err => {}); // as connect.js middleware
         const reqProtocol = req.connection.encrypted ? "https" : "http";
         const reqUri = `${reqProtocol}://${req.headers.host}${req.url}`;
         if (req.url.search(self.opts.from) !== 0) return next();
@@ -35,8 +34,7 @@ const WebGate = class WebGate {
             const request = self.space.request(
                 req.method, toUri, req.headers, body, gateReq);
             self.space.access(request).then(a => Promise.all(a)).then(
-                reqres  => {
-                    const request = reqres[0], response = reqres[1];
+                ([request, response]) => {
                     res.writeHead(response.status, response.headers);
                     res.end(response.body);
                 });

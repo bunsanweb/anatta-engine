@@ -8,18 +8,18 @@
 const ConfTree = function ConfTree(json, parent, name) {
     const conf = Object.create(ConfTree.prototype);
     const descs = Object.keys(json).reduce((descs, key) => {
-        const desc = Object.getOwnPropertyDescriptor(json, key);
+        const desc = Reflect.getOwnPropertyDescriptor(json, key);
         const value = Array.isArray(desc.value) ? desc.value.concat() :
                   typeof desc.value === "object" ?
                   ConfTree(desc.value, conf, key) : desc.value;
         desc.enumerable = false;
-        delete desc.value;
-        delete desc.writable;
-        desc.get = function () {
+        Reflect.deleteProperty(desc, "value");
+        Reflect.deleteProperty(desc, "writable");
+        desc.get = function get() {
             return value;
         };
-        desc.set = function (v) {
-            Object.defineProperty(this, key, {
+        desc.set = function set(v) {
+            Reflect.defineProperty(this, key, {
                 value: v, enumerable: true, writable: true});
             if (parent) parent[name] = this;
         };

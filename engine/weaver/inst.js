@@ -14,7 +14,7 @@ const insertSrcField = (inst) => {
     };
 };
 
-const activate = function (engine, inst) {
+function activate(engine, inst) {
     const prefix = url.resolve(inst.root, inst.id);
     return new Promise((f, r) => {
         inst.from = prefix;
@@ -25,6 +25,6 @@ const activate = function (engine, inst) {
         engine.space.manager.bind(`galaxy|${prefix}`, prefix, field);
         f(engine);
     }).then(engine => engine.link({href: `${prefix}/manifest.html`}).get());
-};
+}
 
 exports.activate = activate;
