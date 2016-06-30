@@ -1,3 +1,5 @@
+/*eslint prefer-arrow-callback: 0, func-names: 0*/
+/*global suite, test*/
 "use strict";
 
 const assert = require("assert");

@@ -1,4 +1,5 @@
 /*eslint max-statements: [2, 25]*/
+/*global Streamer*/
 "use strict";
 
 window.addEventListener("load", ev => {

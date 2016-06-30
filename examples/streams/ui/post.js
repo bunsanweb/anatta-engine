@@ -1,4 +1,4 @@
-const Post = function (postTo) {
+window.Post = function Post(postTo) {
     "use strict";
     
     const input = document.getElementById("input");

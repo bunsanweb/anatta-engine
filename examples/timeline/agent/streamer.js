@@ -1,6 +1,7 @@
+/*global anatta*/
 "use strict";
 
-const Streamer = (function () {
+window.Streamer = (function build() {
     const Streamer = function Streamer(uri, formatter) {
         return Object.create(Streamer.prototype, {
             uri: {value: uri},
@@ -29,25 +30,25 @@ const Streamer = (function () {
     }));
     
     // public methods
-    Streamer.prototype.on = function (event, handler) {
-        this.events[event] = handler || function () {};
+    Streamer.prototype.on = function on(event, handler) {
+        this.events[event] = handler || (() => {});
         return this;
     };
 
-    Streamer.prototype.spawn = function (name, ...args) {
+    Streamer.prototype.spawn = function spawn(name, ...args) {
         try {
             Reflect.apply(this.events[name], this, args);
         } catch (ex) {}
     };
 
-    Streamer.prototype.load = function () {
+    Streamer.prototype.load = function load() {
         getHtml(this.uri).then(entity => handlers.load(this, entity));
     };
-    Streamer.prototype.refresh = function () {
+    Streamer.prototype.refresh = function refresh() {
         getHtml(this.links.refresh).then(
             entity => handlers.refresh(this, entity));
     };
-    Streamer.prototype.backward = function () {
+    Streamer.prototype.backward = function backward() {
         getHtml(this.links.backward).then(
             entity => handlers.backward(this, entity));
     };

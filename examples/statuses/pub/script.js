@@ -1,3 +1,4 @@
+/*global Streamer*/
 "use strict";
 
 window.addEventListener("load", ev => {

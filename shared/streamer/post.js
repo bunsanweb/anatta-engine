@@ -1,5 +1,5 @@
 /*global fusion*/
-(function (root, factory) {
+(function top(root, factory) {
     if (typeof exports === "object") module.exports = factory;
     else root.StreamerPost = factory(root);
 })(this, window => {
@@ -15,7 +15,7 @@
     // - opts.activityTemplate: DOM Element for template of
     //      the activity doc (usually article element).
     // - opts.href: URI string of the index doc to get and to update
-    return function (opts) {
+    return function StreamPost(opts) {
         let taskLane = Promise.resolve({});
         const onPost = (ev) => {
             const data = anatta.form.decode(ev.detail.request);

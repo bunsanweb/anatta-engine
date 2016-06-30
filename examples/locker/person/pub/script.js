@@ -9,7 +9,7 @@ window.addEventListener("load", ev => {
     const add = document.getElementById("add");
     const agent = "/agent/";
 
-    const doRender = function (ev) {
+    const doRender = (ev) => {
         const doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = ev.target.responseText;
         const houseElem = doc.querySelector("link[rel='house']");

@@ -4,19 +4,19 @@ window.addEventListener("load", ev => {
     const upload = document.getElementById("upload");
     const fileInput = () => document.getElementById("fileinput");
 
-    const doRender = function (ev) {
-        document.getElementById("files").outerHTML = this.responseText;
+    const doRender = (ev) => {
+        document.getElementById("files").outerHTML = ev.target.responseText;
         fileInput().outerHTML = fileInput().outerHTML; // clear selection
     };
 
-    const doLoad = function (ev) {
+    const doLoad = (ev) => {
         const req = new XMLHttpRequest();
         req.addEventListener("load", doRender.bind(req), false);
         req.open("GET", url, true);
         req.send();
     };
 
-    const doUpload = function (ev) {
+    const doUpload = (ev) => {
         const data = new FormData();
         Array.from(fileInput().files).forEach(
             file => data.append("file", file));

@@ -1,4 +1,4 @@
-/*global LockerAuth*/
+/*global anatta, LockerAuth*/
 "use strict";
 
 window.addEventListener("agent-load", ev => {

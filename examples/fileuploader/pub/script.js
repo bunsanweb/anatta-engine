@@ -4,8 +4,8 @@ window.addEventListener("load", ev => {
     const upload = document.getElementById("upload");
     const fileInput = () => document.getElementById("fileinput");
 
-    const doRender = function (ev) {
-        document.getElementById("files").outerHTML = this.responseText;
+    const doRender = (ev) => {
+        document.getElementById("files").outerHTML = ev.target.responseText;
         fileInput().outerHTML = fileInput().outerHTML; // clear selection
     };
 

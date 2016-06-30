@@ -13,7 +13,7 @@ window.addEventListener("load", ev => {
         req.send(data);
     });
 
-    const formData = function (elem) {
+    const formData = (elem) => {
         const data = new FormData();
         data.append(elem.id, elem.value);
         return data;

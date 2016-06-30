@@ -1,3 +1,4 @@
+/*global anatta, Streamer*/
 "use strict";
 
 window.addEventListener("agent-load", ev => {
@@ -76,7 +77,7 @@ window.addEventListener("agent-load", ev => {
         }, statusesDoc.documentElement.outerHTML);
     };
 
-    const formatStatus = function (uri, entry) {
+    const formatStatus = (uri, entry) => {
         const parsed = url.parse(uri);
         const href = `${parsed.protocol}//${parsed.host}/`;
         const from = fromTemplate.cloneNode(true);
@@ -120,7 +121,7 @@ window.addEventListener("agent-load", ev => {
         });
     };
 
-    const postFollower = function (ev) {
+    const postFollower = (ev) => {
         const followerUri = anatta.form.decode(ev.detail.request).follower;
         if (followerUri && !streamers[followerUri]) {
             setStreamer(followerUri);

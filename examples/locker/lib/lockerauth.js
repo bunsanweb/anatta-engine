@@ -1,7 +1,6 @@
-/*global LockerAuth*/
 "use strict";
 
-const LockerAuth = (function () {
+window.LockerAuth = (function build() {
     const scheme = "LockerAuth";
     const challenge = {
         alg: "sha256",

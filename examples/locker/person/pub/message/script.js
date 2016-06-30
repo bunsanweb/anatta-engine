@@ -13,20 +13,20 @@ window.addEventListener("load", ev => {
         req.send(data);
     });
     
-    const doRender = function (ev) {
+    const doRender = (ev) => {
         const doc = document.implementation.createHTMLDocument("");
         doc.documentElement.innerHTML = ev.target.responseText;
         const messageElem = doc.getElementById("message");
         message.textContent = messageElem ? messageElem.textContent : "";
     };
 
-    const doLoad = function (ev) {
+    const doLoad = (ev) => {
         const req = request("GET", agent, null);
         req.then(doRender);
     };
 
     
-    const formData = function (elem) {
+    const formData = (elem) => {
         const data = new FormData();
         data.append(elem.id, elem.value);
         return data;

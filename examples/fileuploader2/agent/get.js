@@ -1,3 +1,4 @@
+/*global anatta*/
 "use strict";
 window.addEventListener("agent-load", ev => {
     window.addEventListener("agent-access", ev => {

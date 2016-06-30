@@ -1,7 +1,7 @@
 "use strict";
 window.addEventListener("load", ev => {
-    const doRender = function (ev) {
-        document.querySelector("#contents").innerHTML = this.responseText;
+    const doRender = (ev) => {
+        document.querySelector("#contents").innerHTML = ev.target.responseText;
     };
     const doLoad = (ev) => {
         const url = "/agent/";

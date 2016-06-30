@@ -1,5 +1,5 @@
 /*eslint no-else-return: 0*/
-(function (root, factory) {
+(function top(root, factory) {
     if (typeof exports === "object") module.exports = factory;
     else root.StreamerSource = factory(root);
 })(this, window => {
@@ -25,7 +25,7 @@
     //        (container of each entry) in the index doc
     // - opts.entriesMax: count for max length of activities for the chunk doc
     // - opts.waitRefresh: specified wait span to refresh accesss for clients
-    return function (opts) {
+    return function StreamSource(opts) {
         opts.selector = opts.selector || {};
         opts.selector.entries = opts.selector.entries || "[rel=entry]";
         opts.entriesMax = opts.entriesMax || 20;

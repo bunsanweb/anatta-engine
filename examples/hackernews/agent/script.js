@@ -1,3 +1,4 @@
+/*global anatta*/
 "use strict";
 window.addEventListener("agent-load", ev => {
     const containerTemplate = document.querySelector(".container");

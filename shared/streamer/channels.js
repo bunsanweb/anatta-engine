@@ -21,19 +21,19 @@
         chain.on("arrive", linear.arrive.bind(self));
         return self;
     };
-    Linear.prototype.on = function (name, handler) {
+    Linear.prototype.on = function on(name, handler) {
         this.handlers[name] = handler;
     };
-    Linear.prototype.action = function (name) {
+    Linear.prototype.action = function action(name) {
         return this[name].bind(this);
     };
-    Linear.prototype.load = function () {
+    Linear.prototype.load = function load() {
         return this.chain.load();
     };
-    Linear.prototype.refresh = function () {
+    Linear.prototype.refresh = function refresh() {
         return this.chain.refresh();
     };
-    Linear.prototype.backward = function () {
+    Linear.prototype.backward = function backward() {
         return this.chain.backward();
     };
     const linear = {
@@ -88,22 +88,22 @@
         });
         return self;
     };
-    Chain.prototype.on = function (name, handler) {
+    Chain.prototype.on = function on(name, handler) {
         this.handlers[name] = handler;
     };
-    Chain.prototype.action = function (name) {
+    Chain.prototype.action = function action(name) {
         return this[name].bind(this);
     };
-    Chain.prototype.load = function () {
+    Chain.prototype.load = function load() {
         const first = Fragment(this.opts);
         this.fragments.push(first);
         Reflect.apply(chain.bindChain, this, [first]);
         first.load();
     };
-    Chain.prototype.refresh = function () {
+    Chain.prototype.refresh = function refresh() {
         this.fragments[this.fragments.length - 1].refresh();
     };
-    Chain.prototype.backward = function () {
+    Chain.prototype.backward = function backward() {
         this.fragments[this.fragments.length - 1].backward();
     };
     const chain = {
@@ -144,19 +144,19 @@
         basic.on("backward", fragment.onBackward.bind(self));
         return self;
     };
-    Fragment.prototype.on = function (name, handler) {
+    Fragment.prototype.on = function on(name, handler) {
         this.handlers[name] = handler;
     };
-    Fragment.prototype.action = function (name) {
+    Fragment.prototype.action = function action(name) {
         return this[name].bind(this);
     };
-    Fragment.prototype.load = function () {
+    Fragment.prototype.load = function load() {
         return this.basic.load();
     };
-    Fragment.prototype.backward = function () {
+    Fragment.prototype.backward = function backward() {
         return this.basic.backward();
     };
-    Fragment.prototype.refresh = function () {
+    Fragment.prototype.refresh = function refresh() {
         const uri = this.basic.link.refresh;
         const opts = merge({href: uri}, this.opts);
         Reflect.apply(this.handlers.refresh, this, [Fragment(opts)]);
@@ -210,21 +210,21 @@
             }}
         });
     };
-    Basic.prototype.on = function (name, handler) {
+    Basic.prototype.on = function on(name, handler) {
         this.handlers[name] = handler;
     };
-    Basic.prototype.action = function (name) {
+    Basic.prototype.action = function action(name) {
         return this[name].bind(this);
     };
-    Basic.prototype.load = function () {
+    Basic.prototype.load = function load() {
         this.lane = this.lane.then(
             () => get(this.opts.href).then(basic.onLoad.bind(this)));
     };
-    Basic.prototype.refresh = function () {
+    Basic.prototype.refresh = function refresh() {
         this.lane = this.lane.then(
             () => get(this.link.refresh).then(basic.onRefresh.bind(this)));
     };
-    Basic.prototype.backward = function () {
+    Basic.prototype.backward = function backward() {
         this.lane = this.lane.then(
             () => get(this.link.backward).then(basic.onBackward.bind(this)));
     };
@@ -255,7 +255,7 @@
         }
     };
     
-    const parseMessage = function (reqres) {
+    const parseMessage = function parseMessage(reqres) {
         const doc = platform.createHtml(reqres);
         return {
             entries: Array.from(
@@ -353,7 +353,7 @@
         }
     };
     
-    const platform = (function () {
+    const platform = (function build() {
         if (typeof window === "object" && typeof window.anatta === "object" &&
             window.anatta.engine) {
             return platforms.agent;

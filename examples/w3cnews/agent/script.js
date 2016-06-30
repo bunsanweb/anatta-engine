@@ -1,3 +1,4 @@
+/*global anatta*/
 "use strict";
 window.addEventListener("agent-load", ev => {
     const url = document.getElementById("url").href;

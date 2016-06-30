@@ -16,7 +16,7 @@ window.addEventListener("load", ev => {
         req.send();
     };
 
-    const doUpdate = function (ev) {
+    const doUpdate = (ev) => {
         const url = "/wall/";
         const req = new XMLHttpRequest();
         req.addEventListener("load", doLoad, false);

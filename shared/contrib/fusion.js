@@ -1,6 +1,6 @@
 "use strict";
 
-window.fusion = (function () {
+window.fusion = (function build() {
     // Generic library for mapping entity and links to DOM Element tree
     // e.g. fusion(entity, templateTree[, doc]) => Element
     //
@@ -110,11 +110,11 @@ window.fusion = (function () {
             json: {value: json}
         });
     };
-    JsonEntity.prototype.attr = function (key) {
+    JsonEntity.prototype.attr = function attr(key) {
         const value = this.json[key];
         return value ? value.toString() : "";
     };
-    JsonEntity.prototype.find = function (query) {
+    JsonEntity.prototype.find = function find(query) {
         if (query !== "*") return [];
         return (this.json.links || []).map(JsonLink);
     };
@@ -123,11 +123,11 @@ window.fusion = (function () {
             json: {value: json}
         });
     };
-    JsonLink.prototype.attr = function (key) {
+    JsonLink.prototype.attr = function attr(key) {
         const value = this.json[key];
         return value ? value.toString() : "";
     };
-    JsonLink.prototype.find = function (query) {
+    JsonLink.prototype.find = function find(query) {
         return [];
     };
     
