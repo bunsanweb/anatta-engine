@@ -39,7 +39,7 @@ test("Create Orb field with dir.Orb , do put then get", function (done) {
 const tmpDir = () => {
     const os = require("os");
     const path = require("path");
-    return path.join(os.tmpDir(), `anatta-engine-orb-dir-test-${process.pid}`);
+    return path.join(os.tmpdir(), `anatta-engine-orb-dir-test-${process.pid}`);
 };
 const cleanupDir = (dir) => {
     const fs = require("fs");

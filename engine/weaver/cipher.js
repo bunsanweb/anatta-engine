@@ -24,7 +24,7 @@ const privateEncrypt = (forgeKey, buf, encoding) => {
     return Buffer.from(encrypted, "binary").toString(encoding);
 };
 const publicDecrypt = (forgeKey, str, encoding) => {
-    const raw = Buffer(str, encoding).toString("binary");
+    const raw = Buffer.from(str, encoding).toString("binary");
     const decrypted = forge.pki.rsa.decrypt(raw, forgeKey, true, true);
     return Buffer.from(decrypted, "binary");
 };
