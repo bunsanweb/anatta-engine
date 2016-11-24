@@ -11,14 +11,16 @@ const engine = anatta.engine.builder.engine({
     },
     space: {
         "src:": {field: "file", root: "./streams/", prefix: "/"},
-        "src:/shared/": {field: "file", root: anatta.shared(),
-                         prefix: "/shared/"},
-        "src:/streamer/": {field: "file", root: anatta.shared("./streamer/"),
-                           prefix: "/streamer/"},
+        "src:/shared/": {
+            field: "file", root: anatta.shared(), prefix: "/shared/"},
+        "src:/streamer/": {
+            field: "file", root: anatta.shared("./streamer/"),
+            prefix: "/streamer/"},
         "orb:": {field: "orb", cache: false},
         "root:/": {field: "file", root: "./ui/", prefix: "/"},
-        "root:/streamer/": {field: "file", root: anatta.shared("./streamer/"),
-                            prefix: "/streamer/"},
+        "root:/streamer/": {
+            field: "file", root: anatta.shared("./streamer/"),
+            prefix: "/streamer/"},
         "root:/streams": {field: "agent", uri: "src:/index.html"}
     }
 });

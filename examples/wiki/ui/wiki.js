@@ -32,7 +32,7 @@ window.addEventListener("load", ev => {
         content.innerHTML = plain.replace(wikiName, linker);
         source.value = plain;
     };
-    const wikiName = /\[\[([^\]]+)\]\]/g;
+    const wikiName = /\[\[([^\]]+)]]/g;
     const linker = (match, name) => `<a href='#${name}'>${name}</a>`;
     
     const doUpdate = (ev) => {

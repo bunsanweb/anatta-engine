@@ -7,7 +7,7 @@ window.addEventListener("load", ev => {
     const update = document.getElementById("update");
     const orb = document.querySelector("link[rel='orb']").href;
 
-    const wikiName = /\[\[([^\]]+)\]\]/g;
+    const wikiName = /\[\[([^\]]+)]]/g;
     const linker = (match, name) => `<a href='#${name}'>${name}</a>`;
     
     const init = () => {

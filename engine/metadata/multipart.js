@@ -55,9 +55,11 @@ const parseFile = (disposition) => {
     const type = disposition.headers["content-disposition"];
     const filename = Buffer.from(
         type.match(/\bfilename="([^"]+)"/)[1], "binary").toString();
-    return {filename,
-            body: Buffer.from(disposition.body, "binary"),
-            headers: disposition.headers};
+    return {
+        filename,
+        body: Buffer.from(disposition.body, "binary"),
+        headers: disposition.headers,
+    };
 };
 
 const splitMultipart = (body, boundary) => {

@@ -18,8 +18,8 @@ test("post", function (done) {
             "src:": {
                 field: "file", root: "./test/assets/streamer/streams/",
                 prefix: "/"},
-            "src:/shared/": {field: "file", root: anatta.shared(),
-                             prefix: "/shared/"},
+            "src:/shared/": {
+                field: "file", root: anatta.shared(), prefix: "/shared/"},
             "src:/streamer/": {
                 field: "file", root: anatta.shared("./streamer/"),
                 prefix: "/streamer/"},

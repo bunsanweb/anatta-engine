@@ -16,8 +16,8 @@ test("self test as tap agent", function (done) {
         },
         space: {
             "src:": {field: "file", root: "./test/assets/tap/", prefix: "/"},
-            "src:/shared/": {field: "file", root: anatta.shared(),
-                             prefix: "/shared/"},
+            "src:/shared/": {
+                field: "file", root: anatta.shared(), prefix: "/shared/"},
             "module:/unittest/": {field: "agent", uri: "src:/unittest.html"},
         },
     });

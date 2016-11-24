@@ -17,8 +17,8 @@ test("build as generic config", function () {
         space: {
             "http:": {field: "web"},
             "https:": {field: "web"},
-            "file:/": {field: "file",
-                       path: "./test/assets/agent/", prefix: "/"},
+            "file:/": {
+                field: "file", path: "./test/assets/agent/", prefix: "/"},
             "orb:": {field: "orb"},
             "data:": {field: "data"},
             "myagent:": {field: "agent", uri: "file:/empty.html"},

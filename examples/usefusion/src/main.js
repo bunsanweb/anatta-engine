@@ -7,8 +7,10 @@ window.addEventListener("agent-load", ev => {
         href: "http://example.org/",
         links: [
             {title: "Hello", tags: "greeting", content: "Hello Fusion"},
-            {title: "Good Bye",
-             content: "<span style='color: red'>...</span>"},
+            {
+                title: "Good Bye",
+                content: "<span style='color: red'>...</span>"
+            },
         ],
     };
     

@@ -11,8 +11,8 @@ const engine = anatta.engine.builder.engine({
     space: {
         "http:": {field: "web"},
         "src:": {field: "file", root: "./src/", prefix: "/"},
-        "src:/shared/": {field: "file", root: anatta.shared(),
-                         prefix: "/shared/"},
+        "src:/shared/": {
+            field: "file", root: anatta.shared(), prefix: "/shared/"},
         "module:/": {field: "agent", uri: "src:/index.html"},
         "module:/unittest/": {field: "agent", uri: "src:/unittest.html"},
     },

@@ -33,7 +33,7 @@
         
         const onGet = (ev) => {
             const pathname = ev.detail.request.location.pathname;
-            const id = pathname.match(/\/([^\/]+)$/);
+            const id = pathname.match(/\/([^/]+)$/);
             if (id) return respondActivity(ev, id[1]);
             return getIndexDoc().then(index => {
                 const view = renderMessage(ev.detail.request, index);
@@ -172,8 +172,8 @@
                 if (bid && rid && uid) {
                     return {
                         refresh: {count: c, refresh: rid},
-                        backward: {count: c, backward: lid, refresh: rid,
-                                   until: uid}
+                        backward: {
+                            count: c, backward: lid, refresh: rid, until: uid}
                     };
                 }
                 // req: "/?backward=bid&refresh=rid"
@@ -191,8 +191,8 @@
                 if (rid) {
                     return {
                         refresh: {count: c, refresh: fid},
-                        backward: {count: c, backward: lid, refresh: fid,
-                                   until: rid}
+                        backward: {
+                            count: c, backward: lid, refresh: fid, until: rid}
                     };
                 }
                 // req: "/"
@@ -209,8 +209,8 @@
                 if (bid && rid && uid) {
                     return {
                         refresh: {count: c, refresh: rid},
-                        backward: {count: c, backward: bid, refresh: rid,
-                                   until: uid}
+                        backward: {
+                            count: c, backward: bid, refresh: rid, until: uid}
                     };
                 }
                 // req: "/?backward=bid&refresh=rid"
@@ -228,8 +228,8 @@
                 if (rid) {
                     return {
                         refresh: {count: c, refresh: rid},
-                        backward: {count: c, backward: rid, refresh: rid,
-                                   until: rid}
+                        backward: {
+                            count: c, backward: rid, refresh: rid, until: rid}
                     };
                 }
                 // req: "/"
