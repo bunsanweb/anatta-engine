@@ -11,6 +11,7 @@
 // - Atom: "entry" elements
 // - HTML: "a" elements with "href"
 
+const url = require("url");
 const core = require("./core");
 const jsdom = require("../metadata/jsdom");
 const xmlSerializer = jsdom.XMLSerializer();
@@ -73,7 +74,8 @@ const AtomBinder = class AtomBinder extends ResourceBinder {
                       link.atom;
             const elem = doc.defaultView.matcher.select(
                 "entry > link[rel='self']", link.atom)[0];
-            return elem ? elem.getAttribute("href") : "";
+            return !elem ? "" :
+                url.resolve(doc.documentURI, elem.getAttribute("href"));
         }
         case "content-type": return "application/atom+xml";
         case "body": return xmlSerializer.serializeToString(link.atom);

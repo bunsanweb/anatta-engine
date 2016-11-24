@@ -8,8 +8,8 @@
 
   <entry>
     <title>Hello</title>
-    <link rel="self" href="file:assets/article1.atom"/>
-    <id>file:assets/article1.atom</id>
+    <link rel="self" href="article1.atom"/>
+    <id>file:article1.atom</id>
     <updated>2013-12-13T18:30:02Z</updated>
     <summary>World</summary>
   </entry>

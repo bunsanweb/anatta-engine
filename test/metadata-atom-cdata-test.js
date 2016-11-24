@@ -21,7 +21,7 @@ test("Get Atom resource", function (done) {
         },
     }));
     
-    const uri = "file:assets/cdata.atom";
+    const uri = `file://${__dirname}/assets/cdata.atom`;
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {

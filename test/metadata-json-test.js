@@ -33,17 +33,19 @@ test("Get JSON resource from relative link", function (done) {
     }));
     engine.porter.map["application/json"] = anatta.metadata.json;
     
-    const uri = "file:assets/linker.json";
+    const uri = `file://${__dirname}/assets/linker.json`;
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {
         const links = entity.all();
         assert.equal(links.length, 1);
-        assert.equal(links[0].href(), "file:assets/target.json");
+        assert.equal(
+            links[0].href(), `file://${__dirname}/assets/target.json`);
         assert.equal(links[0].attr("href"), "target.json");
         return links[0].get();
     }).then(target => {
-        assert.equal(target.attr("href"), "file:assets/target.json");
+        assert.equal(
+            target.attr("href"), `file://${__dirname}/assets/target.json`);
         assert.equal(target.attr("body"), '{"name": "target"}\n');
     }).then(done, done);
 });

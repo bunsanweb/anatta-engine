@@ -14,13 +14,14 @@ test("Get Atom resource", function (done) {
     engine.porter.map["application/json"] = anatta.metadata.json;
     engine.porter.map["application/atom+xml"] = anatta.metadata.atom;
     
-    const uri = "file:assets/feed.atom";
+    const uri = `file://${__dirname}/assets/feed.atom`;
     const link = engine.link({href: uri});
     assert.equal(link.href(), uri);
     link.get().then(entity => {
         assert.equal(entity.attr("href"), uri);
         const entries = entity.all();
         //console.log(entries[0].attr("body"))
-        assert.equal(entries[0].attr("href"), "file:assets/article1.atom");
+        assert.equal(entries[0].attr("href"),
+                     `file://${__dirname}/assets/article1.atom`);
     }).then(done, done);
 });
