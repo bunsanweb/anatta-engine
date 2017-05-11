@@ -1,6 +1,6 @@
 "use strict";
 
-const jsdom = require("jsdom");
+const jsdom = require("jsdom/lib/old-api");
 const xmldom = require("xmldom");
 const nwmatcher = require("nwmatcher");
 

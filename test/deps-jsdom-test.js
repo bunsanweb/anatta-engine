@@ -3,7 +3,7 @@
 "use strict";
 
 const assert = require("assert");
-const jsdom = require("jsdom");
+const jsdom = require("jsdom/lib/old-api");
 
 function createHTMLDocument() {
     return jsdom.jsdom("<!doctype html>", {
