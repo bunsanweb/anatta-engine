@@ -1,16 +1,16 @@
 # Anatta Engine
 
 "anatta-engine" is a programming environment that applies
-the programming ways in browsers for the Web Resource(URI)s
-to the Web Resources theirself:
+the **programming ways in browsers for the Web Resource(URI)s**
+to the Web Resources themself:
 
 - Hyperlink of URI as first-class object
 - Programs resolve hyperlinks as the data includes next hyperlinks
 - Programs are also revealed via resolving URIs
 
 The `Engine` manages the URI `Space` that contains
-web URIs(`"http"`, `"https"`), files(`"file:`), 
-storages(`"orb"` as abstract writable cache),  
+web URIs(`"http"`, `"https"`), files(`"file`), 
+storages(`"orb"` as abstract writable cache), 
 and the programs using the engine itself.
 
 The `Space` can redirect between the URIs as mapping to arrange the resources.
@@ -26,7 +26,7 @@ For the concept, several design decisions exist in the "anatta-engine" as:
 - HTML with JavaScript for the program format
 - ...
 
-## Setup
+## Setup the repository
 
 The "anatta-engine" runs on "node.js" with no native packages directly.
 You can set up with `npm install`:
@@ -58,10 +58,14 @@ In the "anatta-engine", roles of script files exist as:
 
 The first one is a main library of "anatta-engine" 
 in the ["engine"](./engine/) directory.
-Using them for starting the engine as the example's `run.js` files.
+Using them for starting the engine as the example's 
+[`run.js` files](examples/wall/run.js).
 
-The scond one is a main part of the complex examples.
-The third one is also in the examples usually stored at `pub` directories.
+The scond one is a main part of the complex examples;
+e.g. [wall example's wall/script.js](examples/wall/wall/script.js).
+The third one is also in the examples usually stored 
+at `pub` directories; 
+e.g. [wall example's pub/script.js](examples/wall/pub/script.js).
 The second one and the third one is almost same style of programming.
 So the shared library loading with "script" tag for them are same code
 in [`shared`](./shared)  directory.
