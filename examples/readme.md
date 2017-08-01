@@ -53,9 +53,9 @@ then the `agent` load the source file `file:/index.html` by the descriptor.
 The `agent` is accessed from browser UI html.
 
 - How to use programmable `agent` in the `Engine`
-- How `agent`s interact from outside asynchromnously.
+- How `agent`s interact from outside asynchronously.
 
-Thw `wall` is just write and update a single message.
+The `wall` is just write and update a single message.
 
 ## `fileuploader` example
 
@@ -97,13 +97,13 @@ its private `orb` storage.
 ## `statuses` example
 
 The [`statuses` example](statuses) is a lifelog stream application
-that communicates the browser side code and the `agenet` with paged links.
+that communicates the browser side code and the `agent` with paged links.
 The page passed from the `agent` includes "refresh" and "backward" links.
 The browser side code uses the links to update its view.
 
 - How to manipulate list of hyperlinks
 
-## `limeline` example
+## `timeline` example
 
 The [`timeline` example](timeline) is extended the `statuses` example
 with multiple followers.
@@ -123,18 +123,18 @@ for programming with same event driven style to manipulate the hyperlinks.
 ## `locker` example
 
 The [`locker` example](locker) is an multiple peers example 
-for access control with (builtin) publick-key cryptography in `agent`.
+for access control with (builtin) public-key cryptography in `agent`.
 
 The "person" peer has a key pair to sign the actions.
 The "house" peer check the action with registered public keys
-to update its state (that includes publick key list).
+to update its state (that includes public key list).
 
-- How to use public-key cruptography in `agent`
+- How to use public-key cryptography in `agent`
 
 ## `hosting` example
 
 The [`hosting` example](hosting) is a simple example emulates 
-an app registored store and app running hosts.
+an app registered store and app running hosts.
 
 The "store" peer is a static web site that has 
 a list of "app" as a app descriptor `inst.json` 
@@ -146,7 +146,7 @@ to run as the sub `engine` to access to the browsers.
 
 Note that the system of sub `engine`s is `engine`s mapped in a parent `engine`.
 It calls `GalaxyField` as a source code, and the feature in `agent` named
-`inst` to simply launcing with the descriptor.
+`inst` to simply launching with the descriptor.
 It is important that the parent mapped URIs are not the root of sub engines,
 that is similar as `WebGate` mapped URI space.
 So that the private URI space may exist in each sub `engines`.
@@ -170,14 +170,9 @@ that is not required to check on the browser.
 ## `usefusion` example
 
 The [`usefusion` example](usefusion) is an example for 
-DOM based builin tiny template engine: ["fusion"](../shared/contrib/fusion.js).
+DOM based builtin tiny template engine: ["fusion"](../shared/contrib/fusion.js).
 The mapping data of the "fusion" is just "metadata" based objects
 (`Entity`/`Link`) in the `Engine`.
 
-- How to apply inner pbjects and DOM tree simply
-
-
-
-
-
+- How to apply inner objects and DOM tree simply
 

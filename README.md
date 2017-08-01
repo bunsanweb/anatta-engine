@@ -2,7 +2,7 @@
 
 "anatta-engine" is a programming environment that applies
 the **programming ways in browsers for the Web Resource(URI)s**
-to the Web Resources themself:
+to the Web Resources themselves:
 
 - Hyperlink of URI as first-class object
 - Programs resolve hyperlinks as the data includes next hyperlinks
@@ -15,7 +15,7 @@ and the programs using the engine itself.
 
 The `Space` can redirect between the URIs as mapping to arrange the resources.
 As for the programs, programs mapped URI are used as a libraries.
-And then, puting The `Engine` into a `WebGate` gateway to 
+And then, putting The `Engine` into a `WebGate` gateway to 
 reveal the part of the arranged `space` becomes as a HTTP/S Web server.
 It can also be connected by usual browsers. 
 And It can be connected by the `Engine`s from remote host seamless ways.
@@ -61,7 +61,7 @@ in the ["engine"](./engine/) directory.
 Using them for starting the engine as the example's 
 [`run.js` files](examples/wall/run.js).
 
-The scond one is a main part of the complex examples;
+The second one is a main part of the complex examples;
 e.g. [wall example's wall/script.js](examples/wall/wall/script.js).
 The third one is also in the examples usually stored 
 at `pub` directories; 
