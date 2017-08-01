@@ -1,6 +1,6 @@
-# examples
+# Examples of Engine programming
 
-Each example can launch as: ``node run.js``
+Each example can be launched as: ``node run.js``
 then you can access it as ``http://localhost:8000/``
 on your web browser.
 
@@ -25,6 +25,8 @@ Other examples:
 
 - [unittest](unittest)
 - [usefusion](usefusion)
+
+These examples show what the `Engine` focuses on.
 
 ## `helloworld` example
 
