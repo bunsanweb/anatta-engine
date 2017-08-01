@@ -1,4 +1,4 @@
-# Examples of Engine programming
+# Examples of Engine program
 
 Each example can be launched as: ``node run.js``
 then you can access it as ``http://localhost:8000/``
@@ -27,6 +27,7 @@ Other examples:
 - [usefusion](usefusion)
 
 These examples show what the `Engine` focuses on.
+The order of the examples goes up to the programming concept of the `Engine`.
 
 ## `helloworld` example
 
@@ -161,7 +162,7 @@ The [`agent` HTML](unittest/src/unittest.html) is just loading scripts as
 the ["tap.js"](../shared/contrib/tap.js), 
 ["library scripts"](unittest/src/library.js) and 
 ["unittest scripts"](unittest/src/library-tests.js).
-The `shared/contrib/tap.js` is a TAP style simple unittest runner 
+The `shared/contrib/tap.js` is a TAP(Test Anything Protocol) style simple unittest runner 
 `agent` script.
 
 - How to unit testing for `agent`
@@ -176,5 +177,5 @@ DOM based builtin tiny template engine: ["fusion"](../shared/contrib/fusion.js).
 The mapping data of the "fusion" is just "metadata" based objects
 (`Entity`/`Link`) in the `Engine`.
 
-- How to apply inner objects and DOM tree simply
+- How to apply inner objects to a DOM tree
 
