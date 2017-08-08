@@ -72,5 +72,5 @@ in [`shared`](./shared)  directory.
 
 For details of the design of source codes, see:
 
-- [docs/design.md](docs/design.md)
+- [doc/design.md](doc/design.md)
 
