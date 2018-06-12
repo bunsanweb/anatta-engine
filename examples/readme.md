@@ -82,7 +82,7 @@ the `Engine` at `run.js`.
 ## `hackernews` example
 
 The [`hackernews` example](hackernews) is similar to the `w3cnews` example
-except it defines defines `metadata` in the `agent`.
+except it defines `metadata` in the `agent`.
 
 - How to define `metadata` in `agent`
 - How to process external hyperlinked resources recursively
@@ -142,7 +142,7 @@ an app registered store and an app running hosts.
 The "store" peer is a static web site that has 
 a list of "app" as a app descriptor `inst.json` 
 with all files  related the `agent`s.
-The "host" peer manages URLs stored in `inst.json`s 
+The "host" peer manages `inst.json` URLs of each "app"
 to run as the sub `engine` to access browsers.
 
 - How to use sub `engine`s in `agent`
