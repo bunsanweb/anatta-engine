@@ -17,5 +17,5 @@
 - usefusion
 
 Each example can launch as: ``node run.js``
-then you can access it as ``http://localhost:8000/``
+and can be accessed at ``http://localhost:8000/``
 on your web browser.
