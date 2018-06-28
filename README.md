@@ -32,7 +32,7 @@ The "anatta-engine" runs directly on "node.js" with no native packages.
 You can set it up with `npm install`:
 
 ```bash
-$ git clone https://github.com/anatta-project/anatta-engine
+$ git clone https://github.com/bunsanweb/anatta-engine
 $ cd anatta-engine
 $ npm install
 ```
