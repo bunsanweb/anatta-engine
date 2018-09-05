@@ -1,26 +1,26 @@
 {
-    "name": "anatta-engine",
-    "version": "0.4.5",
-    "private": true,
-    "scripts": {
-        "eslint": "eslint .",
-        "test": "mocha"
-    },
-    "main": "./anatta",
-    "engines": {
-        "node": ">=7"
-    },
-    "dependencies": {
-        "jsdom": "<11",
-        "xmldom": "*",
-        "nwmatcher": "*",
-        "iconv-lite": "*",
-        "node-forge": "*",
-        "mongodb": "*"
-    },
-    "devDependencies": {
-        "eslint": "*",
-        "mocha": "*"
-    },
-    "repository": {}
+  "name": "anatta-engine",
+  "version": "0.4.5",
+  "private": true,
+  "scripts": {
+    "eslint": "eslint .",
+    "test": "mocha"
+  },
+  "main": "./anatta",
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "jsdom": "<11",
+    "xmldom": "*",
+    "nwmatcher": "*",
+    "iconv-lite": "*",
+    "node-forge": "*",
+    "mongodb": "*"
+  },
+  "devDependencies": {
+    "eslint": "*",
+    "mocha": "*"
+  },
+  "repository": {}
 }
