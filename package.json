@@ -7,9 +7,11 @@
         "test": "mocha"
     },
     "main": "./anatta",
-    "engines": {"node": ">=7"},
+    "engines": {
+        "node": ">=7"
+    },
     "dependencies": {
-        "jsdom": "*",
+        "jsdom": "<11",
         "xmldom": "*",
         "nwmatcher": "*",
         "iconv-lite": "*",
@@ -20,6 +22,5 @@
         "eslint": "*",
         "mocha": "*"
     },
-    "repository": {
-    }
+    "repository": {}
 }
