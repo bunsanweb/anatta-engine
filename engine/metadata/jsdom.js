@@ -1,6 +1,6 @@
 "use strict";
 
-const jsdom = require("jsdom/lib/old-api");
+const jsdom = require("jsdom");
 const xmldom = require("xmldom");
 const nwmatcher = require("nwmatcher");
 
@@ -10,12 +10,10 @@ const xmlSerializer = new xmldom.XMLSerializer();
 
 // compat function for "document.implementation.createHTMLDocument"
 exports.createHTMLDocument = (title) => {
-    const html = jsdom.jsdom("<!doctype html>", {
-        virtualConsole: jsdom.createVirtualConsole().sendTo(console),
-        features: {
-            FetchExternalResources: false,
-            ProcessExternalResources: false
-        }});
+    const dom = new jsdom.JSDOM("<!doctype html>", {
+        virtualConsole: new jsdom.VirtualConsole().sendTo(console),
+    });
+    const html = dom.window.html;
     if (typeof title === "string") {
         html.title = title;
     }
@@ -29,14 +27,11 @@ exports.createDocument = () => {
 };
 
 exports.parseHTML = (src, uri) => {
-    const html = jsdom.jsdom(src, {
-        parsingMode: "html",
+    const dom = new jsdom.JSDOM(src, {
         url: uri,
-        virtualConsole: jsdom.createVirtualConsole().sendTo(console),
-        features: {
-            FetchExternalResources: false,
-            ProcessExternalResources: false
-        }});
+        virtualConsole: new jsdom.VirtualConsole().sendTo(console),
+    });
+    const html = dom.window.document;
     return html;
 };
 exports.parseXML = (src, uri) => {
@@ -53,7 +48,8 @@ const XMLSerializer = class XMLSerializer {
     serializeToString(node) {
         const doc = node.ownerDocument ? node.ownerDocument : node;
         if (doc.implementation.createHTMLDocument) {
-            return jsdom.serializeDocument(node);
+            return node === doc ? doc.documentImplementation.outerHTML :
+              node.outerHTML;
         }
         return xmlSerializer.serializeToString(node);
     }
