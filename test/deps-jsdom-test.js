@@ -18,11 +18,10 @@ test("querySelector with escaped ids", function () {
     const doc = createHTMLDocument();
     const elems = doc.createElement("div");
     assert.ok(!elems.querySelector("#foo"));
-    //[NOTE] jdsom >= 11 regression: through syntax error case
-    //assert.throws(_ => {
-    //    elems.querySelector("#foo-xxx.0fcd"); // SyntaxError at ".0"
-    //});
-    
+    assert.throws(_ => {
+        elems.querySelector("#foo-xxx.0fcd"); // SyntaxError at ".0"
+    });
+
     const a = doc.createElement("span");
     a.id = "0foo.000";
     elems.appendChild(a);
