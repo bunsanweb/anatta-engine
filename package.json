@@ -11,7 +11,7 @@
     "node": ">=10"
   },
   "dependencies": {
-    "jsdom": "<11",
+    "jsdom": "*",
     "xmldom": "*",
     "nwmatcher": "*",
     "iconv-lite": "*",
@@ -19,7 +19,7 @@
     "mongodb": "*"
   },
   "devDependencies": {
-    "eslint": "*",
+    "eslint": "<4",
     "mocha": "*"
   },
   "repository": {}
