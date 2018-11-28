@@ -9,24 +9,30 @@ const isPublicKey = (forgeKey) =>
 const isPrivateKey = (forgeKey) => forgeKey && !isPublicKey(forgeKey);
 
 const publicEncrypt = (forgeKey, buf, encoding) => {
-    const raw = buf.toString("binary");
+    const raw = forge.util.decode64(buf.toString("base64"));
     const encrypted = forgeKey.encrypt(raw);
-    return Buffer.from(encrypted, "binary").toString(encoding);
+    const enc64 = forge.util.encode64(encrypted);
+    return Buffer.from(enc64, "base64").toString(encoding);
 };
 const privateDecrypt = (forgeKey, str, encoding) => {
-    const raw = Buffer.from(str, encoding).toString("binary");
+    const b64 = Buffer.from(str, encoding).toString("base64");
+    const raw = forge.util.decode64(b64);
     const decrypted = forgeKey.decrypt(raw);
-    return Buffer.from(decrypted, "binary");
+    const dec64 = forge.util.encode64(decrypted);
+    return Buffer.from(dec64, "base64");
 };
 const privateEncrypt = (forgeKey, buf, encoding) => {
-    const raw = buf.toString("binary");
+    const raw = forge.util.decode64(buf.toString("base64"));
     const encrypted = forge.pki.rsa.encrypt(raw, forgeKey, 1);
-    return Buffer.from(encrypted, "binary").toString(encoding);
+    const enc64 = forge.util.encode64(encrypted);
+    return Buffer.from(enc64, "base64").toString(encoding);
 };
 const publicDecrypt = (forgeKey, str, encoding) => {
-    const raw = Buffer.from(str, encoding).toString("binary");
+    const b64 = Buffer.from(str, encoding).toString("base64");
+    const raw = forge.util.decode64(b64);
     const decrypted = forge.pki.rsa.decrypt(raw, forgeKey, true, true);
-    return Buffer.from(decrypted, "binary");
+    const dec64 = forge.util.encode64(decrypted);
+    return Buffer.from(dec64, "base64");
 };
 
 const hashAndSign = (forgeKey, alg, buf, encoding) => {
@@ -69,14 +75,16 @@ const Key = class Key {
     }
     encode(info) {
         const encoding = info.encoding || "base64";
-        const rawPass = crypto.randomBytes(info.size || 64);
-        const encoder = crypto.createCipher(info.cipher, rawPass);
+        const rawPass = crypto.randomBytes(info.size || 24);
+        const iv = crypto.randomBytes(info.ivsize || 16);
+        const encoder = crypto.createCipheriv(info.cipher, rawPass, iv);
         encoder.update(Buffer.from(info.data));
         const data = encoder.final(encoding);
         const pass = isPrivateKey(this.key) ?
-                  privateEncrypt(this.key, rawPass, encoding) :
-                  publicEncrypt(this.key, rawPass, encoding);
-        return {cipher: info.cipher, encoding, pass, data};
+              privateEncrypt(this.key, rawPass, encoding) :
+              publicEncrypt(this.key, rawPass, encoding);
+        const ivhex = iv.toString("hex");
+        return {cipher: info.cipher, encoding, pass, ivhex, data};
     }
     decode(info) {
         const encoding = info.encoding || "base64";
@@ -84,7 +92,8 @@ const Key = class Key {
             const rawPass = isPrivateKey(this.key) ?
                       privateDecrypt(this.key, info.pass, encoding) :
                       publicDecrypt(this.key, info.pass, encoding);
-            const decoder = crypto.createDecipher(info.cipher, rawPass);
+            const iv = Buffer.from(info.ivhex, "hex");
+            const decoder = crypto.createDecipheriv(info.cipher, rawPass, iv);
             decoder.update(info.data, encoding);
             const data = decoder.final();
             return data;

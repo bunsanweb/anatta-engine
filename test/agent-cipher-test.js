@@ -22,6 +22,8 @@ test("encode with privateKey and decode", function (done) {
 
     const info = {
         cipher: "aes192",
+        size: 24,
+        ivsize: 16,
         encoding: "base64",
         data: "hello world!",
     };
@@ -49,6 +51,8 @@ test("encode with publicKey and decode", function (done) {
 
     const info = {
         cipher: "aes192",
+        size: 24,
+        ivsize: 16,
         encoding: "base64",
         data: "hello world!",
     };
